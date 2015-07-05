@@ -1,0 +1,9 @@
+DESCRIPTION.rst
+MANIFEST.in
+README.rst
+setup.cfg
+slip/__init__.py
+slip.egg-info/PKG-INFO
+slip.egg-info/SOURCES.txt
+slip.egg-info/dependency_links.txt
+slip.egg-info/top_level.txt

@@ -1,0 +1,16 @@
+Metadata-Version: 1.1
+Name: slip
+Version: 0.0.0
+Summary: Slip package
+Home-page: https://github.com/rhjdjong/Slip
+Author: Ruud de Jong
+Author-email: ruud.de.jong@xs4all.nl
+License: MIT
+Description: The :mod:`slip` module implements the encoding and decoding functionality
+        for SLIP packets, as described in :rfc:`1055`.
+Keywords: slip message framing protocol RFC1055
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3.4
