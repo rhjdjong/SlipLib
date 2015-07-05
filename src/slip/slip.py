@@ -112,6 +112,7 @@ class SlipDecoder():
         self.reset(True)
 
     def _idle_handler(self, b, errors):
+        # Wait for a non-END byte
         if b != END:
             if b == ESC:
                 self.state = self.State.escaped
@@ -128,10 +129,13 @@ class SlipDecoder():
             self.decoded_bytes.append(b)
     
     def _escaped_handler(self, b, errors):
+        # Decode the next character following and ESC byte.
+        # Exact handling depends on the 'errors' setting
         self._decode_function_map[errors](self, b)
         self.state = self.State.normal
     
     def _error_handler(self, b, errors):
+        # Error recovery: skip to the next END byte
         if b == END:
             self.state = self.State.idle
 
@@ -172,7 +176,7 @@ class SlipDecoder():
                     raise SlipDecodingError('Input not completely decoded. Remaining: {!r}'.
                                             format(self.input_buffer))
                 elif self.state == self.State.escaped:
-                    raise SlipDecodingError('Incomplete input. Final END is missing')
+                    raise SlipDecodingError('Incomplete input. Unfinished ESC sequence.')
         except SlipDecodingError:
             self.decoded_bytes.clear()
             raise
