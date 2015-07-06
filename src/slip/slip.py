@@ -22,6 +22,10 @@ ESC = 0xdb       # SLIP escape character
 ESC_END = 0xdc   # Escaped SLIP END value
 ESC_ESC = 0xdd   # Escaped SLIP ESC value
 
+ENDb = bytes((END,))
+ESCb = bytes((ESC,))
+ESC_ENDb = bytes((ESC, ESC_END))
+ESC_ESCb = bytes((ESC, ESC_ESC))
 
 class SlipEncoder():
     encode_map = {END: ESC_END, ESC: ESC_ESC}
@@ -31,35 +35,18 @@ class SlipEncoder():
         self.encoded_bytes = bytearray()
 
     def encode(self, obj, errors=None, final=False):
-        try:
-            self.errors
-        except AttributeError:
-            self.errors = 'strict'
-        if errors is not None:
-            self.errors = errors
-
         if not isinstance(obj, collections.abc.Iterable):
             obj = (obj,)
-        
-        if not self.encoded_bytes:
-            self.encoded_bytes.append(END)
-                
-        for b in bytes(obj):
-            if b not in (END, ESC):
-                self.encoded_bytes.append(b)
-            else:
-                self.encoded_bytes.append(ESC)
-                self.encoded_bytes.append(self.encode_map[b])
+        self.encoded_bytes.extend(bytes(obj))
         
         if final:
-            try:
-                if len(self.encoded_bytes) > 1:
-                    self.encoded_bytes.append(END)
-                else:
-                    self.encoded_bytes.clear()
-                return bytes(self.encoded_bytes)
-            finally:
-                self.reset()
+            packet = bytearray()
+            if self.encoded_bytes:
+                packet.append(END)
+                packet.extend(self.encoded_bytes.replace(ESCb, ESC_ESCb).replace(ENDb, ESC_ENDb))
+                packet.append(END)
+            self.reset()
+            return packet
 
     def reset(self):
         self.encoded_bytes.clear()
