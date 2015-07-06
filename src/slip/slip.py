@@ -28,8 +28,6 @@ ESC_ENDb = bytes((ESC, ESC_END))
 ESC_ESCb = bytes((ESC, ESC_ESC))
 
 class SlipEncoder():
-    encode_map = {END: ESC_END, ESC: ESC_ESC}
-    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.encoded_bytes = bytearray()
@@ -59,79 +57,9 @@ class SlipEncoder():
         
 
 class SlipDecoder():        
-    class State(IntEnum):
-        idle = 0
-        normal = 1
-        escaped = 2
-        finished = 3
-        error = 4
-    
-    decode_map = {ESC_END: END, ESC_ESC: ESC}
-       
-    def _decode_replace_errors_strict(self, b):
-        try:
-            self.decoded_bytes.append(self.decode_map[b])
-        except KeyError:
-            error_msg = r'Invalid slip ESC sequence: ESC-\x{:02x}'.format(b)
-            raise SlipEncodingError(error_msg)
-    
-    def _decode_replace_errors_replace(self, b):
-        self.decoded_bytes.append(self.decode_map.get(b, b))
-    
-    def _decode_replace_errors_ignore(self, b):
-        try:
-            self.decoded_bytes.append(self.decode_map[b])
-        except KeyError:
-            self.decoded_bytes.append(ESC)
-            self.decoded_bytes.append(b)
-
-    
-    _decode_function_map = {
-        'strict': _decode_replace_errors_strict,
-        'replace': _decode_replace_errors_replace,
-        'ignore': _decode_replace_errors_ignore,
-    }
-    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.input_buffer = bytearray()
-        self.decoded_bytes = bytearray()
         self.reset(True)
-
-    def _idle_handler(self, b, errors):
-        # Wait for a non-END byte
-        if b != END:
-            if b == ESC:
-                self.state = self.State.escaped
-            else:
-                self.state = self.State.normal
-                self.decoded_bytes.append(b)
-    
-    def _normal_handler(self, b, errors):
-        if b == ESC:
-            self.state = self.State.escaped
-        elif b == END:
-            self.state = self.State.finished
-        else:
-            self.decoded_bytes.append(b)
-    
-    def _escaped_handler(self, b, errors):
-        # Decode the next character following and ESC byte.
-        # Exact handling depends on the 'errors' setting
-        self._decode_function_map[errors](self, b)
-        self.state = self.State.normal
-    
-    def _error_handler(self, b, errors):
-        # Error recovery: skip to the next END byte
-        if b == END:
-            self.state = self.State.idle
-
-    _handle_map = {
-        State.idle: _idle_handler,
-        State.normal: _normal_handler,
-        State.escaped: _escaped_handler,
-        State.error: _error_handler,
-    }
 
     def decode(self, obj, errors=None, final=False):
         if errors is None:
@@ -142,56 +70,56 @@ class SlipDecoder():
         
         if not isinstance(obj, collections.abc.Iterable):
             obj = (obj,)
-        self.input_buffer.extend(bytes(obj))
+        self.input_buffer += bytes(obj)
+        self.input_buffer = self.input_buffer.lstrip(ENDb)
         
-        try:
-            for b in self.input_buffer:
-                self.scan_pos += 1
-                self._handle_map[self.state](self, b, errors)
-                if self.state == self.State.finished:
-                    break
-        except SlipEncodingError:
-            self.state = self.State.error
-            self.decoded_bytes.clear()
-            self.reset(final)
-            raise
+        packet = b''
+        if END in self.input_buffer:
+            packet, rest = self.input_buffer.split(ENDb, 1)
+            self.input_buffer = rest.lstrip(ENDb)
+        elif final:
+            packet = self.input_buffer
+            self.input_buffer = b''
         
-        try:
-            if final:
-                if self.state == self.State.finished and any(b != END for b in
-                                                             self.input_buffer[self.scan_pos:]):
-                    raise SlipDecodingError('Input not completely decoded. Remaining: {!r}'.
-                                            format(self.input_buffer))
-                elif self.state == self.State.escaped:
-                    raise SlipDecodingError('Incomplete input. Unfinished ESC sequence.')
-        except SlipDecodingError:
-            self.decoded_bytes.clear()
-            raise
-        else:
-            if self.state == self.State.finished or final:
-                packet = bytes(self.decoded_bytes)
-                self.decoded_bytes.clear()
-                return packet
-        finally:
-            self.reset(final)
-
+        if packet or final:
+            if errors == 'strict':
+                # Check if the bytes that follow an ESC byte are ESC_END or ESC_ESC
+                escaped_parts = packet.split(ESCb)
+                error_bytes = [s[0] for s in escaped_parts[1:] if s and s[0] not in (ESC_END, ESC_ESC)]
+                if error_bytes:
+                    msg = 'Invalid escape sequence ESC-{}'.format(bytes(error_bytes[0:1]))
+                    raise SlipEncodingError(msg)
+                if len(escaped_parts) > 1 and escaped_parts[-1] == b'':
+                    msg = 'Unfinished escape sequence'
+                    raise SlipEncodingError(msg)
+            if errors == 'replace':
+                escaped_parts = packet.split(ESCb)
+                join_parts = []
+                part = escaped_parts[0]
+                for s in escaped_parts[1:]:
+                    if s and s[0] not in (ESC_END, ESC_ESC):
+                        part += s
+                    else:
+                        join_parts.append(part)
+                if part:
+                    join_parts.append(part)
+                packet = ESCb.join(join_parts)
+                
+            if final and self.input_buffer:
+                msg = 'Remaining undecoded bytes: {!r}'.format(self.input_buffer)
+                self.input_buffer = b''
+                raise SlipDecodingError(msg)
+                
+            return packet.replace(ESC_ENDb, ENDb).replace(ESC_ESCb, ESCb)
         
     def reset(self, final=True):
-        if final:
-            # Clear input buffer
-            self.input_buffer.clear()
-            self.state = self.State.idle
-        else:
-            del self.input_buffer[:self.scan_pos]
-        self.scan_pos = 0
-        if self.state == self.State.finished:
-            self.state = self.State.idle
+        self.input_buffer = b''
     
     def getstate(self):
-        return self.state.value
+        return 0
     
     def setstate(self, state):
-        self.state = self.State(state)
+        pass
         
         
 encode = partial(SlipEncoder().encode, final=True)
