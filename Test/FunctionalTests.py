@@ -76,7 +76,7 @@ class FunctionalTests(unittest.TestCase):
         # communicate with the remote application
     
         # First John imports the slip package
-        from slip import slip
+        import slip
         
         # John has read in the documentation that the slip package
         # adds codecs with encoding and decoding capability
@@ -139,7 +139,7 @@ class FunctionalTests(unittest.TestCase):
         # SlipStreamWriter classes that are also provided by the slip package
 
         # First John imports the slip package
-        from slip import slip
+        import slip
         
         # Then he again sets up a TCP connection to the remote application
         import socket
