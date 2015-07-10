@@ -7,7 +7,6 @@ Created on 29 jun. 2015
 import codecs
 import io
 import collections.abc
-from enum import IntEnum
 from functools import partial
 
 class SlipEncodingError(ValueError):
@@ -59,15 +58,9 @@ class SlipEncoder():
 class SlipDecoder():        
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.reset(True)
+        self.reset()
 
-    def decode(self, obj, errors=None, final=False):
-        if errors is None:
-            try:
-                errors = self.errors
-            except AttributeError:
-                errors = 'strict'
-        
+    def decode(self, obj, errors='strict', final=False):
         if not isinstance(obj, collections.abc.Iterable):
             obj = (obj,)
         self.input_buffer += bytes(obj)
@@ -82,37 +75,31 @@ class SlipDecoder():
             self.input_buffer = b''
         
         if packet or final:
-            if errors == 'strict':
-                # Check if the bytes that follow an ESC byte are ESC_END or ESC_ESC
-                escaped_parts = packet.split(ESCb)
-                error_bytes = [s[0] for s in escaped_parts[1:] if s and s[0] not in (ESC_END, ESC_ESC)]
-                if error_bytes:
-                    msg = 'Invalid escape sequence ESC-{}'.format(bytes(error_bytes[0:1]))
-                    raise SlipEncodingError(msg)
-                if len(escaped_parts) > 1 and escaped_parts[-1] == b'':
+            # Verify that ESC is always followed by ESC_END or ESC_ESC
+            # If not, something has gone wrong in the encoding process
+            non_escaped_bytes = [c for s in packet.split(ESC_ENDb) for x in s.split(ESC_ESCb) for c in x]
+            try:
+                i = non_escaped_bytes.index(ESC)
+            except ValueError:
+                pass
+            else:
+                try:
+                    c = non_escaped_bytes[i+1]
+                except IndexError:
                     msg = 'Unfinished escape sequence'
+                else:
+                    msg = 'Invalid escape sequence ESC-{}'.format(bytes([c]))
+                finally:
                     raise SlipEncodingError(msg)
-            if errors == 'replace':
-                escaped_parts = packet.split(ESCb)
-                join_parts = []
-                part = escaped_parts[0]
-                for s in escaped_parts[1:]:
-                    if s and s[0] not in (ESC_END, ESC_ESC):
-                        part += s
-                    else:
-                        join_parts.append(part)
-                if part:
-                    join_parts.append(part)
-                packet = ESCb.join(join_parts)
                 
             if final and self.input_buffer:
                 msg = 'Remaining undecoded bytes: {!r}'.format(self.input_buffer)
-                self.input_buffer = b''
+                self.reset()
                 raise SlipDecodingError(msg)
                 
             return packet.replace(ESC_ENDb, ENDb).replace(ESC_ESCb, ESCb)
         
-    def reset(self, final=True):
+    def reset(self):
         self.input_buffer = b''
     
     def getstate(self):
