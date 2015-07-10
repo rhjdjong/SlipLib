@@ -7,78 +7,77 @@ import unittest
 import io
 from itertools import chain
 
-from slip.slip import END, ESC, ESC_END, ESC_ESC, SlipEncodingError, SlipDecodingError
+from slip.slip import END, ESC, ESC_END, ESC_ESC
+from slip.slip import ENDb, ESCb
+from slip.slip import SlipEncodingError, SlipDecodingError
 import codecs
-
-encode = codecs.getencoder('slip')
-decode = codecs.getdecoder('slip')
-reader = codecs.getreader('slip')
-writer = codecs.getwriter('slip')
-inc_encoder = codecs.getincrementalencoder('slip')
-inc_decoder = codecs.getincrementaldecoder('slip')
 
 
 class EncodingDecodingTest(unittest.TestCase):
+    def setUp(self):
+        self.encode = codecs.getencoder('slip')
+        self.decode = codecs.getdecoder('slip')
+        
     def test_empty_message_encoding(self):
         msg = b''
-        self.assertEqual(encode(msg), b'')
+        self.assertEqual(self.encode(msg), b'')
         
     def test_empty_message_decoding(self):
         packet=b''
-        self.assertEqual(decode(packet), b'')
+        self.assertEqual(self.decode(packet), b'')
 
     def test_simple_encoding_decoding(self):
         msg = b'hello'
-        packet = bytes(chain((END,), msg, (END,)))
-        self.assertEqual(encode(msg), packet)
-        self.assertEqual(decode(packet), msg)
+        packet = bytes(chain(ENDb, msg, ENDb))
+        self.assertEqual(self.encode(msg), packet)
+        self.assertEqual(self.decode(packet), msg)
 
     def test_encoding_decoding_with_embedded_END(self):
-        msg = bytes((END,))
+        msg = bytes(ENDb)
         packet = bytes((END, ESC, ESC_END, END))
-        self.assertEqual(encode(msg), packet)
-        self.assertEqual(decode(packet), msg)
+        self.assertEqual(self.encode(msg), packet)
+        self.assertEqual(self.decode(packet), msg)
         
     def test_encoding_decoding_with_embedded_ESC(self):
-        msg = bytes((ESC,))
+        msg = bytes(ESCb)
         packet = bytes((END, ESC, ESC_ESC, END))
-        self.assertEqual(encode(msg), packet)
-        self.assertEqual(decode(packet), msg)
+        self.assertEqual(self.encode(msg), packet)
+        self.assertEqual(self.decode(packet), msg)
     
     def test_invalid_encoding_with_bare_END(self):
-        packet = bytes(chain((END,), b'left', (END,), b'right', (END,)))
+        packet = bytes(chain(ENDb, b'left', ENDb, b'right', ENDb))
         with self.assertRaises(SlipDecodingError):
-            m = decode(packet)
+            m = self.decode(packet)
             self.fail("Got decoded message {!r}".format(m))
         with self.assertRaises(SlipDecodingError):
-            m = decode(packet)
+            m = self.decode(packet)
             self.fail("Got decoded message {!r}".format(m))
         with self.assertRaises(SlipDecodingError):
-            m = decode(packet)
+            m = self.decode(packet)
             self.fail("Got decoded message {!r}".format(m))
     
     def test_invalid_encoding_with_invalid_ESC_sequence(self):
-        packet = bytes(chain((END,), b'left', (ESC,), b'Xright', (END,)))
+        packet = bytes(chain(ENDb, b'left', ESCb, b'Xright', ENDb))
         with self.assertRaises(SlipEncodingError):
-            m = decode(packet)
+            m = self.decode(packet)
             self.fail("Got decoded message {!r}".format(m))
         with self.assertRaises(SlipEncodingError):
-            m = decode(packet, 'ignore')
+            m = self.decode(packet, 'ignore')
             self.fail("Got decoded message {!r}".format(m))
         with self.assertRaises(SlipEncodingError):
-            m = decode(packet, 'replace')
+            m = self.decode(packet, 'replace')
             self.fail("Got decoded message {!r}".format(m))
 
     def test_invalid_encoding_with_unfinished_ESC_sequence(self):
-        packet = bytes(chain((END,), b'left', (ESC,), (END,)))
+        packet = bytes(chain(ENDb, b'left', ESCb, ENDb))
         with self.assertRaises(SlipEncodingError):
-            m = decode(packet)
+            m = self.decode(packet)
             self.fail("Got decoded message {!r}".format(m))
         with self.assertRaises(SlipEncodingError):
-            m = decode(packet, 'ignore')
+            m = self.decode(packet, 'ignore')
             self.fail("Got decoded message {!r}".format(m))
         with self.assertRaises(SlipEncodingError):
-            m = decode(packet, 'replace')
+            m = self.decode(packet, 'replace')
             self.fail("Got decoded message {!r}".format(m))
 
 class SlipIncrementalEncodingDecodingTest(unittest.TestCase):
@@ -96,26 +95,26 @@ class SlipIncrementalEncodingDecodingTest(unittest.TestCase):
         
     def test_simple_encoding_decoding(self):
         msg = b'hello'
-        packet = bytes(chain((END,), msg, (END,)))
+        packet = bytes(chain(ENDb, msg, ENDb))
         self.assertEqual(self.encoder(msg, final=True), packet)
         self.assertEqual(self.decoder(packet), msg)
 
     def test_encoding_decoding_with_embedded_END(self):
-        msg = bytes((END,))
+        msg = bytes(ENDb)
         packet = bytes((END, ESC, ESC_END, END))
         self.assertEqual(self.encoder(msg, final=True), packet)
         self.assertEqual(self.decoder(packet), msg)
         
     def test_encoding_decoding_with_embedded_ESC(self):
-        msg = bytes((ESC,))
+        msg = bytes(ESCb)
         packet = bytes((END, ESC, ESC_ESC, END))
         self.assertEqual(self.encoder(msg, final=True), packet)
         self.assertEqual(self.decoder(packet), msg)
     
     def test_invalid_encoding_with_bare_END(self):
-        packet = bytes(chain((END,), b'left', (END,), b'right', (END,)))
+        packet = bytes(chain(ENDb, b'left', ENDb, b'right', ENDb))
         with self.assertRaises(SlipDecodingError):
-            m = decode(packet, final=True)
+            m = self.decoder(packet, final=True)
             self.fail("Got decoded message {!r}".format(m))
             self.decoder(packet, final=True)
         with self.assertRaises(SlipDecodingError):
@@ -126,7 +125,7 @@ class SlipIncrementalEncodingDecodingTest(unittest.TestCase):
             self.fail("Got decoded message {!r}".format(m))
     
     def test_invalid_encoding_with_invalid_ESC_sequence(self):
-        packet = bytes(chain((END,), b'left', (ESC,), b'Xright', (END,)))
+        packet = bytes(chain(ENDb, b'left', ESCb, b'Xright', ENDb))
         with self.assertRaises(SlipEncodingError):
             m = self.decoder(packet)
             self.fail("Got decoded message {!r}".format(m))
@@ -138,7 +137,7 @@ class SlipIncrementalEncodingDecodingTest(unittest.TestCase):
             self.fail("Got decoded message {!r}".format(m))
 
     def test_invalid_encoding_with_unfinished_ESC_sequence(self):
-        packet = bytes(chain((END,), b'left', (ESC,), (END,)))
+        packet = bytes(chain(ENDb, b'left', ESCb, ENDb))
         with self.assertRaises(SlipEncodingError):
             m = self.decoder(packet)
             self.fail("Got decoded message {!r}".format(m))
@@ -150,36 +149,36 @@ class SlipIncrementalEncodingDecodingTest(unittest.TestCase):
             self.fail("Got decoded message {!r}".format(m))
 
     def test_decoder_is_reset_after_decoding_escape_error(self):
-        packet = bytes(chain((END,), b'left', (ESC,), b'Xright', (END,)))
+        packet = bytes(chain(ENDb, b'left', ESCb, b'Xright', ENDb))
         with self.assertRaises(SlipEncodingError):
             m = self.decoder(packet)
             self.fail("Got decoded message {!r}".format(m))
         msg = b'hello'
-        packet = bytes(chain((END,), msg, (END,)))
+        packet = bytes(chain(ENDb, msg, ENDb))
         self.assertEqual(self.decoder(packet), msg)
         
     def test_decoder_is_reset_after_remaining_bytes_error(self):
-        packet = bytes(chain((END,), b'left', (END,), b'right', (END,)))
+        packet = bytes(chain(ENDb, b'left', ENDb, b'right', ENDb))
         with self.assertRaises(SlipDecodingError):
             m = self.decoder(packet, final=True)
             self.fail("Got decoded message {!r}".format(m))
         msg = b'hello'
-        packet = bytes(chain((END,), msg, (END,)))
+        packet = bytes(chain(ENDb, msg, ENDb))
         self.assertEqual(self.decoder(packet), msg)
         
     def test_decoder_is_reset_after_unfinished_escape_error(self):
-        packet = bytes(chain((END,), b'left', (ESC,)))
+        packet = bytes(chain(ENDb, b'left', ESCb))
         with self.assertRaises(SlipEncodingError):
             m = self.decoder(packet, final=True)
             self.fail("Got decoded message {!r}".format(m))
         msg = b'hello'
-        packet = bytes(chain((END,), msg, (END,)))
+        packet = bytes(chain(ENDb, msg, ENDb))
         self.assertEqual(self.decoder(packet), msg)
     
     def test_decoder_waits_for_END_after_unfinished_escape_error(self):
-        packet = bytes(chain((END,), b'left', (ESC,), b'wrong'))
+        packet = bytes(chain(ENDb, b'left', ESCb, b'wrong'))
         self.assertIsNone(self.decoder(packet))
-        packet = bytes(chain(b'noise', (END,), b'right', (END,)))
+        packet = bytes(chain(b'noise', ENDb, b'right', ENDb))
         with self.assertRaises(SlipEncodingError):
             m = self.decoder(packet)
             self.fail("Got decoded message {!r}".format(m))
@@ -190,7 +189,7 @@ class SlipIncrementalEncodingDecodingTest(unittest.TestCase):
         for b in msg:
             self.encoder(b, final=False)
         packet = self.encoder(b'', final=True)
-        self.assertEqual(packet, bytes(chain((END,), msg, (END,))))
+        self.assertEqual(packet, bytes(chain(ENDb, msg, ENDb)))
         decoded_msg = bytearray()
         for b in packet:
             m = self.decoder(b, final=False)
@@ -205,8 +204,8 @@ class SlipIncrementalEncodingDecodingTest(unittest.TestCase):
 class SlipReaderWriterTest(unittest.TestCase):
     def setUp(self):
         self.buffer = io.BytesIO()
-        self.writer = writer(self.buffer)
-        self.reader = reader(self.buffer)
+        self.writer = codecs.getwriter('slip')(self.buffer)
+        self.reader = codecs.getreader('slip')(self.buffer)
         
     def test_empty_message_encoding(self):
         msg = b''
@@ -221,14 +220,14 @@ class SlipReaderWriterTest(unittest.TestCase):
         
     def test_simple_encoding_decoding(self):
         msg = b'hello'
-        packet = bytes(chain((END,), msg, (END,)))
+        packet = bytes(chain(ENDb, msg, ENDb))
         self.writer.write(msg)
         self.assertEqual(self.buffer.getvalue(), packet)
         self.reader.seek(0)
         self.assertEqual(self.reader.read(), msg)
 
     def test_encoding_decoding_with_embedded_END(self):
-        msg = bytes((END,))
+        msg = ENDb
         packet = bytes((END, ESC, ESC_END, END))
         self.writer.write(msg)
         self.assertEqual(self.writer.getvalue(), packet)
@@ -236,7 +235,7 @@ class SlipReaderWriterTest(unittest.TestCase):
         self.assertEqual(self.reader.read(), msg)
         
     def test_encoding_decoding_with_embedded_ESC(self):
-        msg = bytes((ESC,))
+        msg = ESCb
         packet = bytes((END, ESC, ESC_ESC, END))
         self.writer.write(msg)
         self.assertEqual(self.buffer.getvalue(), packet)
@@ -244,14 +243,14 @@ class SlipReaderWriterTest(unittest.TestCase):
         self.assertEqual(self.reader.read(), msg)
     
     def test_encoding_with_bare_END(self):
-        packet = bytes(chain((END,), b'left', (END,), b'right', (END,)))
+        packet = bytes(chain(ENDb, b'left', ENDb, b'right', ENDb))
         self.buffer.write(packet)
         self.reader.seek(0)
         self.assertEqual(self.reader.read(), b'left')
         self.assertEqual(self.reader.read(), b'right')
     
     def test_invalid_encoding_with_invalid_ESC_sequence(self):
-        packet = bytes(chain((END,), b'left', (ESC,), b'Xright', (END,)))
+        packet = bytes(chain(ENDb, b'left', ESCb, b'Xright', ENDb))
         self.buffer.write(packet)
         self.reader.seek(0)
         with self.assertRaises(SlipEncodingError):
@@ -269,7 +268,7 @@ class SlipReaderWriterTest(unittest.TestCase):
             self.fail("Got decoded message {!r}".format(m))
 
     def test_invalid_encoding_with_unfinished_ESC_sequence(self):
-        packet = bytes(chain((END,), b'left', (ESC,), (END,)))
+        packet = bytes(chain(ENDb, b'left', ESCb, ENDb))
         self.buffer.write(packet)
         self.reader.seek(0)
         with self.assertRaises(SlipEncodingError):
@@ -287,7 +286,7 @@ class SlipReaderWriterTest(unittest.TestCase):
             self.fail("Got decoded message {!r}".format(m))
 
     def test_decoder_is_reset_after_decoding_escape_error(self):
-        packet = bytes(chain((END,), b'left', (ESC,), b'Xright', (END,)))
+        packet = bytes(chain(ENDb, b'left', ESCb, b'Xright', ENDb))
         self.buffer.write(packet)
         self.reader.seek(0)
         with self.assertRaises(SlipEncodingError):
@@ -295,26 +294,26 @@ class SlipReaderWriterTest(unittest.TestCase):
             self.fail("Got decoded message {!r}".format(m))
         msg = b'hello'
         pos = self.reader.tell()
-        packet = bytes(chain((END,), msg, (END,)))
+        packet = bytes(chain(ENDb, msg, ENDb))
         self.buffer.write(packet)
         self.reader.seek(pos)
         self.assertEqual(self.reader.read(), msg)
         
     def test_decoder_is_reset_after_remaining_bytes_error(self):
-        packet = bytes(chain((END,), b'left', (END,), b'right', (END,)))
+        packet = bytes(chain(ENDb, b'left', ENDb, b'right', ENDb))
         self.buffer.write(packet)
         self.reader.seek(0)
         self.assertEqual(self.reader.read(), b'left')
         self.assertEqual(self.reader.read(), b'right')
         msg = b'hello'
         pos = self.reader.tell()
-        packet = bytes(chain((END,), msg, (END,)))
+        packet = bytes(chain(ENDb, msg, ENDb))
         self.buffer.write(packet)
         self.reader.seek(pos)
         self.assertEqual(self.reader.read(), msg)
         
     def test_decoder_is_reset_after_unfinished_escape_error(self):
-        packet = bytes(chain((END,), b'left', (ESC,)))
+        packet = bytes(chain(ENDb, b'left', ESCb))
         self.buffer.write(packet)
         self.reader.seek(0)
         with self.assertRaises(SlipEncodingError):
@@ -322,24 +321,24 @@ class SlipReaderWriterTest(unittest.TestCase):
             self.fail("Got decoded message {!r}".format(m))
         msg = b'hello'
         pos = self.reader.tell()
-        packet = bytes(chain((END,), msg, (END,)))
+        packet = bytes(chain(ENDb, msg, ENDb))
         self.buffer.write(packet)
         self.reader.seek(pos)
         self.assertEqual(self.reader.read(), msg)
 
     def test_slip_writelines(self):
         msg_list = [b'one', b'two', b'three']
-        packet = bytes(chain((END,), b'one', (END,),
-                             (END,), b'two', (END,),
-                             (END,), b'three', (END,)))
+        packet = bytes(chain(ENDb, b'one', ENDb,
+                             ENDb, b'two', ENDb,
+                             ENDb, b'three', ENDb))
         self.writer.writelines(msg_list)
         self.assertEqual(self.writer.getvalue(), packet)
     
     def test_slip_readlines(self):
         msg_list = [b'one', b'two', b'three']
-        packet = bytes(chain((END,), b'one', (END,),
-                             (END,), b'two', (END,),
-                             (END,), b'three', (END,)))
+        packet = bytes(chain(ENDb, b'one', ENDb,
+                             ENDb, b'two', ENDb,
+                             ENDb, b'three', ENDb))
         self.buffer.write(packet)
         self.reader.seek(0)
         self.assertSequenceEqual(self.reader.readlines(3), msg_list)
