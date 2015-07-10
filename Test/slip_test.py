@@ -9,7 +9,7 @@ from itertools import chain
 
 from slip.slip import END, ESC, ESC_END, ESC_ESC
 from slip.slip import ENDb, ESCb
-from slip.slip import SlipEncodingError, SlipDecodingError
+from slip import SlipEncodingError, SlipDecodingError
 import codecs
 
 
