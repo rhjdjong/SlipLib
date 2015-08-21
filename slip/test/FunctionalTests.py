@@ -190,6 +190,24 @@ class FunctionalTests(unittest.TestCase):
         response = reader.read()
         self.assertEqual(response, b'HELLO' + END_byte + ESC_byte + b'SLIP')
 
+    def test_slip_socket(self):
+        # John creates a slip server.
+        # To test it, he creates a concurrent process
+        # that connects to the server, and
+        # sends a predefined set of messages.
+        import slip
+        
+        msg_list = [b'hello',
+                    b'hello' + END_byte + b'slip',
+                    b'hello' + ESC_byte + b'slip',
+                    b'hello' + ESC_byte + END_byte + b'slip',
+                    b'hello' + END_byte + ESC_byte + b'slip']
+        
+        
+        class TestSlipServer(slip.SlipServer):
+            
+            
+        
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

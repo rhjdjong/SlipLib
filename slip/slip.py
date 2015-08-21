@@ -58,7 +58,7 @@ class SlipEncoder():
 class SlipDecoder():        
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.reset()
+        self.input_buffer = b''
 
     def decode(self, obj, errors='strict', final=False):
         if not isinstance(obj, collections.abc.Iterable):
@@ -77,7 +77,8 @@ class SlipDecoder():
         if packet or final:
             # Verify that ESC is always followed by ESC_END or ESC_ESC
             # If not, something has gone wrong in the encoding process
-            non_escaped_bytes = [c for s in packet.split(ESC_ENDb) for x in s.split(ESC_ESCb) for c in x]
+            non_escaped_bytes = [c for s in packet.split(ESC_ENDb)
+                                 for x in s.split(ESC_ESCb) for c in x]
             try:
                 i = non_escaped_bytes.index(ESC)
             except ValueError:
