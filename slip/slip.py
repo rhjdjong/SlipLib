@@ -9,9 +9,6 @@ import io
 import collections.abc
 from functools import partial
 
-class SlipEncodingError(ValueError):
-    pass
-
 class SlipDecodingError(ValueError):
     pass
 
@@ -91,7 +88,7 @@ class SlipDecoder():
                 else:
                     msg = 'Invalid escape sequence ESC-{}'.format(bytes([c]))
                 finally:
-                    raise SlipEncodingError(msg)
+                    raise SlipDecodingError(msg)
                 
             if final and self.input_buffer:
                 msg = 'Remaining undecoded bytes: {!r}'.format(self.input_buffer)

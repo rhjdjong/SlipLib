@@ -4,18 +4,28 @@ Created on 1 mrt. 2015
 @author: Ruud de Jong
 '''
 
-from setuptools import setup, find_packages  # Always prefer setuptools over distutils
-from codecs import open  # To use a consistent encoding
-from os import path
+from setuptools import setup  # Always prefer setuptools over distutils
+import os
 
-here = path.abspath(path.dirname(__file__))
+import slip
+
+here = os.path.abspath(os.path.dirname(__file__))
 
 # Get the long description from the relevant file
-with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
-    long_description = f.read()
+def read_long_description(*filenames, **kwargs):
+    encoding = kwargs.get('encoding', 'utf-8')
+    seperator = kwargs.get('sep', '\n')
+    buf = []
+    for filename in filenames:
+        with open(filename, encoding=encoding) as f:
+            buf.append(f.read())
+    return seperator.join(buf)
 
-with open(path.join('slip', 'VERSION'), encoding='utf-8') as version_file:
-    version = version_file.read().strip()
+long_description = read_long_description('README.md',
+                                         os.path.join('docs', 'Description.rst'),
+                                         'CHANGES.md')
+
+
     
 setup(
     name='slip',
@@ -23,7 +33,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version = version,
+    version = slip.__version__,
 
     description='Slip package',
     long_description=long_description,
@@ -68,7 +78,7 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=find_packages(exclude=['contrib', 'docs', 'test*']),
+    packages=['slip']
 
     # List run-time dependencies here.  These will be installed by pip when your
     # project is installed. For an analysis of "install_requires" vs pip's
