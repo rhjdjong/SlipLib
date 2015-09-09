@@ -4,7 +4,7 @@ Created on 1 mrt. 2015
 @author: Ruud de Jong
 '''
 
-from setuptools import setup  # Always prefer setuptools over distutils
+from setuptools import setup, find_packages  # Always prefer setuptools over distutils
 import os
 
 import slip
@@ -21,9 +21,7 @@ def read_long_description(*filenames, **kwargs):
             buf.append(f.read())
     return seperator.join(buf)
 
-long_description = read_long_description('README.md',
-                                         os.path.join('docs', 'Description.rst'),
-                                         'CHANGES.md')
+long_description = read_long_description('README.txt')
 
 
     
@@ -78,7 +76,7 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=['slip']
+    packages=find_packages()
 
     # List run-time dependencies here.  These will be installed by pip when your
     # project is installed. For an analysis of "install_requires" vs pip's

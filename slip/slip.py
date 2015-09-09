@@ -6,7 +6,10 @@ Created on 29 jun. 2015
 
 import codecs
 import io
-import collections.abc
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
 from functools import partial
 
 class SlipDecodingError(ValueError):
@@ -29,7 +32,7 @@ class SlipEncoder():
         self.encoded_bytes = bytearray()
 
     def encode(self, obj, errors=None, final=False):
-        if not isinstance(obj, collections.abc.Iterable):
+        if not isinstance(obj, Iterable):
             obj = (obj,)
         self.encoded_bytes.extend(bytes(obj))
         
@@ -43,7 +46,8 @@ class SlipEncoder():
             return packet
 
     def reset(self):
-        self.encoded_bytes.clear()
+        del self.encoded_bytes[:]
+#        self.encoded_bytes.clear()
     
     def getstate(self):
         return 0
@@ -58,7 +62,7 @@ class SlipDecoder():
         self.input_buffer = b''
 
     def decode(self, obj, errors='strict', final=False):
-        if not isinstance(obj, collections.abc.Iterable):
+        if not isinstance(obj, Iterable):
             obj = (obj,)
         self.input_buffer += bytes(obj)
         self.input_buffer = self.input_buffer.lstrip(ENDb)
