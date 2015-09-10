@@ -5,7 +5,9 @@ Created on 1 mrt. 2015
 '''
 
 from setuptools import setup, find_packages  # Always prefer setuptools over distutils
+from setuptools.command.test import test as TestCommand
 import os
+import sys
 
 import slip
 
@@ -23,7 +25,23 @@ def read_long_description(*filenames, **kwargs):
 
 long_description = read_long_description('README.txt')
 
-
+class PyTest(TestCommand):
+    user_options = [('pytest-args=', 'a', 'Arguments to pass to py.test')]
+    
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = []
+    
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+    
+    def run(self):
+        # import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(self.pytest_args)
+        sys.exit(errno)
     
 setup(
     name='slip',
@@ -76,7 +94,7 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=find_packages()
+    packages=find_packages(),
 
     # List run-time dependencies here.  These will be installed by pip when your
     # project is installed. For an analysis of "install_requires" vs pip's
@@ -105,4 +123,7 @@ setup(
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
     # entry_points={},
+    
+    tests_require = ['pytest'],
+    cmdclass = {'test': PyTest}
 )
