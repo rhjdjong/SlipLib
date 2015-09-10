@@ -7,7 +7,7 @@ import unittest
 import socketserver
 import multiprocessing
 
-from slip import slip
+import slip
 
 END_byte = bytes((slip.END,))
 ESC_byte = bytes((slip.ESC,))
@@ -203,9 +203,7 @@ class FunctionalTests(unittest.TestCase):
                     b'hello' + ESC_byte + END_byte + b'slip',
                     b'hello' + END_byte + ESC_byte + b'slip']
         
-        
-        class TestSlipServer(slip.SlipServer):
-            
+           
             
         
 if __name__ == "__main__":
