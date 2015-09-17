@@ -203,9 +203,7 @@ class FunctionalTests(unittest.TestCase):
                     b'hello' + ESC_byte + END_byte + b'slip',
                     b'hello' + END_byte + ESC_byte + b'slip']
         
-        
-        class TestSlipServer(slip.SlipServer):
-            
+         
             
         
 if __name__ == "__main__":
