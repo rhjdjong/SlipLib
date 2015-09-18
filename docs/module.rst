@@ -1,9 +1,8 @@
 Module contents
 ===============
 
-.. module:: slip
+.. automodule:: slip
 
-The module :mod:`slip` exports the following elements.
 
 Exceptions
 ^^^^^^^^^^
@@ -20,20 +19,14 @@ Constants
           
    These constants represent the byte values for the
    special SLIP bytes.
-   
+
+
 Functions
 ^^^^^^^^^
 
-.. function:: slip.encode(obj)
+.. autofunction:: slip.encode(obj)
 
-   Encode a message (*obj*) as a SLIP packet.
-   *obj* must be an iterable that produces byte values.
-   Returns a :code:`bytes` object
+.. autofunction:: slip.decode(obj)
 
-.. function:: slip.decode(obj)
-
-   Decode a SLIP packet (*obj*) into a message.
-   Returns a :code:`bytes` object.
-   Raises :exc:`SlipDecodingError` when the slip packet *obj* cannot be decoded.
 
 

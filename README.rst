@@ -35,7 +35,7 @@ The SLIP protocol uses four special byte values:
 Byte value      Name      Purpose
 =============== ========= =================================================
 :code:`b'\xc0'` *END*     to delimit messages
-:code:`b'\xdb'` *ESC*     to escape any *END* or *ESC* bytes in the message
+:code:`b'\xdb'` *ESC*     to escape *END* or *ESC* bytes in the message
 :code:`b'\xdc'` *ESC_END* the escaped value of the *END* byte
 :code:`b'\xdd'` *ESC_ESC* the escaped value of the *ESC* byte
 =============== ========= =================================================
@@ -45,6 +45,14 @@ An *END* byte in the message is encoded as the sequence
 in the slip packet,
 and an *ESC* byte  in the message is encoded
 as the sequence *ESC+ESC_ESC* (:code:`b'\xdb\xdd'`).
+
+======================== =====================================
+Original                 Encoded
+======================== =====================================
+:code:`b'\xc0'` (*END*)  :code:`b'\xdb\xdc'` (*ESC+ESC_END*)
+:code:`b'\xdb'` (*ESC*)  :code:`b'\xdb\xdd'` (*ESC+ESC_ESC*)
+======================== =====================================
+
 As a consequence, an *ESC* byte in a slip packet
 must always be followed by an *ESC_END* or an *ESC_ESC* byte;
 anything else is a protocol error.
@@ -52,11 +60,3 @@ Although the implementation code proposed by :rfc:`1055`
 ignores such errors, the :mod:`slip` module raises a
 :exc:`SlipDecodingError`
 exception in such cases.
-
-================== ===================
-Original / Decoded Encoded
-================== ===================
-:code:`b'\xc0'`    :code:`b'\xdb\xdc'`
-:code:`b'\xdb'`    :code:`b'\xdb\xdd'`
-================== ===================
-

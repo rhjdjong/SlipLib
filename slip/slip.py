@@ -17,10 +17,11 @@ class SlipDecodingError(ValueError):
     '''Indicates that a byte sequence cannot be decoded.'''
 
 
-END = 0xc0       #: SLIP message delimiter
-ESC = 0xdb       #: SLIP escape character
-ESC_END = 0xdc   #: Escaped SLIP END value
-ESC_ESC = 0xdd   #: Escaped SLIP ESC value
+END = 0xc0
+ESC = 0xdb
+ESC_END = 0xdc
+ESC_ESC = 0xdd
+"""These constants represent the values for the special SLIP bytes."""
 
 _ENDb = bytes((END,))
 _ESCb = bytes((ESC,))
@@ -113,10 +114,32 @@ class SlipDecoder():
 encode = partial(SlipEncoder().encode, errors=None, final=True)
 decode = partial(SlipDecoder().decode, errors=None, final=True)
 
-encode.__doc__ = '''Encode a byte sequence as a SLIP packet'''
+encode.__doc__ = '''Encode a message in a SLIP packet.
+
+The function returns a SLIP packet with the encoded message.
+The SLIP packet contains exactly one
+leading and trailing :data:`END` byte.
+
+Args:
+    obj (byte or byte iterable): the message to be encoded.
+
+Returns:
+    bytes: the SLIP-encoded message.
+'''
 decode.__doc__ = '''Decode a SLIP packet.
 
-Raises :exc:`SlipDecodingError` when *obj* cannot be decoded.
+The function must be called with exactly one SLIP packet.
+This means that, apart from leading and trailing :data:`END` bytes,
+*obj* must contain no other :data:`END` bytes.
+
+Args:
+    obj (byte iterable): the SLIP packet to be decoded.
+
+Returns:
+    bytes: the message contained in the packet.
+    
+Raises:
+    SlipDecodingError: when *obj* cannot be decoded.
 '''
 
 

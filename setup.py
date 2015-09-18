@@ -21,10 +21,8 @@ def read_long_description(*filenames, **kwargs):
             buf.append(f.read())
     return seperator.join(buf)
 
-long_description = read_long_description('README.txt')
-
-
-    
+long_description = read_long_description('README.rst')
+  
 setup(
     name='slip',
 
