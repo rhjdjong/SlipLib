@@ -23,8 +23,6 @@ def read_long_description(*filenames, **kwargs):
             buf.append(f.read())
     return seperator.join(buf)
 
-long_description = read_long_description('README.txt')
-
 class PyTest(TestCommand):
     user_options = [('pytest-args=', 'a', 'Arguments to pass to py.test')]
     
@@ -43,6 +41,8 @@ class PyTest(TestCommand):
         errno = pytest.main(self.pytest_args)
         sys.exit(errno)
     
+long_description = read_long_description('README.rst')
+  
 setup(
     name='slip',
 

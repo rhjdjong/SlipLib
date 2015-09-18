@@ -62,23 +62,11 @@ class EncodingDecodingTest(unittest.TestCase):
         with self.assertRaises(SlipDecodingError):
             m = self.decode(packet)
             self.fail("Got decoded message {!r}".format(m))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decode(packet, 'ignore')
-            self.fail("Got decoded message {!r}".format(m))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decode(packet, 'replace')
-            self.fail("Got decoded message {!r}".format(m))
 
     def test_invalid_encoding_with_unfinished_ESC_sequence(self):
         packet = bytes(chain(ENDb, b'left', ESCb, ENDb))
         with self.assertRaises(SlipDecodingError):
             m = self.decode(packet)
-            self.fail("Got decoded message {!r}".format(m))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decode(packet, 'ignore')
-            self.fail("Got decoded message {!r}".format(m))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decode(packet, 'replace')
             self.fail("Got decoded message {!r}".format(m))
 
 class SlipIncrementalEncodingDecodingTest(unittest.TestCase):

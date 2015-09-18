@@ -1,11 +1,12 @@
 '''
 Created on 29 jun. 2015
 
-@author: Ruud
+@author: Ruud de Jong
 '''
 
 import codecs
 import io
+import re
 try:
     from collections.abc import Iterable
 except ImportError:
@@ -13,18 +14,24 @@ except ImportError:
 from functools import partial
 
 class SlipDecodingError(ValueError):
-    pass
+    '''Indicates that a byte sequence cannot be decoded.'''
 
 
-END = 0xc0       # SLIP message delimiter
-ESC = 0xdb       # SLIP escape character
-ESC_END = 0xdc   # Escaped SLIP END value
-ESC_ESC = 0xdd   # Escaped SLIP ESC value
+END = 0xc0
+ESC = 0xdb
+ESC_END = 0xdc
+ESC_ESC = 0xdd
+"""These constants represent the values for the special SLIP bytes."""
 
-ENDb = bytes((END,))
-ESCb = bytes((ESC,))
-ESC_ENDb = bytes((ESC, ESC_END))
-ESC_ESCb = bytes((ESC, ESC_ESC))
+_ENDb = bytes((END,))
+_ESCb = bytes((ESC,))
+_E_ENDb = bytes((ESC_END,))
+_E_ESCb = bytes((ESC_ESC,))
+_ESC_ENDb = bytes((ESC, ESC_END))
+_ESC_ESCb = bytes((ESC, ESC_ESC))
+
+_invalid_esc_sequence_re = re.compile(_ESCb + b'(?:([^'+_E_ENDb+_E_ESCb
+                                      +br'])|(\Z))')
 
 class SlipEncoder():
     def __init__(self, *args, **kwargs):
@@ -40,14 +47,14 @@ class SlipEncoder():
             packet = bytearray()
             if self.encoded_bytes:
                 packet.append(END)
-                packet.extend(self.encoded_bytes.replace(ESCb, ESC_ESCb).replace(ENDb, ESC_ENDb))
+                packet.extend(self.encoded_bytes.replace(_ESCb, _ESC_ESCb).
+                                                 replace(_ENDb, _ESC_ENDb))
                 packet.append(END)
             self.reset()
             return packet
 
     def reset(self):
         del self.encoded_bytes[:]
-#        self.encoded_bytes.clear()
     
     def getstate(self):
         return 0
@@ -61,16 +68,16 @@ class SlipDecoder():
         super().__init__(*args, **kwargs)
         self.input_buffer = b''
 
-    def decode(self, obj, errors='strict', final=False):
+    def decode(self, obj, errors=None, final=False):
         if not isinstance(obj, Iterable):
             obj = (obj,)
         self.input_buffer += bytes(obj)
-        self.input_buffer = self.input_buffer.lstrip(ENDb)
+        self.input_buffer = self.input_buffer.lstrip(_ENDb)
         
         packet = b''
         if END in self.input_buffer:
-            packet, rest = self.input_buffer.split(ENDb, 1)
-            self.input_buffer = rest.lstrip(ENDb)
+            packet, rest = self.input_buffer.split(_ENDb, 1)
+            self.input_buffer = rest.lstrip(_ENDb)
         elif final:
             packet = self.input_buffer
             self.input_buffer = b''
@@ -78,28 +85,21 @@ class SlipDecoder():
         if packet or final:
             # Verify that ESC is always followed by ESC_END or ESC_ESC
             # If not, something has gone wrong in the encoding process
-            non_escaped_bytes = [c for s in packet.split(ESC_ENDb)
-                                 for x in s.split(ESC_ESCb) for c in x]
-            try:
-                i = non_escaped_bytes.index(ESC)
-            except ValueError:
-                pass
-            else:
-                try:
-                    c = non_escaped_bytes[i+1]
-                except IndexError:
-                    msg = 'Unfinished escape sequence'
+            match = _invalid_esc_sequence_re.search(packet)
+            if match:
+                b = match.group(1)
+                if b:
+                    msg = 'Invalid escape sequence ESC-{}'.format(b)
                 else:
-                    msg = 'Invalid escape sequence ESC-{}'.format(bytes([c]))
-                finally:
-                    raise SlipDecodingError(msg)
-                
+                    msg = 'Unfinished escape sequence'
+                raise SlipDecodingError(msg)                  
+
             if final and self.input_buffer:
                 msg = 'Remaining undecoded bytes: {!r}'.format(self.input_buffer)
                 self.reset()
                 raise SlipDecodingError(msg)
                 
-            return packet.replace(ESC_ENDb, ENDb).replace(ESC_ESCb, ESCb)
+            return packet.replace(_ESC_ENDb, _ENDb).replace(_ESC_ESCb, _ESCb)
         
     def reset(self):
         self.input_buffer = b''
@@ -111,8 +111,36 @@ class SlipDecoder():
         pass
         
         
-encode = partial(SlipEncoder().encode, final=True)
-decode = partial(SlipDecoder().decode, final=True)
+encode = partial(SlipEncoder().encode, errors=None, final=True)
+decode = partial(SlipDecoder().decode, errors=None, final=True)
+
+encode.__doc__ = '''Encode a message in a SLIP packet.
+
+The function returns a SLIP packet with the encoded message.
+The SLIP packet contains exactly one
+leading and trailing :data:`END` byte.
+
+Args:
+    obj (byte or byte iterable): the message to be encoded.
+
+Returns:
+    bytes: the SLIP-encoded message.
+'''
+decode.__doc__ = '''Decode a SLIP packet.
+
+The function must be called with exactly one SLIP packet.
+This means that, apart from leading and trailing :data:`END` bytes,
+*obj* must contain no other :data:`END` bytes.
+
+Args:
+    obj (byte iterable): the SLIP packet to be decoded.
+
+Returns:
+    bytes: the message contained in the packet.
+    
+Raises:
+    SlipDecodingError: when *obj* cannot be decoded.
+'''
 
 
 class SlipIncrementalEncoder(SlipEncoder, codecs.IncrementalEncoder):

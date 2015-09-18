@@ -6,3 +6,7 @@ __pycache__
 *.pyc
 .project
 .pydevproject
+.tox
+.settings
+*.egg-info
+docs/_build

@@ -204,7 +204,6 @@ class FunctionalTests(unittest.TestCase):
                     b'hello' + END_byte + ESC_byte + b'slip']
         
            
-            
         
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
