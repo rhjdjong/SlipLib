@@ -1,5 +1,5 @@
-:mod:`slip` --- A module for the SLIP protocol
-==============================================
+:py:mod:`slip` --- A module for the SLIP protocol
+=================================================
 
 .. module:: slip
    :synopsis: Module that provides support for the SLIP protocol.
@@ -7,7 +7,7 @@
 .. Copyright (C) 2015 Ruud de Jong
 
 
-The :mod:`slip` module implements the encoding and decoding functionality
+The :py:mod:`slip` module implements the encoding and decoding functionality
 for SLIP packets, as described in :rfc:`1055`.
 
 Background
@@ -57,6 +57,6 @@ As a consequence, an *ESC* byte in a slip packet
 must always be followed by an *ESC_END* or an *ESC_ESC* byte;
 anything else is a protocol error.
 Although the implementation code proposed by :rfc:`1055`
-ignores such errors, the :mod:`slip` module raises a
-:exc:`SlipDecodingError`
+ignores such errors, the :py:mod:`slip` module raises a
+:py:exc:`SlipDecodingError`
 exception in such cases.
