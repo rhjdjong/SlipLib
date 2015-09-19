@@ -10,3 +10,4 @@ __pycache__
 .settings
 *.egg-info
 docs/_build
+.externalToolBuilders

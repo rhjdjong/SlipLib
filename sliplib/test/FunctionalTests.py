@@ -7,7 +7,7 @@ import unittest
 import socketserver
 import multiprocessing
 
-import slip
+import sliplib as slip
 
 END_byte = bytes((slip.END,))
 ESC_byte = bytes((slip.ESC,))
@@ -76,7 +76,7 @@ class FunctionalTests(unittest.TestCase):
         # communicate with the remote application
     
         # First John imports the slip package
-        import slip
+        import sliplib as slip
         
         # John has read in the documentation that the slip package
         # adds codecs with encoding and decoding capability
@@ -139,7 +139,7 @@ class FunctionalTests(unittest.TestCase):
         # SlipStreamWriter classes that are also provided by the slip package
 
         # First John imports the slip package
-        import slip
+        import sliplib as slip
         
         # Then he again sets up a TCP connection to the remote application
         import socket
@@ -195,7 +195,7 @@ class FunctionalTests(unittest.TestCase):
         # To test it, he creates a concurrent process
         # that connects to the server, and
         # sends a predefined set of messages.
-        import slip
+        import sliplib as slip
         
         msg_list = [b'hello',
                     b'hello' + END_byte + b'slip',

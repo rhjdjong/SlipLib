@@ -7,8 +7,8 @@ import unittest
 import io
 from itertools import chain
 
-from slip import END, ESC, ESC_END, ESC_ESC
-from slip import SlipDecodingError
+from sliplib import END, ESC, ESC_END, ESC_ESC
+from sliplib import SlipDecodingError
 import codecs
 
 ENDb = bytes((END,))

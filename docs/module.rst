@@ -1,13 +1,13 @@
 Module contents
 ===============
 
-.. automodule:: slip
+.. automodule:: sliplib
 
 
 Exceptions
 ^^^^^^^^^^
 
-.. autoexception:: slip.SlipDecodingError
+.. autoexception:: sliplib.SlipDecodingError
 
 Constants
 ^^^^^^^^^
@@ -24,9 +24,9 @@ Constants
 Functions
 ^^^^^^^^^
 
-.. autofunction:: slip.encode(obj)
+.. autofunction:: sliplib.encode(obj)
 
-.. autofunction:: slip.decode(obj)
+.. autofunction:: sliplib.decode(obj)
 
 
 

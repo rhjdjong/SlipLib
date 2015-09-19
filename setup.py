@@ -9,7 +9,7 @@ from setuptools.command.test import test as TestCommand
 import os
 import sys
 
-import slip
+import sliplib
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -44,12 +44,12 @@ class PyTest(TestCommand):
 long_description = read_long_description('README.rst')
   
 setup(
-    name='slip',
+    name='sliplib',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version = slip.__version__,
+    version = sliplib.__version__,
 
     description='Slip package',
     long_description=long_description,

@@ -1,14 +1,18 @@
-:py:mod:`slip` --- A module for the SLIP protocol
-=================================================
+``sliplib`` --- A module for the SLIP protocol
+==============================================
 
-.. module:: slip
+.. module:: sliplib
    :synopsis: Module that provides support for the SLIP protocol.
 .. moduleauthor:: Ruud de Jong <rhjdjong@gmail.com>
 .. Copyright (C) 2015 Ruud de Jong
 
-
-The :py:mod:`slip` module implements the encoding and decoding functionality
-for SLIP packets, as described in :rfc:`1055`.
+.. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
+   :target: http://slip.readthedocs.org/en/latest/
+   
+The ``sliplib`` module implements the encoding and decoding
+functionality for SLIP packets, as described in :rfc:`1055`.
+It defines encoding and decoding functions and classes,
+and registers these in the :mod:`codecs` module.
 
 Background
 ----------
@@ -34,10 +38,10 @@ The SLIP protocol uses four special byte values:
 =============== ========= =================================================
 Byte value      Name      Purpose
 =============== ========= =================================================
-:code:`b'\xc0'` *END*     to delimit messages
-:code:`b'\xdb'` *ESC*     to escape *END* or *ESC* bytes in the message
-:code:`b'\xdc'` *ESC_END* the escaped value of the *END* byte
-:code:`b'\xdd'` *ESC_ESC* the escaped value of the *ESC* byte
+:code:`0xc0`    *END*     to delimit messages
+:code:`0xdb`    *ESC*     to escape *END* or *ESC* bytes in the message
+:code:`0xdc`    *ESC_END* the escaped value of the *END* byte
+:code:`0xdd`    *ESC_ESC* the escaped value of the *ESC* byte
 =============== ========= =================================================
 
 An *END* byte in the message is encoded as the sequence
@@ -57,6 +61,6 @@ As a consequence, an *ESC* byte in a slip packet
 must always be followed by an *ESC_END* or an *ESC_ESC* byte;
 anything else is a protocol error.
 Although the implementation code proposed by :rfc:`1055`
-ignores such errors, the :py:mod:`slip` module raises a
-:py:exc:`SlipDecodingError`
+ignores such errors, the ``sliplib`` module raises an
 exception in such cases.
+
