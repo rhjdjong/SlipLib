@@ -7,7 +7,7 @@ import unittest
 import io
 from itertools import chain
 
-from sliplib import END, ESC, ESC_END, ESC_ESC
+from sliplib.slip import END, ESC, ESC_END, ESC_ESC
 from sliplib import SlipDecodingError
 import codecs
 

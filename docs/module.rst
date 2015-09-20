@@ -11,11 +11,10 @@ Exceptions
 
 Constants
 ^^^^^^^^^
-
 .. data:: END
-          ESC
-          ESC_END
-          ESC_ESC
+.. data:: ESC
+.. data:: ESC_END
+.. data:: ESC_ESC
           
    These constants represent the byte values for the
    special SLIP bytes.

@@ -1,18 +1,15 @@
 ``sliplib`` --- A module for the SLIP protocol
 ==============================================
 
-.. module:: sliplib
-   :synopsis: Module that provides support for the SLIP protocol.
-.. moduleauthor:: Ruud de Jong <rhjdjong@gmail.com>
-.. Copyright (C) 2015 Ruud de Jong
-
-.. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
-   :target: http://slip.readthedocs.org/en/latest/
+.. image:: https://readthedocs.org/projects/sliplib/badge/?version=latest
+   :target: http://sliplib.readthedocs.org/en/latest/?badge=latest
+   :alt: Documentation Status
    
 The ``sliplib`` module implements the encoding and decoding
 functionality for SLIP packets, as described in :rfc:`1055`.
 It defines encoding and decoding functions and classes,
-and registers these in the :mod:`codecs` module.
+and registers these in the
+`codecs <https://docs.python.org/3/library/codecs.html#module-codecs>`_ module.
 
 Background
 ----------
@@ -35,14 +32,14 @@ to frame variable length messages.
 
 The SLIP protocol uses four special byte values:
 
-=============== ========= =================================================
+=============== ========= =============================================
 Byte value      Name      Purpose
-=============== ========= =================================================
+=============== ========= =============================================
 :code:`0xc0`    *END*     to delimit messages
 :code:`0xdb`    *ESC*     to escape *END* or *ESC* bytes in the message
 :code:`0xdc`    *ESC_END* the escaped value of the *END* byte
 :code:`0xdd`    *ESC_ESC* the escaped value of the *ESC* byte
-=============== ========= =================================================
+=============== ========= =============================================
 
 An *END* byte in the message is encoded as the sequence
 *ESC+ESC_END* (:code:`b'\xdb\xdc'`)
@@ -50,12 +47,12 @@ in the slip packet,
 and an *ESC* byte  in the message is encoded
 as the sequence *ESC+ESC_ESC* (:code:`b'\xdb\xdd'`).
 
-======================== =====================================
-Original                 Encoded
-======================== =====================================
-:code:`b'\xc0'` (*END*)  :code:`b'\xdb\xdc'` (*ESC+ESC_END*)
-:code:`b'\xdb'` (*ESC*)  :code:`b'\xdb\xdd'` (*ESC+ESC_ESC*)
-======================== =====================================
+.. csv-table::
+   :header: "Original", "Encoded"
+
+   ``b'\xc0'``, ``b'\xdb\xdc'``
+   ``b'\xdb'``, ``b'\xdb\xdd'``
+
 
 As a consequence, an *ESC* byte in a slip packet
 must always be followed by an *ESC_END* or an *ESC_ESC* byte;

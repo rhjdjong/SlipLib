@@ -55,7 +55,7 @@ setup(
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/rhjdjong/Slip',
+    url='https://github.com/rhjdjong/SlipLib',
 
     # Author details
     author='Ruud de Jong',

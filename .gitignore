@@ -11,3 +11,4 @@ __pycache__
 *.egg-info
 docs/_build
 .externalToolBuilders
+dist
