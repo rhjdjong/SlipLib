@@ -4,7 +4,11 @@
 .. image:: https://readthedocs.org/projects/sliplib/badge/?version=latest
    :target: http://sliplib.readthedocs.org/en/latest/?badge=latest
    :alt: Documentation Status
-   
+
+.. image:: https://travis-ci.org/rhjdjong/SlipLib.svg
+   :target: https://travis-ci.org/rhjdjong/SlipLib
+   :alt: Test Status
+    
 The ``sliplib`` module implements the encoding and decoding
 functionality for SLIP packets, as described in :rfc:`1055`.
 It defines encoding and decoding functions and classes,
