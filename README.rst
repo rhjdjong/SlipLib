@@ -1,14 +1,19 @@
-``sliplib`` --- A module for the SLIP protocol
-==============================================
 
 .. image:: https://readthedocs.org/projects/sliplib/badge/?version=latest
    :target: http://sliplib.readthedocs.org/en/latest/?badge=latest
-   :alt: Documentation Status
+   :alt: ReadTheDocs Documentation Status
 
 .. image:: https://travis-ci.org/rhjdjong/SlipLib.svg
    :target: https://travis-ci.org/rhjdjong/SlipLib
-   :alt: Test Status
-    
+   :alt: Travis Test Status
+
+.. image:: https://ci.appveyor.com/api/projects/status/rqe1ufitabs5niy9?svg=true
+   :target: https://ci.appveyor.com/project/RuuddeJong/sliplib
+   :alt: AppVeyor Test Status
+   
+``sliplib`` --- A module for the SLIP protocol
+==============================================
+
 The ``sliplib`` module implements the encoding and decoding
 functionality for SLIP packets, as described in :rfc:`1055`.
 It defines encoding and decoding functions and classes,
