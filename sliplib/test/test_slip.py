@@ -4,334 +4,224 @@ Created on 8 mrt. 2015
 @author: Ruud
 '''
 import unittest
-import io
-from itertools import chain
 
+from sliplib import *
 from sliplib.slip import END, ESC, ESC_END, ESC_ESC
-from sliplib import SlipDecodingError
-import codecs
 
-ENDb = bytes((END,))
-ESCb = bytes((ESC,))
 
-class EncodingDecodingTest(unittest.TestCase):
-    def setUp(self):
-        self.encode = codecs.getencoder('slip')
-        self.decode = codecs.getdecoder('slip')
-        
+class EncodingTest(unittest.TestCase):
     def test_empty_message_encoding(self):
         msg = b''
-        self.assertEqual(self.encode(msg), b'')
-        
-    def test_empty_message_decoding(self):
-        packet=b''
-        self.assertEqual(self.decode(packet), b'')
-
-    def test_simple_encoding_decoding(self):
-        msg = b'hello'
-        packet = bytes(chain(ENDb, msg, ENDb))
-        self.assertEqual(self.encode(msg), packet)
-        self.assertEqual(self.decode(packet), msg)
-
-    def test_encoding_decoding_with_embedded_END(self):
-        msg = bytes(ENDb)
-        packet = bytes((END, ESC, ESC_END, END))
-        self.assertEqual(self.encode(msg), packet)
-        self.assertEqual(self.decode(packet), msg)
-        
-    def test_encoding_decoding_with_embedded_ESC(self):
-        msg = bytes(ESCb)
-        packet = bytes((END, ESC, ESC_ESC, END))
-        self.assertEqual(self.encode(msg), packet)
-        self.assertEqual(self.decode(packet), msg)
+        packet = END+END
+        self.assertEqual(encode(msg), packet)
     
-    def test_invalid_encoding_with_bare_END(self):
-        packet = bytes(chain(ENDb, b'left', ENDb, b'right', ENDb))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decode(packet)
-            self.fail("Got decoded message {!r}".format(m))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decode(packet)
-            self.fail("Got decoded message {!r}".format(m))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decode(packet)
-            self.fail("Got decoded message {!r}".format(m))
+    def test_simple_message_encoding(self):
+        msg = b'hallo'
+        packet = END + msg + END
+        self.assertEqual(encode(msg), packet)
+
+    def test_special_character_encoding(self):
+        test_list = [(END, ESC+ESC_END),
+                     (ESC, ESC+ESC_ESC),
+                     (ESC+ESC_END, ESC+ESC_ESC + ESC_END),
+                     (ESC+ESC_ESC, ESC+ESC_ESC + ESC_ESC),
+                     (ESC+END, ESC+ESC_ESC + ESC+ESC_END),
+                     (ESC+ESC, ESC+ESC_ESC + ESC+ESC_ESC),
+                     ]
+        for msg, p in test_list:
+            packet = END + bytes(p) + END
+            self.assertEqual(encode(msg), packet,
+                             'Encoding failed for {}'.format(msg))
+
+
+class DecodingTest(unittest.TestCase):
+    def test_empty_packet_decoding(self):
+        packet = END+END
+        self.assertEqual(decode(packet), b'')
+        
+    def test_single_message_decoding(self):
+        msg = b'hallo'
+        packet = END + msg + END
+        self.assertEqual(decode(packet), msg)
     
-    def test_invalid_encoding_with_invalid_ESC_sequence(self):
-        packet = bytes(chain(ENDb, b'left', ESCb, b'Xright', ENDb))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decode(packet)
-            self.fail("Got decoded message {!r}".format(m))
+    def test_special_character_decoding(self):
+        test_list = [(ESC+ESC_ESC, ESC),
+                     (ESC+ESC_END, END),
+                     (ESC_ESC+ESC+ESC_END, ESC_ESC+END),
+                     (ESC_END+ESC+ESC_ESC, ESC_END+ESC),
+                     (ESC+ESC_ESC+ESC+ESC_END, ESC+END),
+                     (ESC+ESC_END+ESC+ESC_ESC, END+ESC),
+                     ]
+        for p, msg in test_list:
+            packet = END + bytes(p) + END
+            self.assertEqual(decode(packet), msg,
+                             'Decoding failed for {}'.format(packet))
+    
+    def test_protocol_error_is_ignored_during_decoding(self):
+        test_list = [ESC+b'x',
+                     b'abc'+ESC,
+                     b'a'+END+b'z',
+                     ]
+        for msg in test_list:
+            packet = END + msg + END
+            self.assertEqual(decode(packet), msg)
+    
+    
 
-    def test_invalid_encoding_with_unfinished_ESC_sequence(self):
-        packet = bytes(chain(ENDb, b'left', ESCb, ENDb))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decode(packet)
-            self.fail("Got decoded message {!r}".format(m))
+class IsValidTest(unittest.TestCase):
+    def test_empty_packet_is_valid(self):
+        self.assertTrue(is_valid(END+END))
+        self.assertTrue(is_valid(b''))
+        
+    def test_packet_with_single_message_is_valid(self):
+        packet = END + b'hallo' + END
+        self.assertTrue(is_valid(packet))
+    
+    
+    def test_packet_with_special_character_encoding_is_valid(self):
+        test_list = [ESC+ESC_ESC,
+                     ESC+ESC_END,
+                     ESC_ESC+ESC+ESC_END,
+                     ESC_END+ESC+ESC_ESC,
+                     ESC+ESC_ESC+ESC+ESC_END,
+                     ESC+ESC_END+ESC+ESC_ESC,
+                     ]
+        for p in test_list:
+            packet = END + p + END
+            self.assertTrue(is_valid(packet))
 
-class SlipIncrementalEncodingDecodingTest(unittest.TestCase):
+    def test_packet_with_protocol_error_is_invalid(self):
+        self.assertFalse(is_valid(END+b'a'+END+b'b'+END))
+        self.assertFalse(is_valid(ESC+b'x'))
+        self.assertFalse(is_valid(b'unfinished'+ESC))
+        self.assertFalse(is_valid(b'unfinished'+ESC+END))
+    
+
+class DriverTest(unittest.TestCase):
     def setUp(self):
-        self.encoder = codecs.getincrementalencoder('slip')().encode
-        self.decoder = codecs.getincrementaldecoder('slip')().decode
-        
-    def test_empty_message_encoding(self):
-        msg = b''
-        self.assertEqual(self.encoder(msg, final=True), b'')
+        self.driver = Driver()
     
-    def test_empty_message_decoding(self):
-        packet=b''
-        self.assertEqual(self.decoder(packet, final=True), b'')
-        
-    def test_simple_encoding_decoding(self):
-        msg = b'hello'
-        packet = bytes(chain(ENDb, msg, ENDb))
-        self.assertEqual(self.encoder(msg, final=True), packet)
-        self.assertEqual(self.decoder(packet), msg)
+    def test_single_message_decoding(self):
+        msg = b'hallo'
+        self.driver.receive(END + msg + END)
+        self.assertSequenceEqual(self.driver.messages, [msg])
 
-    def test_encoding_decoding_with_embedded_END(self):
-        msg = bytes(ENDb)
-        packet = bytes((END, ESC, ESC_END, END))
-        self.assertEqual(self.encoder(msg, final=True), packet)
-        self.assertEqual(self.decoder(packet), msg)
-        
-    def test_encoding_decoding_with_embedded_ESC(self):
-        msg = bytes(ESCb)
-        packet = bytes((END, ESC, ESC_ESC, END))
-        self.assertEqual(self.encoder(msg, final=True), packet)
-        self.assertEqual(self.decoder(packet), msg)
+    def test_message_buffer_is_flushed_after_reading(self):
+        msg = b'hallo'
+        self.driver.receive(END + msg + END)
+        self.assertSequenceEqual(self.driver.messages, [msg])
+        self.assertSequenceEqual(self.driver.messages, [])
+            
+    def test_multi_message_decoding(self):
+        msgs = [b'hi', b'there']
+        packet = END*2 + msgs[0] + END*5 + msgs[1] + END*7
+        self.driver.receive(packet)
+        self.assertSequenceEqual(self.driver.messages, msgs)
     
-    def test_invalid_encoding_with_bare_END(self):
-        packet = bytes(chain(ENDb, b'left', ENDb, b'right', ENDb))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decoder(packet, final=True)
-            self.fail("Got decoded message {!r}".format(m))
-            self.decoder(packet, final=True)
-        with self.assertRaises(SlipDecodingError):
-            m = self.decoder(packet, final=True, errors='ignore')
-            self.fail("Got decoded message {!r}".format(m))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decoder(packet, final=True, errors='replace')
-            self.fail("Got decoded message {!r}".format(m))
-    
-    def test_invalid_encoding_with_invalid_ESC_sequence(self):
-        packet = bytes(chain(ENDb, b'left', ESCb, b'Xright', ENDb))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decoder(packet)
-            self.fail("Got decoded message {!r}".format(m))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decoder(packet, 'ignore')
-            self.fail("Got decoded message {!r}".format(m))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decoder(packet, 'replace')
-            self.fail("Got decoded message {!r}".format(m))
-
-    def test_invalid_encoding_with_unfinished_ESC_sequence(self):
-        packet = bytes(chain(ENDb, b'left', ESCb, ENDb))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decoder(packet)
-            self.fail("Got decoded message {!r}".format(m))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decoder(packet, 'ignore')
-            self.fail("Got decoded message {!r}".format(m))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decoder(packet, 'replace')
-            self.fail("Got decoded message {!r}".format(m))
-
-    def test_decoder_is_reset_after_decoding_escape_error(self):
-        packet = bytes(chain(ENDb, b'left', ESCb, b'Xright', ENDb))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decoder(packet)
-            self.fail("Got decoded message {!r}".format(m))
-        msg = b'hello'
-        packet = bytes(chain(ENDb, msg, ENDb))
-        self.assertEqual(self.decoder(packet), msg)
-        
-    def test_decoder_is_reset_after_remaining_bytes_error(self):
-        packet = bytes(chain(ENDb, b'left', ENDb, b'right', ENDb))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decoder(packet, final=True)
-            self.fail("Got decoded message {!r}".format(m))
-        msg = b'hello'
-        packet = bytes(chain(ENDb, msg, ENDb))
-        self.assertEqual(self.decoder(packet), msg)
-        
-    def test_decoder_is_reset_after_unfinished_escape_error(self):
-        packet = bytes(chain(ENDb, b'left', ESCb))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decoder(packet, final=True)
-            self.fail("Got decoded message {!r}".format(m))
-        msg = b'hello'
-        packet = bytes(chain(ENDb, msg, ENDb))
-        self.assertEqual(self.decoder(packet), msg)
-    
-    def test_decoder_waits_for_END_after_unfinished_escape_error(self):
-        packet = bytes(chain(ENDb, b'left', ESCb, b'wrong'))
-        self.assertIsNone(self.decoder(packet))
-        packet = bytes(chain(b'noise', ENDb, b'right', ENDb))
-        with self.assertRaises(SlipDecodingError):
-            m = self.decoder(packet)
-            self.fail("Got decoded message {!r}".format(m))
-        self.assertEqual(self.decoder(b'', final=True), b'right')
-
-    def test_simple_incremental_encoding_and_decoding(self):
-        msg = b'hello'
-        for b in msg:
-            self.encoder(b, final=False)
-        packet = self.encoder(b'', final=True)
-        self.assertEqual(packet, bytes(chain(ENDb, msg, ENDb)))
-        decoded_msg = bytearray()
+    def test_split_message_decoding(self):
+        msg = b'hallo'
+        packet = END + msg
         for b in packet:
-            m = self.decoder(b, final=False)
-            if m:
-                decoded_msg.extend(m)
-        m = self.decoder(b'', final=True)
-        if m:
-            decoded_msg.extend(m)
-        self.assertEqual(decoded_msg, msg)
+            self.driver.receive(bytes((b,)))
+            self.assertSequenceEqual(self.driver.messages, [])
+        self.driver.receive(END)
+        self.assertSequenceEqual(self.driver.messages, [msg])
+        
+    def test_end_of_stream_with_empty_packet(self):
+        msg_list = [b'hi', b'there']
+        packet = END + msg_list[0] + END + msg_list[1]
+        self.driver.receive(packet)
+        self.assertSequenceEqual(self.driver.messages, msg_list[:-1])
+        self.driver.receive(b'')
+        self.assertSequenceEqual(self.driver.messages, [msg_list[-1]])
+    
+    def test_single_message_encoding(self):
+        msg = b'hallo'
+        self.driver.send(msg)
+        self.assertEqual(self.driver.packets, encode(msg))
+    
+    def test_multi_message_encoding(self):
+        msg_list = [b'hi', b'there']
+        for m in msg_list:
+            self.driver.send(m)
+        self.assertEqual(self.driver.packets, b''.join(encode(m) for m in msg_list))
+    
+    def test_packet_buffer_is_flushed_after_reading(self):
+        msg = b'hallo'
+        self.driver.send(msg)
+        self.assertEqual(self.driver.packets, encode(msg))
+        self.assertEqual(self.driver.packets, b'')
+        
+    def test_stream_with_errors(self):
+        msgs = [b'hallo', b'with'+ESC+b' error', b'with trailing'+ESC,  b'there']
+        packet = END + (END*2).join(msgs) + END
+        self.driver.receive(packet)
+        self.assertSequenceEqual(self.driver.messages, msgs)
 
-
-class SlipReaderWriterTest(unittest.TestCase):
+        
+class DriverStrictTest(unittest.TestCase):
     def setUp(self):
-        self.buffer = io.BytesIO()
-        self.writer = codecs.getwriter('slip')(self.buffer)
-        self.reader = codecs.getreader('slip')(self.buffer)
-        
-    def test_empty_message_encoding(self):
-        msg = b''
-        self.writer.write(msg)
-        self.assertEqual(self.buffer.getvalue(), b'')
+        self.driver = Driver(error='strict')
     
-    def test_empty_message_decoding(self):
-        packet=b''
-        self.buffer.write(packet)
-        self.reader.seek(0)       
-        self.assertEqual(self.reader.read(), b'')
-        
-    def test_simple_encoding_decoding(self):
-        msg = b'hello'
-        packet = bytes(chain(ENDb, msg, ENDb))
-        self.writer.write(msg)
-        self.assertEqual(self.buffer.getvalue(), packet)
-        self.reader.seek(0)
-        self.assertEqual(self.reader.read(), msg)
+    def test_single_message_decoding(self):
+        msg = b'hallo'
+        self.driver.receive(END + msg + END)
+        self.assertSequenceEqual(self.driver.messages, [msg])
 
-    def test_encoding_decoding_with_embedded_END(self):
-        msg = ENDb
-        packet = bytes((END, ESC, ESC_END, END))
-        self.writer.write(msg)
-        self.assertEqual(self.writer.getvalue(), packet)
-        self.reader.seek(0)
-        self.assertEqual(self.reader.read(), msg)
+    def test_message_buffer_is_flushed_after_reading(self):
+        msg = b'hallo'
+        self.driver.receive(END + msg + END)
+        self.assertSequenceEqual(self.driver.messages, [msg])
+        self.assertSequenceEqual(self.driver.messages, [])
+            
+    def test_multi_message_decoding(self):
+        msgs = [b'hi', b'there']
+        packet = END*2 + msgs[0] + END*5 + msgs[1] + END*7
+        self.driver.receive(packet)
+        self.assertSequenceEqual(self.driver.messages, msgs)
+    
+    def test_split_message_decoding(self):
+        msg = b'hallo'
+        packet = END + msg
+        for b in packet:
+            self.driver.receive(bytes((b,)))
+            self.assertSequenceEqual(self.driver.messages, [])
+        self.driver.receive(END)
+        self.assertSequenceEqual(self.driver.messages, [msg])
         
-    def test_encoding_decoding_with_embedded_ESC(self):
-        msg = ESCb
-        packet = bytes((END, ESC, ESC_ESC, END))
-        self.writer.write(msg)
-        self.assertEqual(self.buffer.getvalue(), packet)
-        self.reader.seek(0)
-        self.assertEqual(self.reader.read(), msg)
+    def test_end_of_stream_with_empty_packet(self):
+        msg_list = [b'hi', b'there']
+        packet = END + msg_list[0] + END + msg_list[1]
+        self.driver.receive(packet)
+        self.assertSequenceEqual(self.driver.messages, msg_list[:-1])
+        self.driver.receive(b'')
+        self.assertSequenceEqual(self.driver.messages, [msg_list[-1]])
     
-    def test_encoding_with_bare_END(self):
-        packet = bytes(chain(ENDb, b'left', ENDb, b'right', ENDb))
-        self.buffer.write(packet)
-        self.reader.seek(0)
-        self.assertEqual(self.reader.read(), b'left')
-        self.assertEqual(self.reader.read(), b'right')
+    def test_single_message_encoding(self):
+        msg = b'hallo'
+        self.driver.send(msg)
+        self.assertEqual(self.driver.packets, encode(msg))
     
-    def test_invalid_encoding_with_invalid_ESC_sequence(self):
-        packet = bytes(chain(ENDb, b'left', ESCb, b'Xright', ENDb))
-        self.buffer.write(packet)
-        self.reader.seek(0)
-        with self.assertRaises(SlipDecodingError):
-            m = self.reader.read()
-            self.fail("Got decoded message {!r}".format(m))
-        self.reader.errors = 'ignore'
-        self.reader.seek(0)
-        with self.assertRaises(SlipDecodingError):
-            m = self.reader.read()
-            self.fail("Got decoded message {!r}".format(m))
-        self.reader.errors = 'replace'
-        self.reader.seek(0)
-        with self.assertRaises(SlipDecodingError):
-            m = self.reader.read()
-            self.fail("Got decoded message {!r}".format(m))
-
-    def test_invalid_encoding_with_unfinished_ESC_sequence(self):
-        packet = bytes(chain(ENDb, b'left', ESCb, ENDb))
-        self.buffer.write(packet)
-        self.reader.seek(0)
-        with self.assertRaises(SlipDecodingError):
-            m = self.reader.read()
-            self.fail("Got decoded message {!r}".format(m))
-        self.reader.errors = 'ignore'
-        self.reader.seek(0)
-        with self.assertRaises(SlipDecodingError):
-            m = self.reader.read()
-            self.fail("Got decoded message {!r}".format(m))
-        self.reader.errors = 'replace'
-        self.reader.seek(0)
-        with self.assertRaises(SlipDecodingError):
-            m = self.reader.read()
-            self.fail("Got decoded message {!r}".format(m))
-
-    def test_decoder_is_reset_after_decoding_escape_error(self):
-        packet = bytes(chain(ENDb, b'left', ESCb, b'Xright', ENDb))
-        self.buffer.write(packet)
-        self.reader.seek(0)
-        with self.assertRaises(SlipDecodingError):
-            m = self.reader.read()
-            self.fail("Got decoded message {!r}".format(m))
-        msg = b'hello'
-        pos = self.reader.tell()
-        packet = bytes(chain(ENDb, msg, ENDb))
-        self.buffer.write(packet)
-        self.reader.seek(pos)
-        self.assertEqual(self.reader.read(), msg)
+    def test_multi_message_encoding(self):
+        msg_list = [b'hi', b'there']
+        for m in msg_list:
+            self.driver.send(m)
+        self.assertEqual(self.driver.packets, b''.join(encode(m) for m in msg_list))
         
-    def test_decoder_is_reset_after_remaining_bytes_error(self):
-        packet = bytes(chain(ENDb, b'left', ENDb, b'right', ENDb))
-        self.buffer.write(packet)
-        self.reader.seek(0)
-        self.assertEqual(self.reader.read(), b'left')
-        self.assertEqual(self.reader.read(), b'right')
-        msg = b'hello'
-        pos = self.reader.tell()
-        packet = bytes(chain(ENDb, msg, ENDb))
-        self.buffer.write(packet)
-        self.reader.seek(pos)
-        self.assertEqual(self.reader.read(), msg)
+    def test_packet_buffer_is_flushed_after_reading(self):
+        msg = b'hallo'
+        self.driver.send(msg)
+        self.assertEqual(self.driver.packets, encode(msg))
+        self.assertEqual(self.driver.packets, b'')
         
-    def test_decoder_is_reset_after_unfinished_escape_error(self):
-        packet = bytes(chain(ENDb, b'left', ESCb))
-        self.buffer.write(packet)
-        self.reader.seek(0)
-        with self.assertRaises(SlipDecodingError):
-            m = self.reader.read()
-            self.fail("Got decoded message {!r}".format(m))
-        msg = b'hello'
-        pos = self.reader.tell()
-        packet = bytes(chain(ENDb, msg, ENDb))
-        self.buffer.write(packet)
-        self.reader.seek(pos)
-        self.assertEqual(self.reader.read(), msg)
-
-    def test_slip_writelines(self):
-        msg_list = [b'one', b'two', b'three']
-        packet = bytes(chain(ENDb, b'one', ENDb,
-                             ENDb, b'two', ENDb,
-                             ENDb, b'three', ENDb))
-        self.writer.writelines(msg_list)
-        self.assertEqual(self.writer.getvalue(), packet)
-    
-    def test_slip_readlines(self):
-        msg_list = [b'one', b'two', b'three']
-        packet = bytes(chain(ENDb, b'one', ENDb,
-                             ENDb, b'two', ENDb,
-                             ENDb, b'three', ENDb))
-        self.buffer.write(packet)
-        self.reader.seek(0)
-        self.assertSequenceEqual(self.reader.readlines(3), msg_list)
-    
+    def test_stream_with_errors(self):
+        msgs = [b'hallo', b'with'+ESC+b' error', b'with trailing'+ESC,  b'there']
+        packet = END + (END*2).join(msgs) + END
+        with self.assertRaises(ProtocolError) as e:
+            self.driver.receive(packet)
+            self.assertSequenceEqual(e.args, (b'with'+ESC+b' error', b'with trailing'+ESC))
+        self.assertSequenceEqual(self.driver.messages, (msgs[0], msgs[-1]))
+            
             
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
