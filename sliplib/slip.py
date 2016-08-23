@@ -25,16 +25,16 @@ def encode(msg: bytes) -> bytes:
     return END + msg.replace(ESC, ESC+ESC_ESC).replace(END, ESC+ESC_END) + END
 
 def decode(packet: bytes) -> bytes:
-    """decode(packet) -> message from SLIP-encoded send
+    """decode(packet) -> message from SLIP-encoded packet
     """
     return packet.strip(END).replace(ESC+ESC_END, END).replace(ESC+ESC_ESC, ESC)
 
 def is_valid(packet: bytes) -> bool:
-    """is_valid(packet) -> indicates if the packet's contents conforms to the SLIP specification.
+    """is_valid(packet) -> indicates if the packet's contents conform to the SLIP specification.
     
     A packet is valid if:
     * It contains no END bytes other than leading and/or trailing END bytes, and
-    * Any ESC byte is followed by an ESC_END or ESC_ESC byte.  
+    * All ESC bytes are followed by an ESC_END or ESC_ESC byte.  
     """ 
     packet = packet.strip(END)
     return not (END in packet or
@@ -55,7 +55,7 @@ class Driver():
         """send(data). Encode data in a SLIP send.
         
         Encoded data is buffered. By reading the attribute
-        '_packets', the buffer is flushed.
+        'packets', the buffer is flushed.
         """
         with self._sendlock:
             self._packets.append(encode(data))
@@ -72,13 +72,13 @@ class Driver():
     def receive(self, data: bytes):
         """receive(data). Handle received SLIP-encoded data.
         
-        Extracts _packets from data, and decodes them. The resulting _messages
-        are buffered, and can be retrieved by reading the attribute _messages.
+        Extracts packets from data, and decodes them. The resulting messages
+        are buffered, and can be retrieved by reading the attribute 'messages'.
         """
         
         # Empty data indicates that the data reception is complete.
         # To force a buffer flush, an END byte is added, so that the
-        # current contents of _recv_buffer will form a send.
+        # current contents of _recv_buffer will form a complete message.
         if not data:
             data = END
         
@@ -86,8 +86,8 @@ class Driver():
         
         # The following situations can occur:
         #
-        #  1) _recv_buffer empty or contains only END bytes --> no new _packets
-        #  2) _recv_buffer contains with non-END bytes --> new _packets from data
+        #  1) _recv_buffer empty or contains only END bytes --> no new packets
+        #  2) _recv_buffer contains non-END bytes --> new packets from data
         
         # Strip leading END bytes from _recv_buffer to avoid empty _packets.
         self._recv_buffer = self._recv_buffer.lstrip(END)
@@ -96,7 +96,7 @@ class Driver():
         
         # The _recv_buffer is split on sequences of one or more END bytes.
         # The trailing element from the split operation is a possibly incomplete
-        # send; this element is therefore used as the new _recv_buffer.
+        # packet; this element is therefore used as the new _recv_buffer.
         # If _recv_buffer has one or more trailing END bytes, then the last element,
         # and therefore the new _recv_buffer, is an empty bytes object.
         packets = re.split(END+b'+', self._recv_buffer)
