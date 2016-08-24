@@ -74,16 +74,25 @@ Usage
 The recommended usage is to run all encoding and decoding operations
 through an instantiation ``driver`` of the ``Driver`` class, in combination
 with the appropriate networking code.
-The ``Driver`` class works without any IO, and can therefore be used with
+The ``Driver`` class works without any I/O, and can therefore be used with
 any networking code.
 
-To the application code that uses plain messages, the ``Driver`` class
-offers the method ``send(msg)`` (to send a message)
-and the read-only attribute ``messages`` (to obtain a list of received messages).
-Similarly, to the networking code the ``Driver`` class offers the
-method ``receive(data)`` (to process data received from the network) and
-the read-only attribute ``packets`` (to obtain the encoded messages that are
-available for sending out over the network).
+The ``Driver`` class
+offers the methods ``send(msg)`` (to encode a message) and ``receive(data)``
+(to handle received data), and a read-only attribute attribute ``messages``
+(to retrieve decoded messages).
+
+The method ``send(msg)`` immediately returns an encoded packet, which can
+directly be sent over the network.
+
+Because the data received over the network can contain several packets,
+and can end in a possibly incomplete packets, the method ``receive(data)``
+does not directly return any messages.
+Instead it parses the data, and complete packages are decoded and buffered
+internally.
+The attribute ``messages`` can be read to obtain a list of received messages.
+Reading this attribute flushes the internal buffer.
+
 
 Error Handling
 ==============

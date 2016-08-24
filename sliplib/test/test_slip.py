@@ -137,21 +137,21 @@ class DriverTest(unittest.TestCase):
     
     def test_single_message_encoding(self):
         msg = b'hallo'
-        self.driver.send(msg)
-        self.assertEqual(self.driver.packets, encode(msg))
+        packet = self.driver.send(msg)
+        self.assertEqual(packet, encode(msg))
     
-    def test_multi_message_encoding(self):
-        msg_list = [b'hi', b'there']
-        for m in msg_list:
-            self.driver.send(m)
-        self.assertEqual(self.driver.packets, b''.join(encode(m) for m in msg_list))
-    
-    def test_packet_buffer_is_flushed_after_reading(self):
-        msg = b'hallo'
-        self.driver.send(msg)
-        self.assertEqual(self.driver.packets, encode(msg))
-        self.assertEqual(self.driver.packets, b'')
-        
+#     def test_multi_message_encoding(self):
+#         msg_list = [b'hi', b'there']
+#         for m in msg_list:
+#             self.driver.send(m)
+#         self.assertEqual(self.driver.packets, b''.join(encode(m) for m in msg_list))
+#     
+#     def test_packet_buffer_is_flushed_after_reading(self):
+#         msg = b'hallo'
+#         self.driver.send(msg)
+#         self.assertEqual(self.driver.packets, encode(msg))
+#         self.assertEqual(self.driver.packets, b'')
+#         
     def test_stream_with_errors(self):
         msgs = [b'hallo', b'with'+ESC+b' error', b'with trailing'+ESC,  b'there']
         packet = END + (END*2).join(msgs) + END
@@ -199,21 +199,21 @@ class DriverStrictTest(unittest.TestCase):
     
     def test_single_message_encoding(self):
         msg = b'hallo'
-        self.driver.send(msg)
-        self.assertEqual(self.driver.packets, encode(msg))
+        packet = self.driver.send(msg)
+        self.assertEqual(packet, encode(msg))
     
-    def test_multi_message_encoding(self):
-        msg_list = [b'hi', b'there']
-        for m in msg_list:
-            self.driver.send(m)
-        self.assertEqual(self.driver.packets, b''.join(encode(m) for m in msg_list))
-        
-    def test_packet_buffer_is_flushed_after_reading(self):
-        msg = b'hallo'
-        self.driver.send(msg)
-        self.assertEqual(self.driver.packets, encode(msg))
-        self.assertEqual(self.driver.packets, b'')
-        
+#     def test_multi_message_encoding(self):
+#         msg_list = [b'hi', b'there']
+#         for m in msg_list:
+#             self.driver.send(m)
+#         self.assertEqual(self.driver.packets, b''.join(encode(m) for m in msg_list))
+#         
+#     def test_packet_buffer_is_flushed_after_reading(self):
+#         msg = b'hallo'
+#         self.driver.send(msg)
+#         self.assertEqual(self.driver.packets, encode(msg))
+#         self.assertEqual(self.driver.packets, b'')
+#         
     def test_stream_with_errors(self):
         msgs = [b'hallo', b'with'+ESC+b' error', b'with trailing'+ESC,  b'there']
         packet = END + (END*2).join(msgs) + END

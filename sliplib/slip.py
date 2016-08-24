@@ -22,11 +22,13 @@ class ProtocolError(ValueError):
 def encode(msg: bytes) -> bytes:
     """encode(msg) -> SLIP-encoded message.
     """
+    msg = bytes(msg)
     return END + msg.replace(ESC, ESC+ESC_ESC).replace(END, ESC+ESC_END) + END
 
 def decode(packet: bytes) -> bytes:
     """decode(packet) -> message from SLIP-encoded packet
     """
+    packet = bytes(packet)
     return packet.strip(END).replace(ESC+ESC_END, END).replace(ESC+ESC_ESC, ESC)
 
 def is_valid(packet: bytes) -> bool:
@@ -46,28 +48,22 @@ class Driver():
     def __init__(self, error='ignore'):
         self.error = error
         self._recv_buffer = b''
-        self._packets = []
         self._messages = []
         self._recvlock = Lock()
-        self._sendlock = Lock()
     
-    def send(self, data: bytes):
-        """send(data). Encode data in a SLIP send.
-        
-        Encoded data is buffered. By reading the attribute
-        'packets', the buffer is flushed.
+    def send(self, data: bytes) -> bytes:
+        """send(data). Encode data in a SLIP packet.
         """
-        with self._sendlock:
-            self._packets.append(encode(data))
+        return encode(data)
         
-    @property
-    def packets(self) -> bytes:
-        """packets -> Read and flush the packet buffer.
-        """
-        with self._sendlock:
-            result = b''.join(self._packets)
-            self._packets = []
-        return result
+#     @property
+#     def packets(self) -> bytes:
+#         """packets -> Read and flush the packet buffer.
+#         """
+#         with self._sendlock:
+#             result = b''.join(self._packets)
+#             self._packets = []
+#         return result
 
     def receive(self, data: bytes):
         """receive(data). Handle received SLIP-encoded data.
