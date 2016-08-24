@@ -64,7 +64,7 @@ as the sequence *ESC+ESC_ESC* (:code:`b'\xdb\xdd'`).
    ``b'\xdb'``, ``b'\xdb\xdd'``
 
 
-As a consequence, an *ESC* byte in a slip packet
+As a consequence, an *ESC* byte in an encoded slip packet
 must always be followed by an *ESC_END* or an *ESC_ESC* byte;
 anything else is a protocol error.
 
@@ -85,9 +85,6 @@ method ``receive(data)`` (to process data received from the network) and
 the read-only attribute ``packets`` (to obtain the encoded messages that are
 available for sending out over the network).
 
-The ``driver`` sits between the application code that uses plain messages,
-and the networking code that works with SLIP-encoded packets.
-
 Error Handling
 ==============
 
@@ -100,18 +97,18 @@ of its attribute :code:`error`,
 which can be set at creation time, and changed at any time thereafter.
 
 When :code:`error` has the value :code:`'strict'`, protocol errors
-result in a code:`ProtocolError` exception, and any offending packets
+result in a :code:`ProtocolError` exception, and any offending packets
 are not decoded.
 
 Any other value of the :code:`error` attribute means that protocol errors
-are ignored. Invalid or unfinshed escape sequences are copied as-is into
-the message. This behaviour is *not* the same as the reference implementation
+are ignored. Invalid or unfinished escape sequences are copied as-is into
+the message. This is different from the behavior of the reference implementation
 in :rfc:`1055`.
 
 When the reference implementation encounters an invalid byte *b* following an *ESC* byte,
 the *ESC* byte is ignored, and the byte *b* is copied into the decoded message.
 
-The :module:`sliplib` non-strict error handling copies invalid *ESC X* byte
+The ``sliplib`` non-strict error handling copies invalid *ESC X* byte
 sequences as-is into the decoded message, with the exception of an *ESC END* byte
 sequence. An *ESC END* byte sequence results in a finished decoded message with
 a single *ESC* byte at the end.
