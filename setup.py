@@ -39,7 +39,7 @@ class PyTest(TestCommand):
     def run(self):
         # import here, cause outside the eggs aren't loaded
         import pytest
-        errno = pytest.main(self.pytest_args)
+        errno = pytest.main(self.pytest_args) # @UndefinedVariable
         sys.exit(errno)
     
 long_description = read_long_description('README.rst')
