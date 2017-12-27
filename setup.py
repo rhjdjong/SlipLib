@@ -1,18 +1,17 @@
-'''
-Created on 1 mrt. 2015
-
-@author: Ruud de Jong
-'''
+# Copyright (c) 2017 Ruud de Jong
+# This file is part of the SlipLib project which is released under the MIT license.
+# See https://github.com/rhjdjong/SlipLib for details.
 
 from setuptools import setup, find_packages  # Always prefer setuptools over distutils
+# noinspection PyPep8Naming
 from setuptools.command.test import test as TestCommand
 import os
 import sys
 
-import sliplib
-
+from sliplib.version import __version__
 
 here = os.path.abspath(os.path.dirname(__file__))
+
 
 # Get the long description from the relevant file
 def read_long_description(*filenames, **kwargs):
@@ -24,33 +23,37 @@ def read_long_description(*filenames, **kwargs):
             buf.append(f.read())
     return seperator.join(buf)
 
+
 class PyTest(TestCommand):
     user_options = [('pytest-args=', 'a', 'Arguments to pass to py.test')]
-    
+
     def initialize_options(self):
         TestCommand.initialize_options(self)
         self.pytest_args = []
-    
+
     def finalize_options(self):
         TestCommand.finalize_options(self)
         self.test_args = []
         self.test_suite = True
-    
+
     def run(self):
         # import here, cause outside the eggs aren't loaded
         import pytest
-        errno = pytest.main(self.pytest_args) # @UndefinedVariable
+        errno = pytest.main(self.pytest_args)  # @UndefinedVariable
         sys.exit(errno)
-    
+
+
 long_description = read_long_description('README.rst')
-  
+
+
 setup(
     name='sliplib',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version = sliplib.__version__,
+    version=__version__,
+    #version=sliplib.__version__,
 
     description='Slip package',
     long_description=long_description,
@@ -81,12 +84,12 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-#         'Programming Language :: Python :: 2',
-#         'Programming Language :: Python :: 2.6',
-#         'Programming Language :: Python :: 2.7',
-#         'Programming Language :: Python :: 3',
-#         'Programming Language :: Python :: 3.2',
-#         'Programming Language :: Python :: 3.3',
+        #         'Programming Language :: Python :: 2',
+        #         'Programming Language :: Python :: 2.6',
+        #         'Programming Language :: Python :: 2.7',
+        #         'Programming Language :: Python :: 3',
+        #         'Programming Language :: Python :: 3.2',
+        #         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
 
@@ -117,14 +120,15 @@ setup(
     # need to place data files outside of your packages.
     # see http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
-    #data_files=[('my_data', ['data/data_file'])],
+    # data_files=[('my_data', ['data/data_file'])],
 
-    
+
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
     # entry_points={},
-    
-    tests_require = ['pytest'],
-    cmdclass = {'test': PyTest}
+
+    tests_require=['pytest'],
+    cmdclass={'test': PyTest},
+    install_requires=['sphinx_rtd_theme']
 )

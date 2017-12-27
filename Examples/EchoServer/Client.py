@@ -1,8 +1,8 @@
-'''
+"""
 Created on 24 aug. 2016
 
 @author: Ruud
-'''
+"""
 
 import socket
 import sys
@@ -19,11 +19,7 @@ if __name__ == '__main__':
         if not message:
             break
         message = bytes(message, 'utf-8')
-        driver.send(message)
-        data = driver.packets
-        sock.sendall(data)
+        sock.sendall(driver.send(message))
         rcvd = sock.recv(1024)
-        driver.receive(rcvd)
-        messages = driver.messages
+        messages = driver.receive(rcvd)
         print(messages)
-            
