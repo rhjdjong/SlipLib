@@ -13,6 +13,14 @@ from sliplib import ProtocolError, SlipSocket, END, ESC
 
 TRAVIS = os.environ.get("TRAVIS", "")
 
+delegated_socket_attributes = [
+    attr for attr in dir(socket.socket)
+    if not (attr.startswith('_') or
+            attr.startswith('recv') or
+            attr.startswith('send') or
+            attr in ('accept', 'dup', 'makefile', 'share'))
+]
+
 # noinspection PyAttributeOutsideInit,PyUnresolvedReferences
 class TestSlipSocket:
     @pytest.fixture(autouse=True, params=[
@@ -152,12 +160,11 @@ class TestSlipSocket:
         assert address == self.far_address
 
     @pytest.mark.parametrize('method', [
-        attr for attr in dir(socket.socket) if
-        callable(getattr(socket.socket, attr)) and (
-                attr.startswith('recv') or
-                attr.startswith('send') or
-                attr in ('dup', 'makefile', 'share')
-        )
+        attr for attr in dir(socket.socket)
+        if  not attr.startswith('_') and
+            attr != 'accept' and
+            callable(getattr(socket.socket, attr)) and
+            attr not in delegated_socket_attributes
     ])
     def test_exception_for_not_supported_operations(self, method):
         with pytest.raises(AttributeError):
@@ -166,13 +173,9 @@ class TestSlipSocket:
     @pytest.mark.parametrize('method', [
         pytest.param(attr, marks=pytest.mark.xfail("Does not work for getsockname on travis for Python3.5 "))
             if TRAVIS and sys.version_info[0, 1] == (3, 5) and attr == 'getsockname'
-            else pytest.param(attr)
-        for attr in dir(socket.socket) if
-        callable(getattr(socket.socket, attr)) and
-        not attr.startswith('_') and
-        not attr.startswith('recv') and
-        not attr.startswith('send') and
-        attr not in ('accept', 'dup', 'makefile', 'share')
+            else attr
+        for attr in delegated_socket_attributes
+        if callable(getattr(socket.socket, attr))
     ])
     def test_delegated_methods(self, method, mocker):
         mocker.patch.object(sliplib.socket.socket, method)
