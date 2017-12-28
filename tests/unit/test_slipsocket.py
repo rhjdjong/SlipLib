@@ -170,9 +170,10 @@ class TestSlipSocket:
     ])
     def test_delegated_methods(self, method, mocker):
         mocker.patch.object(sliplib.socket.socket, method)
-        getattr(sliplib.socket.socket, method).reset_mock()
-        getattr(self.slipsocket, method)()  # Don't care about the arguments
-        getattr(sliplib.socket.socket, method).assert_called_once_with()
+        mocked_method = getattr(sliplib.socket.socket, method)
+        mocked_method.reset_mock()
+        mocked_method()  # Don't care about the arguments
+        mocked_method.assert_called_once_with()
 
     @pytest.mark.parametrize('attr', [
         'family', 'type', 'proto'
