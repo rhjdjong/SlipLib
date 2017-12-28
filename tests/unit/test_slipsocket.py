@@ -33,7 +33,7 @@ not_delegated_methods = [
 ]
 
 # Handle special case for Travis run
-if TRAVIS and sys.version_info[0, 1] == (3, 5):
+if TRAVIS and sys.version_info[0:2] == (3, 5):
     i = delegated_methods.index("getsockname")
     delegated_methods[i] = pytest.param(
         "getsockname",
