@@ -37,7 +37,7 @@ if TRAVIS and sys.version_info[0:2] == (3, 5):
     i = delegated_methods.index("getsockname")
     delegated_methods[i] = pytest.param(
         "getsockname",
-        marks=pytest.mark.xfail("Does not work for getsockname on travis for Python3.5 "))
+        marks=pytest.mark.xfail(reason="Does not work for getsockname on travis for Python3.5"))
 
 
 # noinspection PyAttributeOutsideInit,PyUnresolvedReferences
