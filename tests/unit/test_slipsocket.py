@@ -138,7 +138,7 @@ class TestSlipSocket:
         assert self.slipsocket.recv_msg() == b'bye'
 
     def test_accept_method(self, mocker):
-        mocker.patch('sliplib.socket.socket.accept')
+        mocker.patch('sliplib.socket.socket.accept', unsafe=True)
         sliplib.socket.socket.accept.reset_mock()
         new_socket = sliplib.socket.socket(self.family, socket.SOCK_STREAM)
         sliplib.socket.socket.accept.return_value = (new_socket, self.far_address)
