@@ -83,9 +83,8 @@ class SlipSocket(SlipWrapper):
         return self.socket.proto
 
     def __getattr__(self, attribute):
-        if attribute in (
-                'recv', 'recvfrom', 'recvmsg', 'recvmsg_into', 'recvfrom_into', 'recv_into',
-                'send', 'sendall', 'sendto', 'sendmsg', 'sendfile', 'makefile', 'share', 'dup',
+        if attribute.startswith('recv') or attribute.startswith('send') or attribute in (
+            'makefile', 'share', 'dup',
         ):
             raise AttributeError("'{}' object has no attribute '{}'".
                                  format(self.__class__.__name__, attribute))

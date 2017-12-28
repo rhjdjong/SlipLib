@@ -3,8 +3,6 @@ init:
 - ps: ECHO $env:PYTHON
 environment:
   matrix:
-  - PYTHON: C:\Python33
-  - PYTHON: C:\Python33-x64
   - PYTHON: C:\Python34
   - PYTHON: C:\Python34-x64
   - PYTHON: C:\Python35
@@ -21,7 +19,7 @@ install:
 
     pip install --disable-pip-version-check --user --upgrade pip
 
-    pip install pytest
+    pip install -r test-requirements.txt
 build: off
 test_script:
 - cmd: python setup.py test
