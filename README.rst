@@ -24,7 +24,7 @@ It defines encoding, decoding, and validation functions,
 as well as a  driver class that can be used to implement
 a SLIP protocol stack, and higher-level classes that
 apply the SLIP protocol to TCP connections or IO streams.
-Read the `documentation <http://sliplib.readthedocs.org/en/latest/>`
+Read the `documentation <http://sliplib.readthedocs.org/en/latest/>`_
 for detailed information.
 
 Background
