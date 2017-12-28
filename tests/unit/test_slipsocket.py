@@ -4,11 +4,14 @@
 
 import pytest
 
+import os
+import sys
 import socket
 
 import sliplib
 from sliplib import ProtocolError, SlipSocket, END, ESC
 
+TRAVIS = os.environ.get("TRAVIS", "")
 
 # noinspection PyAttributeOutsideInit,PyUnresolvedReferences
 class TestSlipSocket:
@@ -161,7 +164,10 @@ class TestSlipSocket:
             getattr(self.slipsocket, method)
 
     @pytest.mark.parametrize('method', [
-        attr for attr in dir(socket.socket) if
+        pytest.param(attr, marks=pytest.mark.xfail("Does not work for getsockname on travis for Python3.5 "))
+            if TRAVIS and sys.version_info[0, 1] == (3, 5) and attr == 'getsockname'
+            else pytest.param(attr)
+        for attr in dir(socket.socket) if
         callable(getattr(socket.socket, attr)) and
         not attr.startswith('_') and
         not attr.startswith('recv') and
