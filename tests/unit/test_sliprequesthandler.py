@@ -23,8 +23,8 @@ class DummySlipRequestHandler(SlipRequestHandler):
 # noinspection PyAttributeOutsideInit
 class TestSlipRequestHandler:
     @pytest.fixture(autouse=True, params=[
-        (socket.AF_INET, ('localhost', 0)),
-        (socket.AF_INET6, ('localhost', 0, 0, 0))
+        (socket.AF_INET, ('127.0.0.1', 0)),
+        (socket.AF_INET6, ('::1', 0, 0, 0))
     ])
     def setup(self, request):
         self.family = request.param[0]
