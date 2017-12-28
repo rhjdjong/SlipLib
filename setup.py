@@ -128,7 +128,7 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     # entry_points={},
 
-    tests_require=['pytest'],
+    tests_require=['pytest>=3.0', 'pytest-mock'],
     cmdclass={'test': PyTest},
     install_requires=['sphinx_rtd_theme']
 )

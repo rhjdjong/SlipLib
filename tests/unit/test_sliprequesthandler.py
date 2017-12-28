@@ -23,11 +23,12 @@ class DummySlipRequestHandler(SlipRequestHandler):
 # noinspection PyAttributeOutsideInit
 class TestSlipRequestHandler:
     @pytest.fixture(autouse=True, params=[
-        socket.AF_INET,
-        socket.AF_INET6
+        (socket.AF_INET, ('127.0.0.1', 0)),
+        (socket.AF_INET6, ('::1', 0, 0, 0))
     ])
     def setup(self, request):
-        self.family = request.param
+        self.family = request.param[0]
+        self.bind_address = request.param[1]
         self.ServerClass = type('SlipServer',
                                 (socketserver.TCPServer,),
                                 {"address_family": self.family})
@@ -36,15 +37,15 @@ class TestSlipRequestHandler:
         yield
         self.client_socket.close()
 
-    def server(self, ip_address):
-        srv = self.ServerClass((ip_address, 0), DummySlipRequestHandler)
+    def server(self, bind_address):
+        srv = self.ServerClass(bind_address, DummySlipRequestHandler)
         self.server_address = srv.server_address
         self.server_is_running.set()
         srv.handle_request()
 
     # noinspection PyPep8Naming
     def test_sliprequesthandler_contains_SlipSocket(self):
-        server_thread = threading.Thread(target=self.server, args=('localhost',))
+        server_thread = threading.Thread(target=self.server, args=(self.bind_address,))
         server_thread.start()
         self.server_is_running.wait(0.5)
         self.client_socket.connect(self.server_address)
