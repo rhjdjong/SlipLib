@@ -13,13 +13,32 @@ from sliplib import ProtocolError, SlipSocket, END, ESC
 
 TRAVIS = os.environ.get("TRAVIS", "")
 
-delegated_socket_attributes = [
+socket_methods = [
     attr for attr in dir(socket.socket)
-    if not (attr.startswith('_') or
-            attr.startswith('recv') or
+    if callable(getattr(socket.socket, attr)) and
+       not attr.startswith('_')
+]
+
+delegated_methods = [
+    attr for attr in socket_methods
+    if not (attr.startswith('recv') or
             attr.startswith('send') or
             attr in ('accept', 'dup', 'makefile', 'share'))
 ]
+
+not_delegated_methods = [
+    attr for attr in socket_methods
+    if not attr in delegated_methods and
+       attr != 'accept'
+]
+
+# Handle special case for Travis run
+if TRAVIS and sys.version_info[0, 1] == (3, 5):
+    i = delegated_methods.index("getsockname")
+    delegated_methods[i] = pytest.param(
+        "getsockname",
+        marks=pytest.mark.xfail("Does not work for getsockname on travis for Python3.5 "))
+
 
 # noinspection PyAttributeOutsideInit,PyUnresolvedReferences
 class TestSlipSocket:
@@ -159,24 +178,12 @@ class TestSlipSocket:
         assert new_slip_socket.socket is new_socket
         assert address == self.far_address
 
-    @pytest.mark.parametrize('method', [
-        attr for attr in dir(socket.socket)
-        if  not attr.startswith('_') and
-            attr != 'accept' and
-            callable(getattr(socket.socket, attr)) and
-            attr not in delegated_socket_attributes
-    ])
+    @pytest.mark.parametrize('method', not_delegated_methods)
     def test_exception_for_not_supported_operations(self, method):
         with pytest.raises(AttributeError):
             getattr(self.slipsocket, method)
 
-    @pytest.mark.parametrize('method', [
-        pytest.param(attr, marks=pytest.mark.xfail("Does not work for getsockname on travis for Python3.5 "))
-            if TRAVIS and sys.version_info[0, 1] == (3, 5) and attr == 'getsockname'
-            else attr
-        for attr in delegated_socket_attributes
-        if callable(getattr(socket.socket, attr))
-    ])
+    @pytest.mark.parametrize('method', delegated_methods)
     def test_delegated_methods(self, method, mocker):
         mocker.patch.object(sliplib.socket.socket, method)
         mocked_method = getattr(sliplib.socket.socket, method)
