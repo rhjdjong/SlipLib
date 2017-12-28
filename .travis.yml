@@ -5,10 +5,10 @@ python:
  - "3.5"
  - "3.6"
 
- before_install:
-  - "ip addr show",
-  - "ls /proc/net",
-  - "cat /proc/net/if_inet6"
+before_install:
+ - "ip addr show"
+ - "ls /proc/net"
+ - "cat /proc/net/if_inet6"
 
 install:
  - "pip install -r test-requirements.txt"
