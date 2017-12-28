@@ -13,13 +13,17 @@ from sliplib import ProtocolError, SlipSocket, END, ESC
 # noinspection PyAttributeOutsideInit,PyUnresolvedReferences
 class TestSlipSocket:
     @pytest.fixture(autouse=True, params=[
-        socket.AF_INET,
-        socket.AF_INET6
+        (socket.AF_INET,
+         ('93.184.216.34', 54321), # example.com IPv4 address
+         ('127.0.0.1', 12345) # localhost IPv4 address
+         ),
+        (socket.AF_INET6,
+         ('2606:2800:220:1:248:1893:25c8:1946', 54321, 0, 0), # example.com IPv6 address
+         ('::1', 12345, 0, 0) # localhost IPv6 address
+        )
     ])
     def setup(self, request):
-        self.family = request.param
-        self.far_address = socket.getaddrinfo('example.com', 54321, self.family)[0][-1]
-        self.near_address = socket.getaddrinfo('localhost', 12345, self.family)[0][-1]
+        self.family, self.far_address, self.near_address = request.param
         sock = socket.socket(family=self.family)
         self.slipsocket = SlipSocket(sock)
         yield
