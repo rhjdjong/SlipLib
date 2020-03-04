@@ -130,5 +130,4 @@ setup(
 
     tests_require=['pytest>=3.0', 'pytest-mock'],
     cmdclass={'test': PyTest},
-    install_requires=['sphinx_rtd_theme']
 )
