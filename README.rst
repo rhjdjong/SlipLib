@@ -7,10 +7,9 @@
    :target: https://travis-ci.org/rhjdjong/SlipLib
    :alt: Travis Test Status
 
-.. image:: https://ci.appveyor.com/api/projects/status/rqe1ufitabs5niy9?svg=true
-   :target: https://ci.appveyor.com/project/RuuddeJong/sliplib
+.. image:: https://ci.appveyor.com/api/projects/status/d1nwwn34xoaxh3tt/branch/master?svg=true
+   :target: https://ci.appveyor.com/project/RuuddeJong/sliplib/branch/master
    :alt: AppVeyor Test Status
-
 
 
 ==============================================
