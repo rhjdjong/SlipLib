@@ -2,8 +2,8 @@
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
 
-import re
 import collections
+import re
 
 END = b'\xc0'
 ESC = b'\xdb'
@@ -84,6 +84,7 @@ class Driver:
     This class manages the handling of encoding and decoding of
     messages according to the SLIP protocol.
     """
+
     def __init__(self):
         self._recv_buffer = b''
         self._packets = collections.deque()
