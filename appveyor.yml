@@ -48,4 +48,4 @@ install:
   - py -3.6 -m pip install wheel tox tox-appveyor
 
 test_script:
-  - tox
+  - py -3.6 -m tox
