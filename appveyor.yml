@@ -1,25 +1,52 @@
-version: 1.0.{build}
-init:
-- ps: ECHO $env:PYTHON
 environment:
   matrix:
-  - PYTHON: C:\Python34
-  - PYTHON: C:\Python34-x64
-  - PYTHON: C:\Python35
-  - PYTHON: C:\Python35-x64
-  - PYTHON: C:\Python36
-  - PYTHON: C:\Python36-x64
-install:
-- cmd: >-
-    SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
+    # Python 3.4, 64-bit
+    - TOXENV: py34
+      TOX_APPVEYOR_X64: 1
 
-    python --version
+    # Python 3.4, 32-bit
+    - TOXENV: py34
+      TOX_APPVEYOR_X64: 0
 
-    python -c "import struct; print(struct.calcsize('P') * 8)"
+    # Python 3.5, 64-bit
+    - TOXENV: py35
+      TOX_APPVEYOR_X64: 1
 
-    pip install --disable-pip-version-check --user --upgrade pip
+    # Python 3.5, 32-bit
+    - TOXENV: py35
+      TOX_APPVEYOR_X64: 0
 
-    pip install -r test-requirements.txt
+    # Python 3.6, 64-bit
+    - TOXENV: py36
+      TOX_APPVEYOR_X64: 1
+
+    # Python 3.6, 32-bit
+    - TOXENV: py36
+      TOX_APPVEYOR_X64: 0
+
+    # Python 3.7, 64-bit
+    - TOXENV: py37
+      TOX_APPVEYOR_X64: 1
+
+    # Python 3.7, 32-bit
+    - TOXENV: py37
+      TOX_APPVEYOR_X64: 0
+
+    # Python 3.8, 64-bit
+    - TOXENV: py38
+      TOX_APPVEYOR_X64: 1
+
+    # Python 3.8, 32-bit
+    - TOXENV: py38
+      TOX_APPVEYOR_X64: 0
+
+
 build: off
+
+install:
+  - py -3.6 -m pip install --upgrade pip setuptools
+  - py -3.6 -m pip install wheel tox tox-appveyor
+  - py -3.6 -m pip install -r test-requirements.txt
+
 test_script:
-- cmd: python setup.py test
+  - py -3.6 -m tox

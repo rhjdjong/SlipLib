@@ -54,11 +54,11 @@ must always be followed by an :const:`ESC_END` or an :const:`ESC_ESC` byte;
 anything else is a protocol error.
 """
 
-from .version import __version__
 from .slip import *
-from .slipsocket import *
 from .sliprequesthandler import *
+from .slipsocket import *
 from .slipstream import *
+from .version import __version__
 
 __all__ = ['encode',
            'decode',
@@ -74,4 +74,3 @@ __all__ = ['encode',
            'ESC_END',
            'ESC_ESC',
            '__version__']
-
