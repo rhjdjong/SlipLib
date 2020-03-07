@@ -1,6 +1,6 @@
 image:
-  - Visual Studio 2015
   - Ubuntu1804
+  - Visual Studio 2015
   - macOS
 
 platform:
@@ -15,11 +15,35 @@ environment:
     - TOXENV: py37
     - TOXENV: py38
 
+for:
+  - matrix:
+      only:
+        - image: Visual Studio 2015
+        - platform: x86
+    environment:
+      PATH: C:\Python38;C:\Python38\Scripts
+      PYTHON: python
+      PIP: pip
+  - matrix:
+      only:
+        - image: Visual Studio 2015
+        - platform: x64
+    environment:
+      PATH: C:\Python38_64;C:Python38_64\Scripts;$(PATH)
+      PYTHON: python
+      PIP: pip
+  - matrix:
+      except:
+        - image: Visual Studio 2015
+    environment:
+      PYTHON: python3
+      PIP: pip3
+
 build: off
 
 install:
-  - py -3.8 -m pip install --upgrade pip setuptools
-  - py -3.8 -m pip install tox
+  - $(PYTHON) -m pip install --upgrade pip setuptools
+  - $(PIP) install tox
 
 test_script:
-  - py -3.8 -m tox
+  - tox
