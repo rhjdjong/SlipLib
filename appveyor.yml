@@ -42,8 +42,8 @@ for:
 build: off
 
 install:
-  - $(PYTHON) -m pip install --upgrade pip setuptools
-  - $(PIP) install tox
+  - ps $env:PYTHON -m pip install --upgrade pip setuptools
+  - ps $env:PIP install tox
 
 test_script:
   - tox
