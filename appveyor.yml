@@ -22,4 +22,4 @@ install:
   - py -3.8 -m pip install tox
 
 test_script:
-  - tox
+  - py -3.8 -m tox
