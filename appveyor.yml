@@ -1,48 +1,35 @@
 image:
   - Visual Studio 2015
-  - macOS
-
-platform:
-  - x86
-  - x64
 
 environment:
   matrix:
-    - TOXENV: py34
-    - TOXENV: py35
-    - TOXENV: py36
-    - TOXENV: py37
-    - TOXENV: py38
-
-for:
-  - matrix:
-      only:
-        - image: Visual Studio 2015
-        - platform: x86
-    environment:
+    - TOXENV: py34-mywin32
+      PATH: C:\Python34;C:\Python34\Scripts;%PATH%
+    - TOXENV: py34-mywin64
+      PATH: C:\Python34-x64;C:\Python34-x64\Scripts;%PATH%
+    - TOXENV: py35-mywin32
+      PATH: C:\Python35;C:\Python35\Scripts;%PATH%
+    - TOXENV: py35-mywin64
+      PATH: C:\Python34-x64;C:\Python34-x64\Scripts;%PATH%
+    - TOXENV: py36-mywin32
+      PATH: C:\Python36;C:\Python36\Scripts;%PATH%
+    - TOXENV: py36-mywin64
+      PATH: C:\Python36-x64;C:\Python36-x64\Scripts;%PATH%
+    - TOXENV: py37-mywin32
+      PATH: C:\Python37;C:\Python37\Scripts;%PATH%
+    - TOXENV: py37-mywin64
+      PATH: C:\Python37-x64;C:\Python37-x64\Scripts;%PATH%
+    - TOXENV: py38-mywin32
       PATH: C:\Python38;C:\Python38\Scripts;%PATH%
-      PYTHON: python
-      PIP: pip
-  - matrix:
-      only:
-        - image: Visual Studio 2015
-        - platform: x64
-    environment:
-      PATH: C:\Python38_64;C:Python38_64\Scripts;%PATH%
-      PYTHON: python
-      PIP: pip
-  - matrix:
-      except:
-        - image: Visual Studio 2015
-    environment:
-      PYTHON: python3
-      PIP: pip3
+    - TOXENV: py38-mywin64
+      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
 
 build: off
 
 install:
-  - '%PYTHON% -m pip install --upgrade pip setuptools'
-  - '%PIP% install tox'
+  - python --version
+  - python -m pip install --upgrade pip setuptools
+  - pip install tox'
 
 test_script:
   - tox
