@@ -21,7 +21,7 @@ for:
         - image: Visual Studio 2015
         - platform: x86
     environment:
-      PATH: C:\Python38;C:\Python38\Scripts
+      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
       PYTHON: python
       PIP: pip
   - matrix:
@@ -29,7 +29,7 @@ for:
         - image: Visual Studio 2015
         - platform: x64
     environment:
-      PATH: C:\Python38_64;C:Python38_64\Scripts;$(PATH)
+      PATH: C:\Python38_64;C:Python38_64\Scripts;%PATH%
       PYTHON: python
       PIP: pip
   - matrix:
@@ -42,8 +42,8 @@ for:
 build: off
 
 install:
-  - ps $env:PYTHON -m pip install --upgrade pip setuptools
-  - ps $env:PIP install tox
+  - %PYTHON% -m pip install --upgrade pip setuptools
+  - %PIP% install tox
 
 test_script:
   - tox
