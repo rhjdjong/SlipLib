@@ -1,52 +1,25 @@
+image:
+  - Visual Studio 2015
+  - Ubuntu1804
+  - macOS
+
+platform:
+  - x86
+  - x64
+
 environment:
   matrix:
-    # Python 3.4, 64-bit
     - TOXENV: py34
-      TOX_APPVEYOR_X64: 1
-
-    # Python 3.4, 32-bit
-    - TOXENV: py34
-      TOX_APPVEYOR_X64: 0
-
-    # Python 3.5, 64-bit
     - TOXENV: py35
-      TOX_APPVEYOR_X64: 1
-
-    # Python 3.5, 32-bit
-    - TOXENV: py35
-      TOX_APPVEYOR_X64: 0
-
-    # Python 3.6, 64-bit
     - TOXENV: py36
-      TOX_APPVEYOR_X64: 1
-
-    # Python 3.6, 32-bit
-    - TOXENV: py36
-      TOX_APPVEYOR_X64: 0
-
-    # Python 3.7, 64-bit
     - TOXENV: py37
-      TOX_APPVEYOR_X64: 1
-
-    # Python 3.7, 32-bit
-    - TOXENV: py37
-      TOX_APPVEYOR_X64: 0
-
-    # Python 3.8, 64-bit
     - TOXENV: py38
-      TOX_APPVEYOR_X64: 1
-
-    # Python 3.8, 32-bit
-    - TOXENV: py38
-      TOX_APPVEYOR_X64: 0
-
 
 build: off
 
 install:
-  - py -3.6 -m pip install --upgrade pip setuptools
-  - py -3.6 -m pip install wheel tox tox-appveyor
-  - py -3.6 -m pip install -r test-requirements.txt
+  - py -3.8 -m pip install --upgrade pip setuptools
+  - pip install tox
 
 test_script:
-  - py -3.6 -m tox
+  - tox
