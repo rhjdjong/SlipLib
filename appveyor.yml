@@ -42,8 +42,8 @@ for:
 build: off
 
 install:
-  - '%PYTHON%' -m pip install --upgrade pip setuptools
-  - '%PIP%' install tox
+  - '%PYTHON% -m pip install --upgrade pip setuptools'
+  - '%PIP% install tox'
 
 test_script:
   - tox
