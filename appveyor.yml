@@ -28,10 +28,16 @@ image:
 build: off
 
 install:
-  - python3 -VV
-  - python3 -c "import struct; print(struct.calcsize('P') * 8)"
-  - python3 -m pip install --upgrade pip setuptools
-  - pip3 install tox
+  - cmd: set PATH=C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
+  - cmd: python -VV
+  - sh: python3 -VV
+  - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
+  - sh: python3 -c "import struct; print(struct.calcsize('P') * 8)"
+  - cmd: python -m pip install --upgrade pip setuptools
+  - cmd: pip install tox
+  - sh: apt-get install pip3
+  - sh: pip3 install tox
 
 test_script:
-  - python3 -m tox
+  - cmd: python -m tox
+  - sh: python3 -m tox
