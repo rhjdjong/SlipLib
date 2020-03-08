@@ -1,5 +1,5 @@
 image:
-  - Visual Studio 2015
+#  - Visual Studio 2015
   - Ubuntu
 
 #environment:
@@ -35,7 +35,7 @@ install:
   - cmd: pip install tox
   - sh: python3 -VV
   - sh: python3 -c "import struct; print(struct.calcsize('P') * 8)"
-  - sh: pip3 install tox
+  - sh: pip install tox
 
 test_script:
   - cmd: python -m tox
