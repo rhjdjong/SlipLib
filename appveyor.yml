@@ -36,7 +36,8 @@ install:
   - sh: python3 -VV
   - sh: python3 -c "import struct; print(struct.calcsize('P') * 8)"
   - sh: pip install tox
+  - sh: PATH=/home/appveyor/.local/bin:${PATH}
 
 test_script:
   - cmd: python -m tox
-  - sh: python3 -m tox
+  - sh: tox
