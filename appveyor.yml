@@ -1,6 +1,7 @@
 image:
   - Visual Studio 2015
   - Ubuntu
+  - macOS
 
 environment:
   matrix:
@@ -24,7 +25,7 @@ build: off
 
 test_script:
   - cmd: set OLDPATH=%PATH%
-  - cmd: set PATH=%WINDOWS_PYTHON_PATH%;%WINDOWS_PYTHON_PATH\Scripts;%OLDPATH%
+  - cmd: set PATH=%WINDOWS_PYTHON_PATH%;%WINDOWS_PYTHON_PATH%\Scripts;%OLDPATH%
   - cmd: echo %PATH%
   - cmd: python -VV
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
