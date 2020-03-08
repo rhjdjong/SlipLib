@@ -2,30 +2,21 @@ image:
 #  - Visual Studio 2015
   - Ubuntu
 
-stack: python 3.8
 
-#environment:
-#  matrix:
-#    - TOXENV: py34-mywin32
-#      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
-#    - TOXENV: py34-mywin64
-#      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
-#    - TOXENV: py35-mywin32
-#      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
-#    - TOXENV: py35-mywin64
-#      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
-#    - TOXENV: py36-mywin32
-#      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
-#    - TOXENV: py36-mywin64
-#      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
-#    - TOXENV: py37-mywin32
-#      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
-#    - TOXENV: py37-mywin64
-#      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
-#    - TOXENV: py38-mywin32
-#      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
-#    - TOXENV: py38-mywin64
-#      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
+environment:
+  matrix:
+    - TOXENV: py34
+      PYTHON_VERSION: 3.4
+    - TOXENV: py35
+      PYTHON_VERSION: 3.5
+    - TOXENV: py36
+      PYTHON_VERSION: 3.6
+    - TOXENV: py37
+      PYTHON_VERSION: 3.7
+    - TOXENV: py38
+      PYTHON_VERSION: 3.8
+
+stack: python %PYTHON_VERSION%
 
 build: off
 
