@@ -1,12 +1,10 @@
 image:
-#  - Visual Studio 2015
+  - Visual Studio 2015
   - Ubuntu
 
 
 environment:
   matrix:
-    - TOXENV: py34
-      PYTHON_VERSION: 3.4
     - TOXENV: py35
       PYTHON_VERSION: 3.5
     - TOXENV: py36
@@ -28,7 +26,7 @@ install:
   - cmd: pip install tox
   - sh: python -VV
   - sh: python -c "import struct; print(struct.calcsize('P') * 8)"
-  - sh: python3 -m pip install tox
+  - sh: pip install tox
   - sh: PATH=/home/appveyor/.local/bin:${PATH}
 
 test_script:
