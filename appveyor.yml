@@ -25,11 +25,13 @@ build: off
 test_script:
   - cmd: set OLDPATH=%PATH%
   - cmd: set PATH=%WINDOWS_PYTHON_PATH%;%WINDOWS_PYTHON_PATH\Scripts;%OLDPATH%
+  - cmd: echo %PATH%
   - cmd: python -VV
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
   - cmd: python -m pip install tox
   - cmd: python -m tox
-  - cmd: set PATH=%WINDOWS_PYTHON_PATH%_x64;%WINDOWS_PYTHON_PATH%_x64\Scripts;%OLDPATH%
+  - cmd: set PATH=%WINDOWS_PYTHON_PATH%-x64;%WINDOWS_PYTHON_PATH%-x64\Scripts;%OLDPATH%
+  - cmd: echo %PATH%
   - cmd: python -VV
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
   - cmd: python -m pip install tox
