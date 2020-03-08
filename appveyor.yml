@@ -28,7 +28,7 @@ install:
   - cmd: pip install tox
   - sh: python -VV
   - sh: python -c "import struct; print(struct.calcsize('P') * 8)"
-  - sh: python3.8 -m pip install tox
+  - sh: python3 -m pip install tox
   - sh: PATH=/home/appveyor/.local/bin:${PATH}
 
 test_script:
