@@ -1,28 +1,29 @@
 image:
-  - Visual Studio 2015
-
-environment:
-  matrix:
-    - TOXENV: py34-mywin32
-      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
-    - TOXENV: py34-mywin64
-      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
-    - TOXENV: py35-mywin32
-      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
-    - TOXENV: py35-mywin64
-      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
-    - TOXENV: py36-mywin32
-      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
-    - TOXENV: py36-mywin64
-      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
-    - TOXENV: py37-mywin32
-      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
-    - TOXENV: py37-mywin64
-      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
-    - TOXENV: py38-mywin32
-      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
-    - TOXENV: py38-mywin64
-      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
+#  - Visual Studio 2015
+  - Ubuntu
+  -
+#environment:
+#  matrix:
+#    - TOXENV: py34-mywin32
+#      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
+#    - TOXENV: py34-mywin64
+#      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
+#    - TOXENV: py35-mywin32
+#      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
+#    - TOXENV: py35-mywin64
+#      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
+#    - TOXENV: py36-mywin32
+#      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
+#    - TOXENV: py36-mywin64
+#      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
+#    - TOXENV: py37-mywin32
+#      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
+#    - TOXENV: py37-mywin64
+#      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
+#    - TOXENV: py38-mywin32
+#      PATH: C:\Python38;C:\Python38\Scripts;%PATH%
+#    - TOXENV: py38-mywin64
+#      PATH: C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
 
 build: off
 
