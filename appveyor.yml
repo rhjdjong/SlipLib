@@ -27,12 +27,12 @@ test_script:
   - cmd: set PATH=%WINDOWS_PYTHON_PATH%;%WINDOWS_PYTHON_PATH\Scripts;%OLDPATH%
   - cmd: python -VV
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
-  - cmd: pip install tox
+  - cmd: python -m pip install tox
   - cmd: python -m tox
   - cmd: set PATH=%WINDOWS_PYTHON_PATH_x64%;%WINDOWS_PYTHON_PATH_x64\Scripts;%OLDPATH%
   - cmd: python -VV
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
-  - cmd: pip install tox
+  - cmd: python -m pip install tox
   - cmd: python -m tox
   - sh: python -VV
   - sh: python -c "import struct; print(struct.calcsize('P') * 8)"
