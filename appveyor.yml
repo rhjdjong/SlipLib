@@ -29,7 +29,7 @@ test_script:
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
   - cmd: python -m pip install tox
   - cmd: python -m tox
-  - cmd: set PATH=%WINDOWS_PYTHON_PATH_x64%;%WINDOWS_PYTHON_PATH_x64\Scripts;%OLDPATH%
+  - cmd: set PATH=%WINDOWS_PYTHON_PATH%_x64;%WINDOWS_PYTHON_PATH%_x64\Scripts;%OLDPATH%
   - cmd: python -VV
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
   - cmd: python -m pip install tox
