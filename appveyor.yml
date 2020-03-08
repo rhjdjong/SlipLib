@@ -2,10 +2,6 @@ image:
   - Visual Studio 2015
   - Ubuntu
 
-platform:
-  - x86
-  - x64
-
 environment:
   matrix:
     - TOXENV: py35
@@ -22,7 +18,7 @@ stack: python %PYTHON_VERSION%
 build: off
 
 install:
-  - cmd: set PATH=C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
+#  - cmd: set PATH=C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
   - cmd: python -VV
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
 #  - cmd: python -m pip install --upgrade pip setuptools
