@@ -6,28 +6,36 @@ environment:
   matrix:
     - TOXENV: py35
       PYTHON_VERSION: 3.5
+      WINDOWS_PYTHON_PATH: C:\Python35
     - TOXENV: py36
       PYTHON_VERSION: 3.6
+      WINDOWS_PYTHON_PATH: C:\Python36
     - TOXENV: py37
       PYTHON_VERSION: 3.7
+      WINDOWS_PYTHON_PATH: C:\Python37
     - TOXENV: py38
       PYTHON_VERSION: 3.8
+      WINDOWS_PYTHON_PATH: C:\Python38
+
 
 stack: python %PYTHON_VERSION%
 
 build: off
 
-install:
-#  - cmd: set PATH=C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
+test_script:
+  - cmd: set OLDPATH=%PATH%
+  - cmd: set PATH=%WINDOWS_PYTHON_PATH%;%WINDOWS_PYTHON_PATH\Scripts;%OLDPATH%
   - cmd: python -VV
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
-#  - cmd: python -m pip install --upgrade pip setuptools
   - cmd: pip install tox
+  - cmd: python -m tox
+  - cmd: set PATH=%WINDOWS_PYTHON_PATH_x64%;%WINDOWS_PYTHON_PATH_x64\Scripts;%OLDPATH%
+  - cmd: python -VV
+  - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
+  - cmd: pip install tox
+  - cmd: python -m tox
   - sh: python -VV
   - sh: python -c "import struct; print(struct.calcsize('P') * 8)"
   - sh: pip install tox
   - sh: PATH=/home/appveyor/.local/bin:${PATH}
-
-test_script:
-  - cmd: python -m tox
   - sh: tox
