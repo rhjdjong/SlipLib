@@ -16,7 +16,7 @@ environment:
     - TOXENV: py38
       PYTHON_VERSION: 3.8
 
-stack: python %PYTHON_VERSION%
+stack: python 3.8
 
 build: off
 
