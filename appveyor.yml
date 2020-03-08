@@ -1,7 +1,7 @@
 image:
   - Visual Studio 2015
   - Ubuntu
-  -
+
 #environment:
 #  matrix:
 #    - TOXENV: py34-mywin32
@@ -30,12 +30,11 @@ build: off
 install:
   - cmd: set PATH=C:\Python38-x64;C:\Python38-x64\Scripts;%PATH%
   - cmd: python -VV
-  - sh: python3 -VV
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
-  - sh: python3 -c "import struct; print(struct.calcsize('P') * 8)"
   - cmd: python -m pip install --upgrade pip setuptools
   - cmd: pip install tox
-  - sh: apt-get install pip3
+  - sh: python3 -VV
+  - sh: python3 -c "import struct; print(struct.calcsize('P') * 8)"
   - sh: pip3 install tox
 
 test_script:
