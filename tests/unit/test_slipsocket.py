@@ -188,6 +188,7 @@ class TestSlipSocket:
         mocker.patch.object(sliplib.socket.socket, method)
         mocked_method = getattr(sliplib.socket.socket, method)
         mocked_method.reset_mock()
+        assert mocked_method.call_count == 0  # Because VisualStudio2019 environment for Python3.7 reports two calls
         mocked_method()  # Don't care about the arguments
         mocked_method.assert_called_once_with()
 
