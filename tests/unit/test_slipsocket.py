@@ -188,7 +188,8 @@ class TestSlipSocket:
         mocker.patch.object(sliplib.socket.socket, method)
         mocked_method = getattr(sliplib.socket.socket, method)
         mocked_method.reset_mock()
-        mocked_method()  # Don't care about the arguments
+        slipsocket_method = getattr(self.slipsocket, method)
+        slipsocket_method()  # Don't care about the arguments
         mocked_method.assert_called_once_with()
 
     @pytest.mark.parametrize('attr', [
