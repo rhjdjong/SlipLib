@@ -3,17 +3,39 @@ image:
   - Ubuntu
   - macOS
 
+platform:
+  - x86
+  - x64
+
 environment:
   matrix:
     - PYTHON_VERSION: 3.5
-      WINDOWS_PYTHON_PATH: C:\Python35
+      PYTHON_BUILD: ''
+    - PYTHON_VERSION: 3.5
+      PYTHON_BUILD: '-x64'
     - PYTHON_VERSION: 3.6
-      WINDOWS_PYTHON_PATH: C:\Python36
+      PYTHON_BUILD: ''
+    - PYTHON_VERSION: 3.6
+      PYTHON_BUILD: '-x64'
     - PYTHON_VERSION: 3.7
-      WINDOWS_PYTHON_PATH: C:\Python37
+      PYTHON_BUILD: ''
+    - PYTHON_VERSION: 3.7
+      PYTHON_BUILD: '-x64'
     - PYTHON_VERSION: 3.8
-      WINDOWS_PYTHON_PATH: C:\Python38
+      PYTHON_BUILD: ''
+    - PYTHON_VERSION: 3.8
+      PYTHON_BUILD: '-x64'
 
+matrix:
+  exclude:
+    - platform: x86
+      PYTHON_BUILD: '-x64'
+    - image: Ubuntu
+      platform: x86
+      PYTHON_BUILD: ''
+    - image: macOS
+      platform: x86
+      PYTHON_BUILD: ''
 
 stack: python %PYTHON_VERSION%
 
@@ -21,18 +43,12 @@ build: off
 
 test_script:
   # Windows. Both 32 and 64 bit Python versions
-  - cmd: set OLDPATH=%PATH%
-  - cmd: set PATH=%WINDOWS_PYTHON_PATH%;%WINDOWS_PYTHON_PATH%\Scripts;%OLDPATH%
+  - cmd: set PYTHON_PATH=C:\PYTHON%PYTHON_VERSION:.=%%PYTHON_BUILD%
+  - cmd: set PATH=%PYTHON_PATH%;%PYTHON_PATH%\Scripts;%OLDPATH%
   - cmd: python -VV
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
   - cmd: python -m pip install .[test]
   - cmd: python -m pytest
-  - cmd: python -m pip uninstall -y sliplib
-  - cmd: set PATH=%WINDOWS_PYTHON_PATH%-x64;%WINDOWS_PYTHON_PATH%-x64\Scripts;%OLDPATH%
-  - cmd: python -VV
-  - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
-  - cmd: python -m pip install .[test]
-  - cmd: python -m pytest --capture=tee-sys
 
   # Linux and Mac
   - sh: python -VV
