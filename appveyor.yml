@@ -32,7 +32,7 @@ test_script:
   - cmd: python -VV
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
   - cmd: python -m pip install .[test]
-  - cmd: python -m pytest
+  - cmd: python -m pytest --capture=tee-sys
 
   # Linux and Mac
   - sh: python -VV
