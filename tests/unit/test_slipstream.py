@@ -8,6 +8,10 @@ import sliplib
 from sliplib import SlipStream, END
 
 
+def test_slip_stream_fails_if_instantiated_with_non_bytestream_argument():
+    with pytest.raises(ValueError):
+        SlipStream('string is not valid as a bytestream')
+
 # noinspection PyAttributeOutsideInit
 class TestSlipStreamWithBytesIO:
     @pytest.fixture(autouse=True)

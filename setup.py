@@ -111,6 +111,7 @@ setup(
     tests_require=['pytest>=3.0', 'pytest-mock'],
     cmdclass={'test': PyTest},
     extras_require={
-        'dev': ['sphinx_rtd_theme']
+        'dev': ['sphinx_rtd_theme'],
+        'test': ['pytest', 'coverage', 'pytest-cov']
     }
 )
