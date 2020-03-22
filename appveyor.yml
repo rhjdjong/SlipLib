@@ -27,6 +27,7 @@ test_script:
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
   - cmd: python -m pip install .[test]
   - cmd: python -m pytest
+  - cmd: python -m pip uninstall -y sliplib
   - cmd: set PATH=%WINDOWS_PYTHON_PATH%-x64;%WINDOWS_PYTHON_PATH%-x64\Scripts;%OLDPATH%
   - cmd: python -VV
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
