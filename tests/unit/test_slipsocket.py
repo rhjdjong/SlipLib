@@ -15,7 +15,7 @@ from sliplib import ProtocolError, SlipSocket, END, ESC
 
 TRAVIS = os.environ.get("TRAVIS", "")
 APPVEYOR = os.environ.get("APPVEYOR", "")
-APPVEYOR_IMAGE = os.environ.get("APPVEYOR_BUILD_WORKER_IMAAGE", "")
+APPVEYOR_IMAGE = os.environ.get("APPVEYOR_BUILD_WORKER_IMAGE", "")
 NUMBER_OF_BITS = struct.calcsize("P") * 8
 
 print('APPVEYOR: %s', APPVEYOR)
