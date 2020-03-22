@@ -32,9 +32,13 @@ matrix:
       PYTHON_BUILD: '-x64'
     - image: Ubuntu
       platform: x86
+    - image: Ubuntu
+      platform: x64
       PYTHON_BUILD: ''
     - image: macOS
       platform: x86
+    - image: macOS
+      platform: x64
       PYTHON_BUILD: ''
 
 stack: python %PYTHON_VERSION%

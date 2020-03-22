@@ -4,6 +4,7 @@
 
 import pytest
 import io
+from unittest.mock import patch, MagicMock
 import sliplib
 from sliplib import SlipStream, END
 
@@ -49,11 +50,6 @@ class TestSlipStreamWithBytesIO:
         with pytest.raises(AttributeError):
             getattr(self.slipstream, method)
 
-    # Cannot test delegated methods in this way, because py.test complains with
-    #    TypeError: can't set attributes of built-in/extension type '_io.BytesIO'
-    #
-    # noinspection PyUnresolvedReferences
-    @pytest.mark.skip(reason="Cannot patch attributes of io.BytesIO")
     @pytest.mark.parametrize('method', [
         attr for attr in dir(io.BytesIO) if
         not attr.startswith('_') and
@@ -63,10 +59,11 @@ class TestSlipStreamWithBytesIO:
             'readline', 'readlines', 'seek', 'tell', 'truncate', 'write', 'writelines')
     ])
     def test_delegated_methods(self, method, mocker):
-        mocker.patch.object(sliplib.io.BytesIO, method)
-        getattr(sliplib.io.BytesIO, method).reset_mock()
-        getattr(self.slipstream, method)()  # Don't care about the arguments
-        getattr(sliplib.io.BytesIO, method).assert_called_once_with()
+        # Cannot patch built-in _io.BytesIO, so have to resort to patching the stream attribute in slipstream.
+        with patch.object(self.slipstream, 'stream') as mock_stream:
+            slipstream_method = getattr(self.slipstream, method)
+            slipstream_method()
+            getattr(mock_stream, method).assert_called_once_with()
 
 
 class TestSlipStreamWithFileIO:
