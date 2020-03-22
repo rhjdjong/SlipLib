@@ -17,6 +17,10 @@ APPVEYOR = os.environ.get("APPVEYOR", "")
 APPVEYOR_IMAGE = os.environ.get("APPVEYOR_BUILD_WORKER_IMAAGE", "")
 NUMBER_OF_BITS = struct.calcsize("P") * 8
 
+print('APPVEYOR:', APPVEYOR)
+print('APPVEYOR_IMAGE:', APPVEYOR_IMAGE)
+print('NUMBER_OF_BITS:', NUMBER_OF_BITS)
+
 socket_methods = [
     attr for attr in dir(socket.socket)
     if callable(getattr(socket.socket, attr)) and
