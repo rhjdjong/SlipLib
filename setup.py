@@ -112,6 +112,6 @@ setup(
     cmdclass={'test': PyTest},
     extras_require={
         'dev': ['sphinx_rtd_theme'],
-        'test': ['pytest', 'coverage', 'pytest-cov']
+        'test': ['pytest', 'pytest-mock', 'coverage', 'pytest-cov']
     }
 )
