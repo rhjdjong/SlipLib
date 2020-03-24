@@ -3,6 +3,7 @@
 # See https://github.com/rhjdjong/SlipLib for details.
 
 from socketserver import BaseRequestHandler
+
 from .slipsocket import SlipSocket
 
 

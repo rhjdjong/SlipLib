@@ -3,6 +3,7 @@
 # See https://github.com/rhjdjong/SlipLib for details.
 
 import io
+
 from .slipwrapper import SlipWrapper
 
 

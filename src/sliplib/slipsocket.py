@@ -3,6 +3,7 @@
 # See https://github.com/rhjdjong/SlipLib for details.
 
 import socket
+
 from .slipwrapper import SlipWrapper
 
 
@@ -84,7 +85,7 @@ class SlipSocket(SlipWrapper):
 
     def __getattr__(self, attribute):
         if attribute.startswith('recv') or attribute.startswith('send') or attribute in (
-            'makefile', 'share', 'dup',
+                'makefile', 'share', 'dup',
         ):
             raise AttributeError("'{}' object has no attribute '{}'".
                                  format(self.__class__.__name__, attribute))

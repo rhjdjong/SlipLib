@@ -1,25 +1,62 @@
-version: 1.0.{build}
-init:
-- ps: ECHO $env:PYTHON
+image:
+  - Visual Studio 2019
+  - Ubuntu
+  - macOS
+
+platform:
+  - x86
+  - x64
+
 environment:
   matrix:
-  - PYTHON: C:\Python34
-  - PYTHON: C:\Python34-x64
-  - PYTHON: C:\Python35
-  - PYTHON: C:\Python35-x64
-  - PYTHON: C:\Python36
-  - PYTHON: C:\Python36-x64
-install:
-- cmd: >-
-    SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
+    - PYTHON_VERSION: 3.5
+      PYTHON_BUILD: ''
+    - PYTHON_VERSION: 3.5
+      PYTHON_BUILD: '-x64'
+    - PYTHON_VERSION: 3.6
+      PYTHON_BUILD: ''
+    - PYTHON_VERSION: 3.6
+      PYTHON_BUILD: '-x64'
+    - PYTHON_VERSION: 3.7
+      PYTHON_BUILD: ''
+    - PYTHON_VERSION: 3.7
+      PYTHON_BUILD: '-x64'
+    - PYTHON_VERSION: 3.8
+      PYTHON_BUILD: ''
+    - PYTHON_VERSION: 3.8
+      PYTHON_BUILD: '-x64'
 
-    python --version
+matrix:
+  exclude:
+    - platform: x86
+      PYTHON_BUILD: '-x64'
+    - image: Ubuntu
+      platform: x86
+    - image: Ubuntu
+      platform: x64
+      PYTHON_BUILD: ''
+    - image: macOS
+      platform: x86
+    - image: macOS
+      platform: x64
+      PYTHON_BUILD: ''
 
-    python -c "import struct; print(struct.calcsize('P') * 8)"
+stack: python %PYTHON_VERSION%
 
-    pip install --disable-pip-version-check --user --upgrade pip
-
-    pip install -r test-requirements.txt
 build: off
+
 test_script:
-- cmd: python setup.py test
+  # Windows. Both 32 and 64 bit Python versions
+  - cmd: set PYTHON_PATH=C:\PYTHON%PYTHON_VERSION:.=%%PYTHON_BUILD%
+  - cmd: set PATH=%PYTHON_PATH%;%PYTHON_PATH%\Scripts;%PATH%
+  - cmd: python -VV
+  - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
+  - cmd: python -m pip install .[test]
+  - cmd: python -m pytest
+
+  # Linux and Mac
+  - sh: python -VV
+  - sh: python -c "import struct; print(struct.calcsize('P') * 8)"
+  - sh: pip install .[test]
+  - sh: PATH=/home/appveyor/.local/bin:${PATH}
+  - sh: pytest

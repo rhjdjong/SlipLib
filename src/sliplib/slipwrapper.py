@@ -4,6 +4,7 @@
 
 import collections
 import sys
+
 from .slip import Driver, ProtocolError
 
 
@@ -20,6 +21,7 @@ class SlipWrapper:
     the methods :meth:`send_bytes` and :meth:`recv_bytes`
     to write to and read from the stream.
     """
+
     def __init__(self, stream):
         """
         To instantiate a :class:`SlipWrapper`, the user must provide
