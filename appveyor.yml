@@ -48,7 +48,7 @@ build: off
 test_script:
   # Windows. Both 32 and 64 bit Python versions
   - cmd: set PYTHON_PATH=C:\PYTHON%PYTHON_VERSION:.=%%PYTHON_BUILD%
-  - cmd: set PATH=%PYTHON_PATH%;%PYTHON_PATH%\Scripts;%OLDPATH%
+  - cmd: set PATH=%PYTHON_PATH%;%PYTHON_PATH%\Scripts;%PATH%
   - cmd: python -VV
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
   - cmd: python -m pip install .[test]

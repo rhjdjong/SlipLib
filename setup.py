@@ -3,10 +3,7 @@
 # See https://github.com/rhjdjong/SlipLib for details.
 
 from setuptools import setup, find_packages  # Always prefer setuptools over distutils
-# noinspection PyPep8Naming
-from setuptools.command.test import test as TestCommand
 import os.path
-import sys
 
 
 version_dict = {}
@@ -27,27 +24,11 @@ def read_long_description(*filenames, **kwargs):
     return seperator.join(buf)
 
 
-class PyTest(TestCommand):
-    user_options = [('pytest-args=', 'a', 'Arguments to pass to py.test')]
-
-    def initialize_options(self):
-        TestCommand.initialize_options(self)
-        self.pytest_args = []
-
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
-    def run(self):
-        # import here, cause outside the eggs aren't loaded
-        import pytest
-        errno = pytest.main(self.pytest_args)  # @UndefinedVariable
-        sys.exit(errno)
-
-
 long_description = read_long_description('README.rst')
 
+TEST_REQUIRES = ['pytest', 'pytest-mock', 'pytest-cov']
+DOC_REQUIRES = ['sphinx_rtd_theme']
+DEV_REQUIRES = ['tox', 'mypy', 'wheel']
 
 setup(
     name='sliplib',
@@ -56,7 +37,6 @@ setup(
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
     version=__version__,
-    #version=sliplib.__version__,
 
     description='Slip package',
     long_description=long_description,
@@ -85,19 +65,13 @@ setup(
         # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: MIT License',
 
-        # Specify the Python versions you support here. In particular, ensure
-        # that you indicate whether you support Python 2, Python 3 or both.
-        #         'Programming Language :: Python :: 2',
-        #         'Programming Language :: Python :: 2.6',
-        #         'Programming Language :: Python :: 2.7',
-        #         'Programming Language :: Python :: 3',
-        #         'Programming Language :: Python :: 3.2',
-        #         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+
+        'Topic :: Software Development :: Libraries :: Python Modules',
     ],
 
     # What does your project relate to?
@@ -108,10 +82,8 @@ setup(
     package_dir={'': 'src'},
     packages=find_packages('src'),
 
-    tests_require=['pytest>=3.0', 'pytest-mock'],
-    cmdclass={'test': PyTest},
     extras_require={
-        'dev': ['sphinx_rtd_theme'],
-        'test': ['pytest', 'pytest-mock', 'coverage', 'pytest-cov']
+        'dev': DEV_REQUIRES + DOC_REQUIRES + TEST_REQUIRES,
+        'test': TEST_REQUIRES
     }
 )
