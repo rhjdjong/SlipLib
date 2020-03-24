@@ -28,7 +28,7 @@ long_description = read_long_description('README.rst')
 
 TEST_REQUIRES = ['pytest', 'pytest-mock', 'pytest-cov']
 DOC_REQUIRES = ['sphinx_rtd_theme']
-DEV_REQUIRES = ['tox', 'mypy', 'wheel']
+DEV_REQUIRES = ['tox', 'mypy', 'wheel', 'twine']
 
 setup(
     name='sliplib',
