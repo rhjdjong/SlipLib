@@ -39,8 +39,8 @@ class SlipStream(SlipWrapper):
 
         :param io.BufferedIOBase stream: an existing BufferedIOBase stream.
         """
-        if not isinstance(stream, io.BufferedIOBase):
-            raise ValueError('Only BufferedIOBase streams are supported')
+        if not isinstance(stream, io.IOBase) or hasattr(stream, 'encoding'):
+            raise ValueError('Only binary IO streams are supported')
         super().__init__(stream)
 
     def send_bytes(self, packet):
@@ -49,11 +49,15 @@ class SlipStream(SlipWrapper):
     def recv_bytes(self):
         return b'' if self.stream.closed else self.stream.read(self._chunk_size)
 
+    def readable(self):
+        return self.stream.readable()
+
+    def writable(self):
+        return self.stream.writable()
+
     def __getattr__(self, attribute):
-        if attribute in (
-                'detach', 'getbuffer', 'getvalue', 'peek', 'raw',
-                'read', 'read1', 'readinto', 'readinto1', 'readline', 'readlines',
-                'seek', 'tell', 'truncate', 'write', 'writelines'
+        if attribute.startswith('read') or attribute.startswith('write') or attribute in (
+                'detach', 'getbuffer', 'getvalue', 'peek', 'raw', 'seek', 'seekable', 'tell', 'truncate'
         ):
             raise AttributeError("'{}' object has no attribute '{}'".
                                  format(self.__class__.__name__, attribute))

@@ -2,16 +2,23 @@
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
 
-import pytest
 import io
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
+
+import pytest
 import sliplib
 from sliplib import SlipStream, END
 
 
-def test_slip_stream_fails_if_instantiated_with_non_bytestream_argument():
+def test_slip_stream_fails_if_instantiated_with_non_io_stream_argument():
     with pytest.raises(ValueError):
         SlipStream('string is not valid as a bytestream')
+
+
+def test_slip_stream_fails_if_instantiated_with_non_bytestream_argument():
+    with pytest.raises(ValueError):
+        SlipStream(io.StringIO())
+
 
 # noinspection PyAttributeOutsideInit
 class TestSlipStreamWithBytesIO:
@@ -56,9 +63,9 @@ class TestSlipStreamWithBytesIO:
         callable(getattr(io.BytesIO, attr)) and
         attr not in (
             'detach', 'getbuffer', 'getvalue', 'read', 'read1', 'readinto', 'readinto1',
-            'readline', 'readlines', 'seek', 'tell', 'truncate', 'write', 'writelines')
+            'readline', 'readlines', 'seek', 'seekable', 'tell', 'truncate', 'write', 'writelines')
     ])
-    def test_delegated_methods(self, method, mocker):
+    def test_delegated_methods(self, method):
         # Cannot patch built-in _io.BytesIO, so have to resort to patching the stream attribute in slipstream.
         with patch.object(self.slipstream, 'stream') as mock_stream:
             slipstream_method = getattr(self.slipstream, method)
@@ -70,6 +77,8 @@ class TestSlipStreamWithFileIO:
     def test_file_writing(self, tmpdir):
         f = tmpdir.mkdir('writing').join('slip.txt')
         s = SlipStream(f.open(mode='wb'))
+        assert not s.readable()
+        assert s.writable()
         s.send_msg(b'hallo')
         s.send_msg(b'bye')
         s.close()
@@ -79,6 +88,8 @@ class TestSlipStreamWithFileIO:
         f = tmpdir.mkdir('reading').join('slip.txt')
         f.write_binary(END + b'hallo' + END + END + b'bye' + END)
         s = SlipStream(f.open(mode='rb'))
+        assert s.readable()
+        assert not s.writable()
         assert s.recv_msg() == b'hallo'
         assert s.recv_msg() == b'bye'
         assert s.recv_msg() == b''
@@ -99,9 +110,9 @@ class TestSlipStreamWithFileIO:
         attr for attr in dir(io.BytesIO) if
         not attr.startswith('_') and
         callable(getattr(io.BytesIO, attr)) and
-        attr not in (
-                'detach', 'getbuffer', 'getvalue', 'read', 'read1', 'readinto', 'readinto1',
-                'readline', 'readlines', 'seek', 'tell', 'truncate', 'write', 'writelines')
+        not attr.startswith('read') and
+        not attr.startswith('write') and
+        attr not in ('detach', 'getbuffer', 'getvalue', 'seek', 'seekable', 'tell', 'truncate')
     ])
     def test_delegated_methods(self, method, mocker):
         self.slipstream = SlipStream(io.BufferedIOBase())
