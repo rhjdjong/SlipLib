@@ -30,9 +30,7 @@ class SlipStream(SlipWrapper):
     a :class:`SlipSocket` provides the method :meth:`send_msg` and :meth:`recv_msg`
     to send and receive SLIP-encoded messages.
     """
-    _chunk_size = io.DEFAULT_BUFFER_SIZE
-
-    def __init__(self, stream):
+    def __init__(self, stream, chunk_size=io.DEFAULT_BUFFER_SIZE):
         """
         To instantiate a :class:`SlipStream`, the user must provide
         a pre-constructed :class:`BufferedIOBase` stream.
@@ -41,6 +39,7 @@ class SlipStream(SlipWrapper):
         """
         if not isinstance(stream, io.IOBase) or hasattr(stream, 'encoding'):
             raise ValueError('Only binary IO streams are supported')
+        self._chunk_size = chunk_size
         super().__init__(stream)
 
     def send_bytes(self, packet):
