@@ -11,12 +11,12 @@ from sliplib import SlipStream, END
 
 
 def test_slip_stream_fails_if_instantiated_with_non_io_stream_argument():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         SlipStream('string is not valid as a bytestream')
 
 
 def test_slip_stream_fails_if_instantiated_with_non_bytestream_argument():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         SlipStream(io.StringIO())
 
 

@@ -33,30 +33,40 @@ class SlipStream(SlipWrapper):
     def __init__(self, stream, chunk_size=io.DEFAULT_BUFFER_SIZE):
         """
         To instantiate a :class:`SlipStream`, the user must provide
-        a pre-constructed :class:`BufferedIOBase` stream.
+        a pre-constructed open byte stream that is ready for reading and writing
 
-        :param io.BufferedIOBase stream: an existing BufferedIOBase stream.
+        :param stream: an existing byte stream.
+        :param chunk_size: the number of bytes to read from the stream in one read operation.
+        Default value is `io.DEFAULT_BUFFER_SIZE`.
+        New in version 0.5
         """
-        if not isinstance(stream, io.IOBase) or hasattr(stream, 'encoding'):
-            raise ValueError('Only binary IO streams are supported')
-        self._chunk_size = chunk_size
+        for method in ('read', 'write'):
+            if not hasattr(stream, method) or not callable(getattr(stream, method)):
+                raise TypeError('{} object has no method {}'.format(stream.__class__.__name__, method))
+        if hasattr(stream, 'encoding'):
+            raise TypeError('{} object is not a byte stream'.format(stream.__class__.__name__))
+        self._chunk_size = chunk_size if chunk_size > 0 else io.DEFAULT_BUFFER_SIZE
+        self._stream_closed = False
         super().__init__(stream)
 
     def send_bytes(self, packet):
-        self.stream.write(packet)
+        while len(packet) > 0:
+            number_of_bytes_written = self.stream.write(packet)
+            packet = packet[number_of_bytes_written:]
 
     def recv_bytes(self):
-        return b'' if self.stream.closed else self.stream.read(self._chunk_size)
+        return b'' if self._stream_is_closed else self.stream.read(self._chunk_size)
 
-    def readable(self):
-        return self.stream.readable()
-
-    def writable(self):
-        return self.stream.writable()
+    @property
+    def _stream_is_closed(self):
+        return getattr(self.stream, 'closed', False)
 
     def __getattr__(self, attribute):
+        if attribute in ('readable', 'writable'):
+            return getattr(self.stream, attribute)
         if attribute.startswith('read') or attribute.startswith('write') or attribute in (
-                'detach', 'getbuffer', 'getvalue', 'peek', 'raw', 'seek', 'seekable', 'tell', 'truncate'
+                'detach', 'flushInput', 'flushOutput', 'getbuffer', 'getvalue', 'peek', 'raw', 'reset_input_buffer',
+                'reset_output_buffer', 'seek', 'seekable', 'tell', 'truncate'
         ):
             raise AttributeError("'{}' object has no attribute '{}'".
                                  format(self.__class__.__name__, attribute))
