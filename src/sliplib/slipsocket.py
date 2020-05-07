@@ -72,6 +72,10 @@ class SlipSocket(SlipWrapper):
         return self.__class__(conn), address
 
     @property
+    def closed(self):
+        return self.socket.fileno() != -1
+
+    @property
     def family(self):
         return self.socket.family
 

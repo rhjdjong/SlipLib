@@ -6,7 +6,7 @@ import pytest
 import io
 from unittest.mock import patch, MagicMock
 import sliplib
-from sliplib import SlipStream, END
+from sliplib import SlipStream, END, ESC, ProtocolError
 
 
 def test_slip_stream_fails_if_instantiated_with_non_bytestream_argument():
@@ -69,20 +69,24 @@ class TestSlipStreamWithBytesIO:
 class TestSlipStreamWithFileIO:
     def test_file_writing(self, tmpdir):
         f = tmpdir.mkdir('writing').join('slip.txt')
-        s = SlipStream(f.open(mode='wb'))
+        fio = f.open(mode='wb')
+        s = SlipStream(fio)
         s.send_msg(b'hallo')
         s.send_msg(b'bye')
         s.close()
+        assert fio.closed
         assert f.read_binary() == END + b'hallo' + END + END + b'bye' + END
 
     def test_file_reading(self, tmpdir):
         f = tmpdir.mkdir('reading').join('slip.txt')
         f.write_binary(END + b'hallo' + END + END + b'bye' + END)
-        s = SlipStream(f.open(mode='rb'))
+        fio = f.open(mode='rb')
+        s = SlipStream(fio)
         assert s.recv_msg() == b'hallo'
         assert s.recv_msg() == b'bye'
         assert s.recv_msg() == b''
         s.close()
+        assert fio.closed
 
     @pytest.mark.parametrize('method', [
         'detach', 'getbuffer', 'getvalue', 'peek', 'raw', 'read', 'read1', 'readinto', 'readinto1',
@@ -110,3 +114,24 @@ class TestSlipStreamWithFileIO:
         getattr(self.slipstream, method)()  # Don't care about the arguments
         getattr(sliplib.io.BufferedIOBase, method).assert_called_once_with()
         self.slipstream.close()
+
+    def test_with_statement_and_iteration_on_file(self, tmpdir):
+        f = tmpdir.mkdir('reading').join('slip.txt')
+        f.write_binary(END + b'hallo' + END + END + b'bye' + END)
+        with open(f, mode='rb') as stream:
+            s = SlipStream(stream)
+            expected = (b'hallo', b'bye')
+            for exp, act in zip(expected, s):
+                assert exp == act
+
+    def test_syntax_error_in_file_contents_is_detected_during_iteration(self, tmpdir):
+        f = tmpdir.mkdir('reading').join('slip.txt')
+        f.write_binary(END + b'hallo' + ESC + END + END + b'bye' + END)
+        with open(f, mode='rb') as stream:
+            s = SlipStream(stream)
+            with pytest.raises(ProtocolError):
+                for msg in s:
+                    pass
+            for msg in s:
+                assert msg == b'bye'
+                break

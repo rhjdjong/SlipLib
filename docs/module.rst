@@ -58,6 +58,8 @@ Classes
 
       The :class:`SlipWrapper`'s :class:`stream` instance.
 
+   .. autoattribute:: closed
+
    In addition, :class:`SlipWrapper` requires that derived classes implement the following methods:
 
    .. automethod:: send_bytes

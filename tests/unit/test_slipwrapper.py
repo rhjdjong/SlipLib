@@ -19,5 +19,9 @@ class TestSlipWrapper:
         with pytest.raises(NotImplementedError):
             self.slipwrapper.send_msg(b'oops')
 
+    def test_slip_wrapper_closed_is_not_implemented(self):
+        with pytest.raises(NotImplementedError):
+            self.slipwrapper.closed
+
 
 

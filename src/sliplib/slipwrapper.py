@@ -20,6 +20,13 @@ class SlipWrapper:
     To interact with a concrete stream, a derived class must implement
     the methods :meth:`send_bytes` and :meth:`recv_bytes`
     to write to and read from the stream.
+
+    A :class:`SlipWrapper` instance can be iterated over.
+    Each iteration will provide the next message from the byte stream.
+
+    .. versionchanged:: 0.5
+       Allow iteration over a :class:`SlipWrapper` instance.
+
     """
 
     def __init__(self, stream):
@@ -117,6 +124,26 @@ class SlipWrapper:
             self._handle_pending_protocol_error()
         else:
             return b''
+    
+    @property
+    def closed(self):
+        """Indicates if the stream is closed.
+
+        This attribute is by default delegated to the stream.
+        If the stream does not support a property or attribute ``closed``,
+        then the derived class must implemented this property.
+        It must resolve to ``True`` if the stream is closed,
+        and to ``False`` otherwise.
+
+        :rtype: bool
+
+        .. versionadded:: 0.5
+
+        """
+        try:
+            return self.stream.closed
+        except AttributeError:
+            raise NotImplementedError from None
 
     def _handle_pending_protocol_error(self):
         try:
@@ -125,3 +152,7 @@ class SlipWrapper:
             self._protocol_error = None
             self._traceback = None
             self._flush_needed = True
+
+    def __iter__(self):
+        while not self.closed:
+            yield self.recv_msg()
