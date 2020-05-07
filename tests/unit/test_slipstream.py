@@ -115,23 +115,34 @@ class TestSlipStreamWithFileIO:
         getattr(sliplib.io.BufferedIOBase, method).assert_called_once_with()
         self.slipstream.close()
 
-    def test_with_statement_and_iteration_on_file(self, tmpdir):
+    def test_iteration_on_file(self, tmpdir):
         f = tmpdir.mkdir('reading').join('slip.txt')
         f.write_binary(END + b'hallo' + END + END + b'bye' + END)
-        with open(f, mode='rb') as stream:
-            s = SlipStream(stream)
-            expected = (b'hallo', b'bye')
-            for exp, act in zip(expected, s):
-                assert exp == act
+        stream = open(str(f), mode='rb')
+        s = SlipStream(stream)
+        expected = (b'hallo', b'bye')
+        for exp, act in zip(expected, s):
+            assert exp == act
+        s.close()
+
+    def test_iteration_and_explicit_reads_can_be_mixed(self, tmpdir):
+        f = tmpdir.mkdir('reading').join('slip.txt')
+        f.write_binary(END + b'hallo' + END + END + b'bye' + END + END + b'now' + END)
+        stream = open(str(f), mode='rb')
+        s = SlipStream(stream)
+        iter_s = iter(s)
+        assert next(iter_s) == b'hallo'
+        assert s.recv_msg() == b'bye'
+        assert next(iter_s) == b'now'
 
     def test_syntax_error_in_file_contents_is_detected_during_iteration(self, tmpdir):
         f = tmpdir.mkdir('reading').join('slip.txt')
         f.write_binary(END + b'hallo' + ESC + END + END + b'bye' + END)
-        with open(f, mode='rb') as stream:
-            s = SlipStream(stream)
-            with pytest.raises(ProtocolError):
-                for msg in s:
-                    pass
-            for msg in s:
-                assert msg == b'bye'
-                break
+        stream = open(str(f), mode='rb')
+        s = SlipStream(stream)
+        msg_list = []
+        with pytest.raises(ProtocolError):
+            msg_list.extend(m for m in s)
+        msg_list.extend(m for m in s)
+        assert msg_list == [b'bye']
+        s.close()

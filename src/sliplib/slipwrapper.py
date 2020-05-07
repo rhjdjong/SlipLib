@@ -125,26 +125,6 @@ class SlipWrapper:
         else:
             return b''
     
-    @property
-    def closed(self):
-        """Indicates if the stream is closed.
-
-        This attribute is by default delegated to the stream.
-        If the stream does not support a property or attribute ``closed``,
-        then the derived class must implemented this property.
-        It must resolve to ``True`` if the stream is closed,
-        and to ``False`` otherwise.
-
-        :rtype: bool
-
-        .. versionadded:: 0.5
-
-        """
-        try:
-            return self.stream.closed
-        except AttributeError:
-            raise NotImplementedError from None
-
     def _handle_pending_protocol_error(self):
         try:
             raise self._protocol_error.with_traceback(self._traceback)
@@ -154,5 +134,12 @@ class SlipWrapper:
             self._flush_needed = True
 
     def __iter__(self):
-        while not self.closed:
-            yield self.recv_msg()
+        while True:
+            try:
+                msg = self.recv_msg()
+            except ProtocolError:
+                raise
+            else:
+                if msg == b'':
+                    break
+                yield msg
