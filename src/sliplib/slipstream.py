@@ -10,7 +10,7 @@ from .slipwrapper import SlipWrapper
 class SlipStream(SlipWrapper):
     """Class that wraps an IO stream with a :class:`Driver`
 
-    :class:`SlipStream` combines a :class:`Driver` instance with a
+    :class:`SlipStream` combines a :class:`Driver` instance with an
     :class:`IOBase` byte stream.
 
     The :class:`SlipStream` class has all the methods and attributes
@@ -18,17 +18,17 @@ class SlipStream(SlipWrapper):
     In addition it directly exposes all methods and attributes of
     the contained :obj:`stream`, except for the following:
 
-    * :meth:`read*` and :meth:`write*`. These methods are not
-      supported, because byte-oriented read and write operations
-      would invalidate the internal state maintained by :class:`SlipStream`.
-    * Similarly, :meth:`seek`, :meth:`tell`, and :meth:`truncate` are not supported,
-      because repositioning or truncating the stream would invalidate the internal state.
-    * :meth:`raw`, :meth:`detach` and other methods that provide access to or manipulate
-      the stream's internal data.
+     * :meth:`read*` and :meth:`write*`. These methods are not
+       supported, because byte-oriented read and write operations
+       would invalidate the internal state maintained by :class:`SlipStream`.
+     * Similarly, :meth:`seek`, :meth:`tell`, and :meth:`truncate` are not supported,
+       because repositioning or truncating the stream would invalidate the internal state.
+     * :meth:`raw`, :meth:`detach` and other methods that provide access to or manipulate
+       the stream's internal data.
 
     In stead of the :meth:`read*` and :meth:`write*` methods
-    a :class:`SlipSocket` provides the method :meth:`send_msg` and :meth:`recv_msg`
-    to send and receive SLIP-encoded messages.
+    a :class:`SlipSocket` provides the method :meth:`recv_msg` and :meth:`send_msg`
+    to read and write SLIP-encoded messages.
     """
     def __init__(self, stream, chunk_size=io.DEFAULT_BUFFER_SIZE):
         """
@@ -37,8 +37,10 @@ class SlipStream(SlipWrapper):
 
         :param stream: an existing byte stream.
         :param chunk_size: the number of bytes to read from the stream in one read operation.
-        Default value is `io.DEFAULT_BUFFER_SIZE`.
-        New in version 0.5
+            Default value is `io.DEFAULT_BUFFER_SIZE`.
+
+        .. versionadded:: 0.6
+           The `chunk_size` parameter.
         """
         for method in ('read', 'write'):
             if not hasattr(stream, method) or not callable(getattr(stream, method)):

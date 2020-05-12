@@ -8,7 +8,7 @@
    contain the root `toctree` directive.
 
 .. include:: ../README.rst
-
+.. include:: ../CHANGES.rst
 
 Contents
 ========

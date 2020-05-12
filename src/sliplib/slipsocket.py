@@ -8,7 +8,7 @@ from .slipwrapper import SlipWrapper
 
 
 class SlipSocket(SlipWrapper):
-    """SlipSocket -> Wraps a TCP :class:`socket` with a :class:`Driver`
+    """Class that wraps a TCP :class:`socket` with a :class:`Driver`
 
     :class:`SlipSocket` combines a :class:`Driver` instance with a
     :class:`socket`.

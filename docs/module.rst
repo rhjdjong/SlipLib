@@ -65,7 +65,7 @@ Classes
 
 
 
-.. autoclass:: SlipStream(stream)
+.. autoclass:: SlipStream(stream, [chunk_size])
    :show-inheritance:
 
 
