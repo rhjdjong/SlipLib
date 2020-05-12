@@ -27,13 +27,13 @@ class SlipStream(SlipWrapper):
        the stream's internal data.
 
     In stead of the :meth:`read*` and :meth:`write*` methods
-    a :class:`SlipSocket` provides the method :meth:`recv_msg` and :meth:`send_msg`
+    a :class:`SlipStream` object provides the method :meth:`recv_msg` and :meth:`send_msg`
     to read and write SLIP-encoded messages.
     """
     def __init__(self, stream, chunk_size=io.DEFAULT_BUFFER_SIZE):
         """
-        To instantiate a :class:`SlipStream`, the user must provide
-        a pre-constructed open byte stream that is ready for reading and writing
+        To instantiate a :class:`SlipStream` object, the user must provide
+        a pre-constructed open byte stream that is ready for reading and/or writing
 
         :param stream: an existing byte stream.
         :param chunk_size: the number of bytes to read from the stream in one read operation.
@@ -41,6 +41,17 @@ class SlipStream(SlipWrapper):
 
         .. versionadded:: 0.6
            The `chunk_size` parameter.
+
+        A :class:`SlipStream` instance can e.g. be usefui to read slip-encoded messages
+        from a file:
+
+        .. code::
+
+            with open('/path/to/a/slip/encoded/file', mode='rb') as f:
+                slip_file = SlipStream(f)
+                for msg in slip_file:
+                    # Do something with the message
+
         """
         for method in ('read', 'write'):
             if not hasattr(stream, method) or not callable(getattr(stream, method)):
