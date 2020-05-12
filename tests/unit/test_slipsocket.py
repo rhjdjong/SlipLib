@@ -44,7 +44,7 @@ if TRAVIS and sys.version_info[0:2] == (3, 5):
         "getsockname",
         marks=pytest.mark.xfail(reason="Does not work for getsockname on travis for Python3.5"))
 
-# Handle special case for AppVeyor run
+# Handle special cases for AppVeyor run
 if APPVEYOR and APPVEYOR_IMAGE.startswith("Visual Studio") and sys.version_info[0:2] == (3, 5) and NUMBER_OF_BITS == 64:
     i = delegated_methods.index("getpeername")
     delegated_methods[i] = pytest.param(
@@ -52,6 +52,12 @@ if APPVEYOR and APPVEYOR_IMAGE.startswith("Visual Studio") and sys.version_info[
         marks=pytest.mark.xfail(reason="Appveyor 64 bit Python 3.5 on Windows calls this twice for some reason")
     )
 
+if APPVEYOR and APPVEYOR_IMAGE.startswith("Visual Studio") and sys.version_info[0:2] == (3, 5):
+    i = delegated_methods.index("getsockname")
+    delegated_methods[i] = pytest.param(
+        "getsockname",
+        marks=pytest.mark.xfail(reason="Appveyor Python 3.5 on Windows calls this twice for some reason")
+    )
 
 # noinspection PyAttributeOutsideInit,PyUnresolvedReferences
 class TestSlipSocket:
