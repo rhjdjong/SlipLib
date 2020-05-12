@@ -57,12 +57,12 @@ if APPVEYOR and APPVEYOR_IMAGE.startswith("Visual Studio") and sys.version_info[
 class TestSlipSocket:
     @pytest.fixture(autouse=True, params=[
         (socket.AF_INET,
-         ('93.184.216.34', 54321), # example.com IPv4 address
-         ('127.0.0.1', 12345) # localhost IPv4 address
+         ('93.184.216.34', 54321),  # example.com IPv4 address
+         ('127.0.0.1', 12345)  # localhost IPv4 address
          ),
         (socket.AF_INET6,
-         ('2606:2800:220:1:248:1893:25c8:1946', 54321, 0, 0), # example.com IPv6 address
-         ('::1', 12345, 0, 0) # localhost IPv6 address
+         ('2606:2800:220:1:248:1893:25c8:1946', 54321, 0, 0),  # example.com IPv6 address
+         ('::1', 12345, 0, 0)  # localhost IPv6 address
         )
     ])
     def setup(self, request):
@@ -222,6 +222,37 @@ class TestSlipSocket:
         assert isinstance(sock, SlipSocket)
         assert sock.socket is new_sock
         sliplib.socket.create_connection.assert_called_once_with(self.far_address, None, None)
+
+class TestSlipSocketIteration:
+    @pytest.fixture(autouse=True, params=[
+        (socket.AF_INET,
+         ('93.184.216.34', 54321), # example.com IPv4 address
+         ('127.0.0.1', 12345) # localhost IPv4 address
+         ),
+        (socket.AF_INET6,
+         ('2606:2800:220:1:248:1893:25c8:1946', 54321, 0, 0), # example.com IPv6 address
+         ('::1', 12345, 0, 0) # localhost IPv6 address
+        )
+    ])
+    def setup(self, request):
+        self.family, self.far_address, self.near_address = request.param
+        yield
+
+    def test_slip_socket_iteration(self, mocker):
+        def socket_data_generator():
+            yield END + b'hallo'
+            yield END + END
+            yield b'bye'
+            yield END + END
+            yield b''
+        mocker.patch('sliplib.socket.socket.recv')
+        sliplib.socket.socket.recv.reset_mock()
+        sliplib.socket.socket.recv.side_effect = socket_data_generator()
+        with socket.socket(family=self.family) as sock:
+            slipsock = SlipSocket(sock)
+            expected = (b'hallo', b'bye')
+            for exp, act in zip(expected, slipsock):
+                assert exp == act
 
 
 if __name__ == '__main__':
