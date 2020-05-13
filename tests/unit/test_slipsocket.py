@@ -59,6 +59,13 @@ if APPVEYOR and APPVEYOR_IMAGE.startswith("Visual Studio") and sys.version_info[
         marks=pytest.mark.xfail(reason="Appveyor Python 3.5 on Windows calls this twice for some reason")
     )
 
+if APPVEYOR and APPVEYOR_IMAGE.startswith("macOS") and sys.version_info[0:2] == (3, 6):
+    i = delegated_methods.index("getsockname")
+    delegated_methods[i] = pytest.param(
+        "getsockname",
+        marks=pytest.mark.xfail(reason="Appveyor Python 3.6 on macOS calls this twice for some reason")
+    )
+
 # noinspection PyAttributeOutsideInit,PyUnresolvedReferences
 class TestSlipSocket:
     @pytest.fixture(autouse=True, params=[
