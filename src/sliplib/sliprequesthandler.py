@@ -1,6 +1,6 @@
-# Copyright (c) 2017 Ruud de Jong
-# This file is part of the SlipLib project which is released under the MIT license.
-# See https://github.com/rhjdjong/SlipLib for details.
+#  Copyright (c) 2020. Ruud de Jong
+#  This file is part of the SlipLib project which is released under the MIT license.
+#  See https://github.com/rhjdjong/SlipLib for details.
 
 from socketserver import BaseRequestHandler
 
@@ -25,6 +25,25 @@ class SlipRequestHandler(BaseRequestHandler):
     is needed is to derive a class that
     defines a :meth:`handle` method that uses
     :code:`self.request` to send and receive messages.
+
+    Note that in general it does not make sense to use a :class:`SlipRequestHandler`
+    to handle a single transmission, as is e.g. common with HTTP.
+    The purpose of the SLIP protocol is to allow separation of
+    data messages in a continuous byte stream.
+    As such, it is expected that the :meth:`handle` method of a derived class
+    is capable of handling multiple SLIP messages:
+
+    .. code::
+
+        class MySlipRequestHandler(SlipRequestHandler):
+            ...
+            def handle(self):
+                while True:
+                    msg = self.request.recv_msg()
+                    if msg == b'':
+                        break
+                    # Do something with the message
+
     """
 
     def setup(self):

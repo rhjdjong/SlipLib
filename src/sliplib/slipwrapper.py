@@ -1,6 +1,6 @@
-# Copyright (c) 2017 Ruud de Jong
-# This file is part of the SlipLib project which is released under the MIT license.
-# See https://github.com/rhjdjong/SlipLib for details.
+#  Copyright (c) 2020. Ruud de Jong
+#  This file is part of the SlipLib project which is released under the MIT license.
+#  See https://github.com/rhjdjong/SlipLib for details.
 
 import collections
 import sys
@@ -110,6 +110,8 @@ class SlipWrapper:
                     data = self.recv_bytes()
                     if data == b'':
                         self._stream_closed = True
+                    if isinstance(data, int):  # Single byte reads are represented as integers
+                        data = bytes([data])
                     self._messages.extend(self.driver.receive(data))
             except ProtocolError as pe:
                 self._messages.extend(self.driver.messages)

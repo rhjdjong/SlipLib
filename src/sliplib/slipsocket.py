@@ -1,14 +1,14 @@
-# Copyright (c) 2017 Ruud de Jong
-# This file is part of the SlipLib project which is released under the MIT license.
-# See https://github.com/rhjdjong/SlipLib for details.
+#  Copyright (c) 2020. Ruud de Jong
+#  This file is part of the SlipLib project which is released under the MIT license.
+#  See https://github.com/rhjdjong/SlipLib for details.
 
 import socket
-
+import warnings
 from .slipwrapper import SlipWrapper
 
 
 class SlipSocket(SlipWrapper):
-    """SlipSocket -> Wraps a TCP :class:`socket` with a :class:`Driver`
+    """Class that wraps a TCP :class:`socket` with a :class:`Driver`
 
     :class:`SlipSocket` combines a :class:`Driver` instance with a
     :class:`socket`.
@@ -32,6 +32,10 @@ class SlipSocket(SlipWrapper):
     In stead of the :class:`socket`'s :meth:`send*` and :meth:`recv*` methods
     a :class:`SlipSocket` provides the method :meth:`send_msg` and :meth:`recv_msg`
     to send and receive SLIP-encoded messages.
+
+    .. deprecated:: 0.6
+       Direct access to the methods and attributes of the contained :obj:`socket`
+       other than `family`, `type`, and `proto` will be removed in version 1.0
 
     Only TCP sockets are supported. Using the SLIP protocol on
     UDP sockets is not supported for the following reasons:
@@ -89,6 +93,8 @@ class SlipSocket(SlipWrapper):
         ):
             raise AttributeError("'{}' object has no attribute '{}'".
                                  format(self.__class__.__name__, attribute))
+        warnings.warn("Direct access to the enclosed socket attributes and methods will be removed in version 1.0",
+                      DeprecationWarning, stacklevel=2)
         return getattr(self.socket, attribute)
 
     @classmethod

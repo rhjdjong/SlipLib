@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Ruud de Jong
+# Copyright (c) 2020 Ruud de Jong
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
 
@@ -16,12 +16,12 @@ del version_dict
 # Get the long description from the relevant file
 def read_long_description(*filenames, **kwargs):
     encoding = kwargs.get('encoding', 'utf-8')
-    seperator = kwargs.get('sep', '\n')
+    separator = kwargs.get('sep', '\n')
     buf = []
     for filename in filenames:
         with open(filename, encoding=encoding) as f:
             buf.append(f.read())
-    return seperator.join(buf)
+    return separator.join(buf)
 
 
 long_description = read_long_description('README.rst')

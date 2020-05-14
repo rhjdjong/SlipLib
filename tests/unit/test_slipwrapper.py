@@ -5,6 +5,7 @@
 import pytest
 from sliplib import SlipWrapper
 
+
 class TestSlipWrapper:
     @pytest.fixture(autouse=True)
     def setup(self):

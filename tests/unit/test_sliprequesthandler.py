@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Ruud de Jong
+# Copyright (c) 2020 Ruud de Jong
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
 
@@ -17,7 +17,6 @@ class DummySlipRequestHandler(SlipRequestHandler):
         msg = self.request.recv_msg()
         assert msg == b'hallo'
         self.request.send_msg(bytes(reversed(msg)))
-        self.request.close()
 
 
 # noinspection PyAttributeOutsideInit
@@ -29,6 +28,7 @@ class TestSlipRequestHandler:
     def setup(self, request):
         self.family = request.param[0]
         self.bind_address = request.param[1]
+        # Cannot use standard TCPServer, because that is hardcoded to IPv4
         self.ServerClass = type('SlipServer',
                                 (socketserver.TCPServer,),
                                 {"address_family": self.family})
