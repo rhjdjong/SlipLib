@@ -56,13 +56,13 @@ The server will have printed the following information:
    $ python Server.py
    Slip server listening on ('127.0.0.1', 59454)
    raw data received: b'\\xc0hallo\\xc0'
-   decoded data:
-   b'hallo'
-   raw data to send: b'\\xc0ollah\\xc0'
+   decoded data: b'hallo'
+   sending raw data: b'\\xc0ollah\\xc0'
    raw data received: b'\\xc0bye\\xc0'
-   decoded data:
-   b'bye'
-   raw data to send: b'\\xc0eyb\\xc0'
+   decoded data: b'bye'
+   sending raw data: b'\\xc0eyb\\xc0'
+   raw data received: b''
+   decoded data: b''
    closing down
    $
 

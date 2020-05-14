@@ -7,40 +7,53 @@ Server
 ++++++
 
 The :file:`Server.py` example file is a demonstrator echo server.
-It prints both the
-received raw data it receives from a client and the decoded messages.
-It then reverses the order of the bytes in the encoded message
+It uses a subclass of :class:`SlipRequestHandler`
+that transforms the :attr:`request` attribute into
+a dedicated socket subclass that prints
+the raw data that is received and sent.
+The request handler prints the decoded message,
+and then reverses the order of the bytes in the encoded message
 (so ``abc`` becomes ``cab``),
-prints out the encoded byte string, and sends it back to the client.
+and sends it back to the client.
 """
 
-from sliplib import Driver
+from sliplib import SlipRequestHandler
 from socketserver import TCPServer, BaseRequestHandler
+import socket
+from _socket import dup
 
 
-class SlipHandler(BaseRequestHandler):
+class ChattySocket(socket.socket):
+    def __init__(self, sock):
+        fd = dup(sock.fileno())
+        super().__init__(sock.family, sock.type, sock.proto, fileno=fd)
+        super().settimeout(sock.gettimeout())
+
+    def recv(self, chunksize):
+        data = super().recv(chunksize)
+        print('raw data received:', data)
+        return data
+
+    def sendall(self, data):
+        print('sending raw data:', data)
+        super().sendall(data)
+
+
+class SlipHandler(SlipRequestHandler):
     def setup(self):
-        self.driver = Driver()
+        self.request = ChattySocket(self.request)
+        super().setup()
 
     # Dedicated handler to show the encoded bytes.
     def handle(self):
-        stop = False
-        while not stop:
-            data = self.request.recv(1024)
-            if data:
-                print('raw data received:', data)
+        while True:
+            message = self.request.recv_msg()
+            print('decoded data:', message)
+            if message:
+                self.request.send_msg(bytes(reversed(message)))
             else:
                 print('closing down')
-                stop = True
-
-            messages = self.driver.receive(data)
-            if messages:
-                print('decoded data:')
-                for msg in messages:
-                    print(msg)
-                    data_to_send = self.driver.send(bytes(reversed(msg)))
-                    print('raw data to send:', data_to_send)
-                    self.request.sendall(data_to_send)
+                break
 
 
 if __name__ == '__main__':

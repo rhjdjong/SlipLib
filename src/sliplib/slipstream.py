@@ -11,8 +11,11 @@ from .slipwrapper import SlipWrapper
 class SlipStream(SlipWrapper):
     """Class that wraps an IO stream with a :class:`Driver`
 
-    :class:`SlipStream` combines a :class:`Driver` instance with an
-    :class:`IOBase` byte stream.
+    :class:`SlipStream` combines a :class:`Driver` instance with a byte stream.
+    The byte stream must support the methods :meth:`read` and :meth:`write`.
+    To avoid conflicts and ambiguities, streams that have an :attr:`encoding` attribute
+    (such as :class:`io.StringIO` objects, or text files that are not opened in binary mode)
+    are not accepted as a byte stream.
 
     The :class:`SlipStream` class has all the methods and attributes
     from its base class :class:`SlipWrapper`.
@@ -42,8 +45,13 @@ class SlipStream(SlipWrapper):
         a pre-constructed open byte stream that is ready for reading and/or writing
 
         :param stream: an existing byte stream.
-        :param chunk_size: the number of bytes to read from the stream in one read operation.
-            Default value is `io.DEFAULT_BUFFER_SIZE`.
+        :param chunk_size: the number of bytes to read per read operation.
+
+            The default value for `chunck_size` is `io.DEFAULT_BUFFER_SIZE`.
+            Setting the `chunk_size` is useful when the stream has a low bandwidth and/or bursty data
+            (e.g. a serial port interface).
+            In such cases it is useful to have a `chunk_size` of 1, to avoid that the application
+            hangs or becomes unresponsive.
 
         .. versionadded:: 0.6
            The `chunk_size` parameter.
@@ -76,12 +84,18 @@ class SlipStream(SlipWrapper):
         return b'' if self._stream_is_closed else self.stream.read(self._chunk_size)
 
     @property
+    def readable(self):
+        return getattr(self.stream, 'readable', True)
+
+    @property
+    def writable(self):
+        return getattr(self.stream, 'writable', True)
+
+    @property
     def _stream_is_closed(self):
         return getattr(self.stream, 'closed', False)
 
     def __getattr__(self, attribute):
-        if attribute in ('readable', 'writable'):
-            return getattr(self.stream, attribute)
         if attribute.startswith('read') or attribute.startswith('write') or attribute in (
                 'detach', 'flushInput', 'flushOutput', 'getbuffer', 'getvalue', 'peek', 'raw', 'reset_input_buffer',
                 'reset_output_buffer', 'seek', 'seekable', 'tell', 'truncate'
