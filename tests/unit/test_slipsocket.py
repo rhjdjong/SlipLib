@@ -9,24 +9,13 @@ import pytest
 import sliplib
 from sliplib import ProtocolError, SlipSocket, END, ESC
 
-socket_methods = [
-    attr for attr in dir(socket.socket)
-    if callable(getattr(socket.socket, attr)) and
-       not attr.startswith('_')
-]
+socket_methods = [attr for attr in dir(socket.socket) if
+                  callable(getattr(socket.socket, attr)) and not attr.startswith('_')]
 
-delegated_methods = [
-    attr for attr in socket_methods
-    if not (attr.startswith('recv') or
-            attr.startswith('send') or
-            attr in ('accept', 'dup', 'makefile', 'share'))
-]
+delegated_methods = [attr for attr in socket_methods if not (
+            attr.startswith('recv') or attr.startswith('send') or attr in ('accept', 'dup', 'makefile', 'share'))]
 
-not_delegated_methods = [
-    attr for attr in socket_methods
-    if not attr in delegated_methods and
-       attr != 'accept'
-]
+not_delegated_methods = [attr for attr in socket_methods if attr not in delegated_methods and attr != 'accept']
 
 
 class TestSlipSocket:
@@ -38,7 +27,7 @@ class TestSlipSocket:
         (socket.AF_INET6,
          ('2606:2800:220:1:248:1893:25c8:1946', 54321, 0, 0),  # example.com IPv6 address
          ('::1', 12345, 0, 0)  # localhost IPv6 address
-        )
+         )
     ])
     def setup(self, request, mocker):
         self.family, self.far_address, self.near_address = request.param
@@ -55,7 +44,7 @@ class TestSlipSocket:
         assert self.slipsocket.proto == 0
         assert self.slipsocket.socket is self.sock_mock
 
-    def test_slipsocket_requires_TCP_socket(self):
+    def test_slipsocket_requires_tcp_socket(self):
         self.sock_mock.configure_mock(type=socket.SOCK_DGRAM)
         with pytest.raises(ValueError):
             SlipSocket(self.sock_mock)
@@ -201,6 +190,7 @@ class TestSlipSocket:
         expected = (b'hallo', b'bye')
         for exp, act in zip(expected, self.slipsocket):
             assert exp == act
+
 
 if __name__ == '__main__':
     pytest.main()

@@ -5,7 +5,6 @@
 import io
 import warnings
 import pytest
-import sliplib
 from sliplib import SlipStream, END, ESC, ProtocolError
 
 
@@ -140,7 +139,7 @@ delegated_methods = [
 ]
 
 
-class TestDepracatedMethodDelegation:
+class TestDeprecatedMethodDelegation:
     @pytest.fixture(autouse=True)
     def setup(self, mocker):
         warnings.simplefilter('always')

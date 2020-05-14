@@ -56,7 +56,7 @@ class SlipStream(SlipWrapper):
         .. versionadded:: 0.6
            The `chunk_size` parameter.
 
-        A :class:`SlipStream` instance can e.g. be usefui to read slip-encoded messages
+        A :class:`SlipStream` instance can e.g. be useful to read slip-encoded messages
         from a file:
 
         .. code::

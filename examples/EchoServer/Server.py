@@ -18,7 +18,7 @@ and sends it back to the client.
 """
 
 from sliplib import SlipRequestHandler
-from socketserver import TCPServer, BaseRequestHandler
+from socketserver import TCPServer
 import socket
 from _socket import dup
 

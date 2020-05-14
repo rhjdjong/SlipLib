@@ -4,8 +4,7 @@
 
 import io
 import pytest
-import sliplib
-from sliplib import SlipStream, END, ESC, ProtocolError
+from sliplib import SlipStream, END
 
 
 class TestSlipStreamWithBytesIO:
