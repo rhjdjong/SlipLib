@@ -3,6 +3,7 @@
 #  See https://github.com/rhjdjong/SlipLib for details.
 
 import io
+import warnings
 
 from .slipwrapper import SlipWrapper
 
@@ -29,6 +30,11 @@ class SlipStream(SlipWrapper):
     In stead of the :meth:`read*` and :meth:`write*` methods
     a :class:`SlipStream` object provides the method :meth:`recv_msg` and :meth:`send_msg`
     to read and write SLIP-encoded messages.
+
+    .. deprecated:: 0.6
+       Direct access to the methods and attributes of the contained :obj:`stream`
+       will be removed in version 1.0
+
     """
     def __init__(self, stream, chunk_size=io.DEFAULT_BUFFER_SIZE):
         """
@@ -59,7 +65,6 @@ class SlipStream(SlipWrapper):
         if hasattr(stream, 'encoding'):
             raise TypeError('{} object is not a byte stream'.format(stream.__class__.__name__))
         self._chunk_size = chunk_size if chunk_size > 0 else io.DEFAULT_BUFFER_SIZE
-        self._stream_closed = False
         super().__init__(stream)
 
     def send_bytes(self, packet):
@@ -83,4 +88,6 @@ class SlipStream(SlipWrapper):
         ):
             raise AttributeError("'{}' object has no attribute '{}'".
                                  format(self.__class__.__name__, attribute))
+        warnings.warn("Direct access to the enclosed stream attributes and methods will be removed in version 1.0",
+                      DeprecationWarning, stacklevel=2)
         return getattr(self.stream, attribute)

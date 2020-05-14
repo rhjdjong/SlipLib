@@ -3,6 +3,8 @@
 # See https://github.com/rhjdjong/SlipLib for details.
 
 import socket
+import warnings
+
 import pytest
 import sliplib
 from sliplib import ProtocolError, SlipSocket, END, ESC
@@ -44,23 +46,19 @@ class TestSlipSocket:
                                      type=socket.SOCK_STREAM, proto=0)
         self.slipsocket = SlipSocket(self.sock_mock)
         yield
-        self.slipsocket.close()
+        self.sock_mock.close()
         del self.slipsocket
 
     def test_slipsocket_instantiation(self):
         assert self.slipsocket.family == self.family
         assert self.slipsocket.type == socket.SOCK_STREAM
+        assert self.slipsocket.proto == 0
+        assert self.slipsocket.socket is self.sock_mock
 
-    def test_slipsocket_instantiation_from_socket(self):
-        sock = socket.socket(family=self.family)
-        slipsocket = SlipSocket(sock=sock)
-        assert slipsocket.socket is sock
-
-    # noinspection PyPep8Naming
     def test_slipsocket_requires_TCP_socket(self):
-        sock = socket.socket(family=self.family, type=socket.SOCK_DGRAM)
+        self.sock_mock.configure_mock(type=socket.SOCK_DGRAM)
         with pytest.raises(ValueError):
-            SlipSocket(sock)
+            SlipSocket(self.sock_mock)
 
     def test_sending_data(self, mocker):
         self.slipsocket.send_msg(b'hallo')
@@ -82,13 +80,13 @@ class TestSlipSocket:
         assert self.slipsocket.recv_msg() == b'hallo'
         # noinspection PyProtectedMember
         sz = sliplib.SlipSocket._chunk_size
-        expected_calls = [mocker.call.recv(sz), mocker.call.recv(sz)]
+        expected_calls = [mocker.call.recv(sz)] * 2
         self.sock_mock.recv.assert_has_calls(expected_calls)
         assert self.slipsocket.recv_msg() == b'bye'
-        expected_calls += [mocker.call.recv(sz), mocker.call.recv(sz)]
+        expected_calls = [mocker.call.recv(sz)] * 4
         self.sock_mock.recv.assert_has_calls(expected_calls)
         assert self.slipsocket.recv_msg() == b''
-        expected_calls += [mocker.call.recv(sz)]
+        expected_calls = [mocker.call.recv(sz)] * 5
         self.sock_mock.recv.assert_has_calls(expected_calls)
 
     def test_end_of_data_handling(self, mocker):
@@ -161,13 +159,19 @@ class TestSlipSocket:
         with pytest.raises(AttributeError):
             getattr(self.slipsocket, method)
 
+    # Testing delegated methods.
+    # This will be removed due to deprecation of delegating methods to the wrapped socket.
+
     @pytest.mark.parametrize('method', delegated_methods)
     def test_delegated_methods(self, method, mocker):
         setattr(self.sock_mock, method, mocker.Mock())
-        slipsocket_method = getattr(self.slipsocket, method)
-        slipsocket_method()  # Don't care about the arguments
-        mocked_method = getattr(self.sock_mock, method)
-        mocked_method.assert_called_once_with()
+        with warnings.catch_warnings(record=True) as w:
+            socket_method = getattr(self.slipsocket, method)
+            assert len(w) == 1
+            assert issubclass(w[0].category, DeprecationWarning)
+            assert "will be removed in version 1.0" in str(w[0].message)
+        socket_method()
+        socket_method.assert_called_once_with()
 
     @pytest.mark.parametrize('attr', [
         'family', 'type', 'proto'
@@ -178,13 +182,12 @@ class TestSlipSocket:
             setattr(self.slipsocket, attr, "some value")
 
     def test_create_connection(self, mocker):
-        mocker.patch('sliplib.socket.create_connection')
-        sliplib.socket.create_connection.reset_mock()
-        new_sock = socket.socket(self.family)
-        sliplib.socket.create_connection.return_value = new_sock
+        new_sock_mock = mocker.Mock(spec=socket.socket(self.family), family=self.family, type=socket.SOCK_STREAM,
+                                    proto=0)
+        mocker.patch('sliplib.socket.create_connection', return_value=new_sock_mock)
         sock = SlipSocket.create_connection(self.far_address)
         assert isinstance(sock, SlipSocket)
-        assert sock.socket is new_sock
+        assert sock.socket is new_sock_mock
         sliplib.socket.create_connection.assert_called_once_with(self.far_address, None, None)
 
     def test_slip_socket_iteration(self, mocker):

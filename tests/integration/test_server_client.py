@@ -35,6 +35,9 @@ class SlipEchoClient:
         self.sock.send_msg(msg)
         return self.sock.recv_msg()
 
+    def close(self):
+        self.sock.socket.close()
+
 
 class TestEchoServer:
     @pytest.fixture(autouse=True)
@@ -45,7 +48,7 @@ class TestEchoServer:
         server_address = near.recv()
         self.client = SlipEchoClient(server_address)
         yield
-        self.client.sock.close()
+        self.client.close()
         self.server.join()
 
     def test_echo_server(self):

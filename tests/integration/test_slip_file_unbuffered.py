@@ -17,7 +17,7 @@ def test_reading_slip_file(tmp_path):
     d.mkdir()
     p = d / "read.txt"
     p.write_bytes(b''.join(encode(msg) for msg in data))
-    with p.open(mode='rb') as f:
+    with p.open(mode='rb', buffering=0) as f:
         s = SlipStream(f)
         for exp, act in zip(data, s):
             assert exp == act
@@ -27,7 +27,7 @@ def test_writing_slip_file(tmp_path):
     d = tmp_path / "slip"
     d.mkdir()
     p = d / "write.txt"
-    with p.open(mode='wb') as f:
+    with p.open(mode='wb', buffering=0) as f:
         s = SlipStream(f)
         for msg in data:
             s.send_msg(msg)
