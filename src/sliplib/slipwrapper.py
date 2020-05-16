@@ -2,6 +2,31 @@
 #  This file is part of the SlipLib project which is released under the MIT license.
 #  See https://github.com/rhjdjong/SlipLib for details.
 
+"""
+SlipWrapper
+-----------
+
+.. autoclass:: SlipWrapper
+
+   Class :class:`SlipWrapper` offers the following methods and attributes:
+
+   .. automethod:: send_msg
+   .. automethod:: recv_msg
+
+   .. attribute:: driver
+
+      The :class:`SlipWrapper`'s :class:`Driver` instance.
+
+   .. attribute:: stream
+
+      The wrapped `stream`.
+
+   In addition, :class:`SlipWrapper` requires that derived classes implement the following methods:
+
+   .. automethod:: send_bytes
+   .. automethod:: recv_bytes
+"""
+
 import collections
 import sys
 
@@ -22,11 +47,10 @@ class SlipWrapper:
     to write to and read from the stream.
 
     A :class:`SlipWrapper` instance can be iterated over.
-    Each iteration will provide the next message from the byte stream.
+    Each iteration will provide the next message that is received from the byte stream.
 
     .. versionchanged:: 0.5
        Allow iteration over a :class:`SlipWrapper` instance.
-
     """
 
     def __init__(self, stream):
@@ -47,7 +71,7 @@ class SlipWrapper:
     def send_bytes(self, packet):
         """Send a packet over the stream.
 
-        Derived classes must override this method.
+        Derived classes must implement this method.
 
         :param bytes packet: the packet to send over the stream
         """
@@ -56,13 +80,13 @@ class SlipWrapper:
     def recv_bytes(self):
         """Receive data from the stream.
 
-        Derived classes must override this method.
+        Derived classes must implement this method.
 
         .. note::
             The convention used within the :class:`SlipWrapper` class
             is that :meth:`recv_bytes` returns an empty bytes object
             to indicate that the end of
-            the byte stream has been reached, and no further data will
+            the byte stream has been reached and no further data will
             be received. Derived implementations must ensure that
             this convention is followed.
 
@@ -113,9 +137,9 @@ class SlipWrapper:
                     if isinstance(data, int):  # Single byte reads are represented as integers
                         data = bytes([data])
                     self._messages.extend(self.driver.receive(data))
-            except ProtocolError as pe:
+            except ProtocolError as protocol_error:
                 self._messages.extend(self.driver.messages)
-                self._protocol_error = pe
+                self._protocol_error = protocol_error
                 self._traceback = sys.exc_info()[2]
                 break
 
@@ -137,11 +161,7 @@ class SlipWrapper:
 
     def __iter__(self):
         while True:
-            try:
-                msg = self.recv_msg()
-            except ProtocolError:
-                raise
-            else:
-                if msg == b'':
-                    break
-                yield msg
+            msg = self.recv_msg()
+            if not msg:
+                break
+            yield msg

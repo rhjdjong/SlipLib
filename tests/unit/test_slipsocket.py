@@ -9,13 +9,33 @@ import pytest
 import sliplib
 from sliplib import ProtocolError, SlipSocket, END, ESC
 
-socket_methods = [attr for attr in dir(socket.socket) if
+SOCKET_METHODS = [attr for attr in dir(socket.socket) if
                   callable(getattr(socket.socket, attr)) and not attr.startswith('_')]
 
-delegated_methods = [attr for attr in socket_methods if not (
-            attr.startswith('recv') or attr.startswith('send') or attr in ('accept', 'dup', 'makefile', 'share'))]
+EXPLICITLY_EXPOSED_SOCKET_METHODS = (
+    'accept',
+    'bind',
+    'close',
+    'connect',
+    'connect_ex',
+    'getpeername',
+    'getsockname',
+    'listen',
+    'shutdown',
+)
 
-not_delegated_methods = [attr for attr in socket_methods if attr not in delegated_methods and attr != 'accept']
+DELEGATED_METHODS = tuple(
+    attr for attr in SOCKET_METHODS
+    if not (
+        attr.startswith('recv') or attr.startswith('send') or
+        attr in ('dup', 'makefile', 'share') or
+        attr in EXPLICITLY_EXPOSED_SOCKET_METHODS
+    )
+)
+
+NOT_DELEGATED_METHODS = tuple(
+    attr for attr in SOCKET_METHODS if attr not in DELEGATED_METHODS and attr not in EXPLICITLY_EXPOSED_SOCKET_METHODS
+)
 
 
 class TestSlipSocket:
@@ -143,24 +163,65 @@ class TestSlipSocket:
         assert new_slip_socket.socket is new_socket
         assert address == self.far_address
 
-    @pytest.mark.parametrize('method', not_delegated_methods)
+    def test_bind_method(self, mocker):
+        self.sock_mock.bind = mocker.Mock()
+        self.slipsocket.bind(self.near_address)
+        self.sock_mock.bind.assert_called_once_with(self.near_address)
+
+    def test_close_method(self, mocker):
+        self.sock_mock.close = mocker.Mock()
+        self.slipsocket.close()
+        self.sock_mock.close.assert_called_once_with()
+
+    def test_connect_method(self, mocker):
+        self.sock_mock.connect = mocker.Mock()
+        self.slipsocket.connect(self.far_address)
+        self.sock_mock.connect.assert_called_once_with(self.far_address)
+
+    def test_connect_ex_method(self, mocker):
+        self.sock_mock.connect_ex = mocker.Mock()
+        self.slipsocket.connect_ex(self.far_address)
+        self.sock_mock.connect_ex.assert_called_once_with(self.far_address)
+
+    def test_getpeername_method(self, mocker):
+        self.sock_mock.getpeername = mocker.Mock()
+        self.slipsocket.getpeername()
+        self.sock_mock.getpeername.assert_called_once_with()
+
+    def test_getsockname_method(self, mocker):
+        self.sock_mock.getsockname = mocker.Mock()
+        self.slipsocket.getsockname()
+        self.sock_mock.getsockname.assert_called_once_with()
+
+    def test_listen_method(self, mocker):
+        self.sock_mock.listen = mocker.Mock()
+        self.slipsocket.listen()
+        self.slipsocket.listen(5)
+        assert self.sock_mock.listen.mock_calls == [mocker.call(), mocker.call(5)]
+
+    def test_shutdown_method(self, mocker):
+        self.sock_mock.shutdown = mocker.Mock()
+        self.slipsocket.shutdown(0)
+        self.sock_mock.shutdown.assert_called_once_with(0)
+
+    @pytest.mark.parametrize('method', NOT_DELEGATED_METHODS)
     def test_exception_for_not_supported_operations(self, method):
         with pytest.raises(AttributeError):
             getattr(self.slipsocket, method)
 
     # Testing delegated methods.
     # This will be removed due to deprecation of delegating methods to the wrapped socket.
-
-    @pytest.mark.parametrize('method', delegated_methods)
+    @pytest.mark.parametrize('method', DELEGATED_METHODS)
     def test_delegated_methods(self, method, mocker):
-        setattr(self.sock_mock, method, mocker.Mock())
+        mock_method = mocker.Mock()
+        setattr(self.sock_mock, method, mock_method)
         with warnings.catch_warnings(record=True) as w:
             socket_method = getattr(self.slipsocket, method)
             assert len(w) == 1
             assert issubclass(w[0].category, DeprecationWarning)
             assert "will be removed in version 1.0" in str(w[0].message)
         socket_method()
-        socket_method.assert_called_once_with()
+        mock_method.assert_called_once_with()
 
     @pytest.mark.parametrize('attr', [
         'family', 'type', 'proto'

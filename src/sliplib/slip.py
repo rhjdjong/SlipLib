@@ -2,6 +2,44 @@
 #  This file is part of the SlipLib project which is released under the MIT license.
 #  See https://github.com/rhjdjong/SlipLib for details.
 
+"""
+Constants
+---------
+
+.. data:: END
+.. data:: ESC
+.. data:: ESC_END
+.. data:: ESC_ESC
+
+   These constants represent the special bytes
+   used by SLIP for delimiting and encoding messages.
+
+Functions
+---------
+
+The following are lower-level functions, that should normally not be used directly.
+
+.. autofunction:: encode
+.. autofunction:: decode
+.. autofunction:: is_valid
+
+Classes
+-------
+
+.. autoclass:: Driver
+
+   Class :class:`Driver` offers the following methods:
+
+   .. automethod:: send
+   .. automethod:: receive
+
+   To enable recovery from a :exc:`ProtocolError`, the
+   :class:`Driver` class offers the following attribute and method:
+
+   .. autoattribute:: messages
+   .. automethod:: flush
+"""
+
 import collections
 import re
 
@@ -27,10 +65,7 @@ class ProtocolError(ValueError):
 
 
 def encode(msg):
-    """encode(msg) -> SLIP-encoded message.
-
-    Encodes a message (a byte sequence) into a
-    SLIP-encoded packet.
+    """Encodes a message (a byte sequence) into a SLIP-encoded packet.
 
     :param bytes msg: The message that must be encoded
     :return: The SLIP-encoded message
@@ -41,9 +76,7 @@ def encode(msg):
 
 
 def decode(packet):
-    """decode(packet) -> message from SLIP-encoded packet
-
-    Retrieves the message from the SLIP-encoded packet.
+    """Retrieves the message from the SLIP-encoded packet.
 
     :param bytes packet: The SLIP-encoded message.
            Note that this must be exactly one complete packet.
@@ -61,8 +94,8 @@ def decode(packet):
 
 
 def is_valid(packet):
-    """is_valid(packet) -> indicates if the packet's contents conform to the SLIP specification.
-    
+    """Indicates if the packet's contents conform to the SLIP specification.
+
     A packet is valid if:
 
     * It contains no :const:`END` bytes other than leading and/or trailing :const:`END` bytes, and
@@ -92,10 +125,9 @@ class Driver:
 
     # noinspection PyMethodMayBeStatic
     def send(self, message):
-        """send(message) -> SLIP-encoded message.
+        """Encodes a message into a SLIP-encoded packet.
 
-        Encodes a message (any arbitrary byte-string) into a
-        SLIP-encoded packet.
+        The message can be any arbitrary byte sequence.
 
         :param bytes message: The message that must be encoded.
         :return: A packet with the SLIP-encoded message.
@@ -104,7 +136,7 @@ class Driver:
         return encode(message)
 
     def receive(self, data):
-        """receive(data) -> List of decoded messages.
+        """Decodes data and gives a list of decoded messages.
 
         Processes :obj:`data`, which must be a bytes-like object,
         and returns a (possibly empty) list with :class:`bytes` objects,
@@ -150,7 +182,7 @@ class Driver:
         return self.flush()
 
     def flush(self):
-        """flush() -> List of decoded messages.
+        """Gives a list of decoded messages.
 
         Decodes the packets in the internal buffer.
         This enables the continuation of the processing
@@ -163,9 +195,9 @@ class Driver:
         """
         messages = []
         while self._packets:
-            p = self._packets.popleft()
+            packet = self._packets.popleft()
             try:
-                msg = decode(p)
+                msg = decode(packet)
             except ProtocolError:
                 # Add any already decoded messages to the exception
                 self._messages = messages
@@ -175,7 +207,7 @@ class Driver:
 
     @property
     def messages(self):
-        """messages -> List of decoded messages
+        """A list of decoded messages.
 
         The read-only attribute :attr:`messages` contains
         the messages that were
