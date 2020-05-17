@@ -4,6 +4,7 @@ Changelog
 v0.6.0
 ------
 * Added support for unbuffered byte streams in SlipStream (issue #16).
+
 * Deprecated direct access to wrapped bytestream (SlipStream) and socket (SlipSocket)
 * Updated documentation and examples
 

@@ -13,6 +13,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+# pylint: disable=C
+
 import sys
 import os
 
@@ -57,7 +59,7 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = '.rst'  # pylint: disable=invalid-name
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
@@ -68,7 +70,7 @@ master_doc = 'index'
 # General information about the project.
 project = 'sliplib'
 # noinspection PyShadowingBuiltins
-copyright = '2017, Ruud de Jong'
+copyright = '2020, Ruud de Jong'  # pylint: disable=redefined-builtin
 author = 'Ruud de Jong'
 
 # The version info for the project you're documenting, acts as replacement for

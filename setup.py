@@ -2,19 +2,27 @@
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
 
-from setuptools import setup, find_packages  # Always prefer setuptools over distutils
+"""
+Setup.py for module sliplib
+
+Use ``pip install sliplib[test]`` to allow the tests to be run
+Use ``pip install sliplib[dev]`` for development (including documentation)
+"""
+
 import os.path
+from setuptools import setup, find_packages  # Always prefer setuptools over distutils
 
 
 version_dict = {}
 with open(os.path.join('src', 'sliplib', 'version.py')) as version_file:
-    exec(version_file.read(), version_dict)
+    exec(version_file.read(), version_dict)  # pylint: disable=exec-used
 __version__ = version_dict['__version__']
 del version_dict
 
 
-# Get the long description from the relevant file
 def read_long_description(*filenames, **kwargs):
+    """Get the long description from the relevant file"""
+
     encoding = kwargs.get('encoding', 'utf-8')
     separator = kwargs.get('sep', '\n')
     buf = []

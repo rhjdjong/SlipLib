@@ -150,7 +150,7 @@ class SlipWrapper:
             self._handle_pending_protocol_error()
         else:
             return b''
-    
+
     def _handle_pending_protocol_error(self):
         try:
             raise self._protocol_error.with_traceback(self._traceback)

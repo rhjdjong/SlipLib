@@ -121,7 +121,7 @@ class SlipSocket(SlipWrapper):
         """
 
         if not isinstance(sock, socket.socket) or sock.type != socket.SOCK_STREAM:
-            raise ValueError('Only sockets with type SOCK_STREAM are supported')
+            raise ValueError('Only sockets with type SOCK_STREAM are supported')  # pylint: disable=missing-raises-doc
         super().__init__(sock)
         self.socket = self.stream
 
@@ -178,7 +178,7 @@ class SlipSocket(SlipWrapper):
 
     @property
     def family(self):
-        """The wrapped socket's address family. Usually :const:`socket.AF_INET` (IPv4) or :const:`socket.AF_INET6` (IPv6)."""
+        """The wrapped socket's address family. Usually :const:`socket.AF_INET` (IPv4) or :const:`socket.AF_INET6` (IPv6)."""  # pylint: disable=line-too-long
         return self.socket.family
 
     @property

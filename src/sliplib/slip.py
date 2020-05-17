@@ -123,8 +123,7 @@ class Driver:
         self._packets = collections.deque()
         self._messages = []
 
-    # noinspection PyMethodMayBeStatic
-    def send(self, message):
+    def send(self, message):  # pylint: disable=no-self-use
         """Encodes a message into a SLIP-encoded packet.
 
         The message can be any arbitrary byte sequence.

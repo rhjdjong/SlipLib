@@ -2,14 +2,20 @@
 #  This file is part of the SlipLib project which is released under the MIT license.
 #  See https://github.com/rhjdjong/SlipLib for details.
 
+# pylint: disable=attribute-defined-outside-init
 
-import pytest
+"""
+This module tests SlipSocket using a SLIP echo server, similar to the one in the examples directory.
+"""
+
 from multiprocessing import Pipe, Process
-from sliplib import SlipRequestHandler, SlipSocket
 from socketserver import TCPServer
+import pytest
+from sliplib import SlipRequestHandler, SlipSocket
 
 
 class SlipEchoHandler(SlipRequestHandler):
+    """SLIP request handler that echoes the received message, but with the bytes in reversed order."""
     def handle(self):
         while True:
             message = self.request.recv_msg()
@@ -20,7 +26,8 @@ class SlipEchoHandler(SlipRequestHandler):
             self.request.send_msg(data_to_send)
 
 
-class SlipEchoServer:
+class SlipEchoServer:  # pylint: disable=too-few-public-methods
+    """Execution helper for the echo server. Sends the server address back over the pipe."""
     def __init__(self, pipe):
         self.server = TCPServer(('localhost', 0), SlipEchoHandler)
         pipe.send(self.server.server_address)
@@ -28,20 +35,25 @@ class SlipEchoServer:
 
 
 class SlipEchoClient:
+    """Client for the SLIP echo server"""
     def __init__(self, address):
         self.sock = SlipSocket.create_connection(address)
 
     def echo(self, msg):
+        """Send message to the SLIP server and returns the response."""
         self.sock.send_msg(msg)
         return self.sock.recv_msg()
 
     def close(self):
-        self.sock.socket.close()
+        """Close the SLIP socket"""
+        self.sock.close()
 
 
 class TestEchoServer:
+    """Test for the SLIP echo server"""
     @pytest.fixture(autouse=True)
     def setup(self):
+        """Prepare the server and client"""
         near, far = Pipe()
         self.server = Process(target=SlipEchoServer, args=(far,))
         self.server.start()
@@ -52,6 +64,7 @@ class TestEchoServer:
         self.server.join()
 
     def test_echo_server(self):
+        """Test the echo server"""
         data = [
             (b'hallo', b'ollah'),
             (b'goodbye', b'eybdoog')
