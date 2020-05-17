@@ -2,32 +2,32 @@
 #  This file is part of the SlipLib project which is released under the MIT license.
 #  See https://github.com/rhjdjong/SlipLib for details.
 
+# pylint: disable=relative-beyond-top-level
+
+"""Test using SlipStream with a buffered file"""
+
 from sliplib import encode, SlipStream
-
-data = [
-    b'line 1',
-    b'line with embedded\nnewline',
-    b'last line',
-]
+from .test_data import data, BaseFileTest
 
 
-def test_reading_slip_file(tmp_path):
-    d = tmp_path / "slip"
-    d.mkdir()
-    p = d / "read.txt"
-    p.write_bytes(b''.join(encode(msg) for msg in data))
-    with p.open(mode='rb') as f:
-        s = SlipStream(f)
-        for exp, act in zip(data, s):
-            assert exp == act
+class TestBufferedFileAccess(BaseFileTest):
+    """Test buffered SLIP file access"""
+
+    def test_reading_slip_file(self):
+        """Test reading encoded SLIP messages"""
+
+        self.filepath.write_bytes(b''.join(encode(msg) for msg in data))
+        with self.filepath.open(mode='rb') as f:
+            slipstream = SlipStream(f)
+            for exp, act in zip(data, slipstream):
+                assert exp == act
 
 
-def test_writing_slip_file(tmp_path):
-    d = tmp_path / "slip"
-    d.mkdir()
-    p = d / "write.txt"
-    with p.open(mode='wb') as f:
-        s = SlipStream(f)
-        for msg in data:
-            s.send_msg(msg)
-    assert p.read_bytes() == b''.join(encode(msg) for msg in data)
+    def test_writing_slip_file(self):
+        """Test writing encoded SLIP messages"""
+
+        with self.filepath.open(mode='wb') as f:
+            slipstream = SlipStream(f)
+            for msg in data:
+                slipstream.send_msg(msg)
+        assert self.filepath.read_bytes() == b''.join(encode(msg) for msg in data)

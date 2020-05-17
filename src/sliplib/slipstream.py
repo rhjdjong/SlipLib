@@ -2,6 +2,20 @@
 #  This file is part of the SlipLib project which is released under the MIT license.
 #  See https://github.com/rhjdjong/SlipLib for details.
 
+"""
+SlipStream
+----------
+
+.. autoclass:: SlipStream(stream, [chunk_size])
+   :show-inheritance:
+
+   A :class:`SlipStream` instance has the following attributes in addition to the attributes
+   offered by its base class :class:`SlipWrapper`:
+
+   .. autoattribute:: readable
+   .. autoattribute:: writable
+"""
+
 import io
 import warnings
 
@@ -11,9 +25,10 @@ from .slipwrapper import SlipWrapper
 class SlipStream(SlipWrapper):
     """Class that wraps an IO stream with a :class:`Driver`
 
-    :class:`SlipStream` combines a :class:`Driver` instance with a byte stream.
+    :class:`SlipStream` combines a :class:`Driver` instance with a concrete byte stream.
     The byte stream must support the methods :meth:`read` and :meth:`write`.
-    To avoid conflicts and ambiguities, streams that have an :attr:`encoding` attribute
+    To avoid conflicts and ambiguities caused by different `newline` conventions,
+    streams that have an :attr:`encoding` attribute
     (such as :class:`io.StringIO` objects, or text files that are not opened in binary mode)
     are not accepted as a byte stream.
 
@@ -40,18 +55,20 @@ class SlipStream(SlipWrapper):
 
     """
     def __init__(self, stream, chunk_size=io.DEFAULT_BUFFER_SIZE):
+        # pylint: disable=missing-raises-doc
         """
         To instantiate a :class:`SlipStream` object, the user must provide
         a pre-constructed open byte stream that is ready for reading and/or writing
 
-        :param stream: an existing byte stream.
-        :param chunk_size: the number of bytes to read per read operation.
+        Args:
+            stream (bytestream): The byte stream that will be wrapped.
 
-            The default value for `chunck_size` is `io.DEFAULT_BUFFER_SIZE`.
-            Setting the `chunk_size` is useful when the stream has a low bandwidth and/or bursty data
-            (e.g. a serial port interface).
-            In such cases it is useful to have a `chunk_size` of 1, to avoid that the application
-            hangs or becomes unresponsive.
+            chunk_size (int): the number of bytes to read per read operation.
+                The default value for `chunck_size` is `io.DEFAULT_BUFFER_SIZE`.
+                Setting the `chunk_size` is useful when the stream has a low bandwidth
+                and/or bursty data (e.g. a serial port interface).
+                In such cases it is useful to have a `chunk_size` of 1, to avoid that the application
+                hangs or becomes unresponsive.
 
         .. versionadded:: 0.6
            The `chunk_size` parameter.
@@ -76,23 +93,36 @@ class SlipStream(SlipWrapper):
         super().__init__(stream)
 
     def send_bytes(self, packet):
-        while len(packet) > 0:
+        """See base class"""
+        while packet:
             number_of_bytes_written = self.stream.write(packet)
             packet = packet[number_of_bytes_written:]
 
     def recv_bytes(self):
+        """See base class"""
         return b'' if self._stream_is_closed else self.stream.read(self._chunk_size)
 
     @property
     def readable(self):
+        """Indicates if the wrapped stream is readable.
+        The value is `True` if the readability of the wrapped stream
+        cannot be determined.
+        """
         return getattr(self.stream, 'readable', True)
 
     @property
     def writable(self):
+        """Indicates if the wrapped stream is writable.
+        The value is `True` if the writabilty of the wrapped stream
+        cannot be determined.
+        """
         return getattr(self.stream, 'writable', True)
 
     @property
     def _stream_is_closed(self):
+        """Indicates if the wrapped stream is closed.
+        The value is `False` if it cannot be determined if the wrapped stream is closed.
+        """
         return getattr(self.stream, 'closed', False)
 
     def __getattr__(self, attribute):

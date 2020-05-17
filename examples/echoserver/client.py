@@ -6,7 +6,7 @@
 Client
 ++++++
 
-The :file:`Client.py` example file is a client for the demonstrator echo server .
+The :file:`client.py` example file is a client for the demonstrator echo server .
 It prompts the user for a message,
 encodes it in a Slip packet, sends it to the server,
 and prints the decoded reply it gets back from the server.
@@ -18,7 +18,10 @@ import sys
 import sliplib
 
 if __name__ == '__main__':
-    host, port = sys.argv[1:3]
+    if len(sys.argv) != 3:
+        print("Usage: python client.py <host> <port>")
+        sys.exit(1)
+    host, port = sys.argv[1:3]  # pylint: disable=unbalanced-tuple-unpacking
     print("Connecting to {}, port {}".format(host, port))
     sock = sliplib.SlipSocket.create_connection((host, int(port)))
 
@@ -29,4 +32,4 @@ if __name__ == '__main__':
         message = bytes(message, 'utf-8')
         sock.send_msg(message)
         message = sock.recv_msg()
-        print(message)
+        print('Response:', message)

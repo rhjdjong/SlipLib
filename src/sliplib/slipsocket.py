@@ -2,6 +2,66 @@
 #  This file is part of the SlipLib project which is released under the MIT license.
 #  See https://github.com/rhjdjong/SlipLib for details.
 
+"""
+SlipSocket
+----------
+
+.. autoclass:: SlipSocket(sock)
+   :show-inheritance:
+
+   Class :class:`SlipSocket` offers the following methods in addition to the methods
+   offered by its base class :class:`SlipWrapper`:
+
+   .. automethod:: accept
+   .. automethod:: create_connection
+
+   .. note::
+       The :meth:`accept` and :meth:`create_connection` methods
+       do not magically turn the
+       socket at the remote address into a SlipSocket.
+       For the connection to work properly,
+       the remote socket must already
+       have been configured to use the SLIP protocol.
+
+   The following commonly used :class:`socket.socket` methods are exposed through
+   a :class:`SlipSocket` object.
+   These methods are simply delegated to the wrapped `socket` instance.
+
+   .. automethod:: bind
+   .. automethod:: close
+   .. automethod:: connect
+   .. automethod:: connect_ex
+   .. automethod:: getpeername
+   .. automethod:: getsockname
+   .. automethod:: listen([backlog])
+   .. automethod:: shutdown
+
+   Since the wrapped socket is available as the :attr:`socket` attribute,
+   any other :class:`socket.socket`
+   method can be invoked through that attribute.
+
+   .. warning::
+
+      Avoid using :class:`socket.socket`
+      methods that affect the bytes that are sent or received through the socket.
+      Doing so will invalidate the internal state of the enclosed :class:`Driver` instance,
+      resulting in corrupted SLIP messages.
+      In particular, do not use any of the :meth:`recv*` or :meth:`send*` methods
+      on the :attr:`socket` attribute.
+
+   A :class:`SlipSocket` instance has the following attributes in addition to the attributes
+   offered by its base class :class:`SlipWrapper`:
+
+   .. attribute:: socket
+
+      The wrapped `socket`.
+      This is actually just an alias for the :attr:`stream` attribute in the base class.
+
+   .. autoattribute:: family
+   .. autoattribute:: type
+   .. autoattribute:: proto
+"""
+
 import socket
 import warnings
 from .slipwrapper import SlipWrapper
@@ -50,14 +110,16 @@ class SlipSocket(SlipWrapper):
     _chunk_size = 4096
 
     def __init__(self, sock):
+        # pylint: disable=missing-raises-doc
         """
         To instantiate a :class:`SlipSocket`, the user must provide
-        a pre-constructed TCP :class:`socket`.
+        a pre-constructed TCP `socket`.
         An alternative way to instantiate s SlipSocket is to use the
         class method :meth:`create_connection`.
 
-        :param socket.socket sock: an existing TCP socket, i.e.
-           a socket with type :const:`socket.SOCK_STREAM`
+        Args:
+            sock (socket.socket): An existing TCP socket, i.e.
+                a socket with type :const:`socket.SOCK_STREAM`
         """
 
         if not isinstance(sock, socket.socket) or sock.type != socket.SOCK_STREAM:
@@ -66,25 +128,69 @@ class SlipSocket(SlipWrapper):
         self.socket = self.stream
 
     def send_bytes(self, packet):
+        """See base class"""
         self.socket.sendall(packet)
 
     def recv_bytes(self):
+        """See base class"""
         return self.socket.recv(self._chunk_size)
 
     def accept(self):
+        """Accepts an incoming connection.
+
+        Returns a (:class:`SlipSocket`, `remote_address`) pair,
+        where the :class:`SlipSocket` object can be used to exchange SLIP-encoded data
+        with the socket at the `remote_address`.
+        See :meth:`socket.socket.accept` for more information.
+        """
         conn, address = self.socket.accept()
         return self.__class__(conn), address
 
+    def bind(self, address):
+        """See :meth:`socket.socket.bind`"""
+        self.socket.bind(address)
+
+    def close(self):
+        """See :meth:`socket.socket.close`"""
+        self.socket.close()
+
+    def connect(self, address):
+        """See :meth:`socket.socket.connect`"""
+        self.socket.connect(address)
+
+    def connect_ex(self, address):
+        """See :meth:`socket.socket.connect_ex`"""
+        self.socket.connect_ex(address)
+
+    def getpeername(self):
+        """See :meth:`socket.socket.getpeername`"""
+        self.socket.getpeername()
+
+    def getsockname(self):
+        """See :meth:`socket.socket.getsockname`"""
+        self.socket.getsockname()
+
+    def listen(self, *args):
+        """See :meth:`socket.socket.listen`"""
+        self.socket.listen(*args)
+
+    def shutdown(self, how):
+        """See :meth:`socket.socket.shutdown`"""
+        self.socket.shutdown(how)
+
     @property
     def family(self):
+        """The wrapped socket's address family. Usually :const:`socket.AF_INET` (IPv4) or :const:`socket.AF_INET6` (IPv6)."""  # pylint: disable=line-too-long
         return self.socket.family
 
     @property
     def type(self):
+        """The wrapped socket's type. Always :const:`socket.SOCK_STREAM`."""
         return self.socket.type
 
     @property
     def proto(self):
+        """The wrapped socket's protocol number. Usually 0."""
         return self.socket.proto
 
     def __getattr__(self, attribute):
@@ -105,13 +211,7 @@ class SlipSocket(SlipWrapper):
         using the :func:`socket.create_connection` function.
         The socket that is returned from that call is automatically wrapped in
         a :class:`SlipSocket` object.
-
-        .. note::
-            The :meth:`create_connection` method does not magically turn the
-            socket at the remote address into a SlipSocket.
-            For the connection to work properly,
-            the remote socket must already
-            have been configured to use the SLIP protocol.
+        See :func:`socket.create_connection` for more information.
         """
         sock = socket.create_connection(address, timeout, source_address)
         return cls(sock)

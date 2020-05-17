@@ -4,6 +4,9 @@
 
 
 """
+Introduction
+------------
+
 The :mod:`sliplib` module implements the encoding and decoding
 functionality for SLIP packets, as described in :rfc:`1055`.
 It defines encoding, decoding, and validation functions,
@@ -52,25 +55,47 @@ as the sequence :code:`ESC+ESC_ESC` (:code:`b'\\xdb\\xdd'`).
 As a consequence, an :const:`ESC` byte in an encoded SLIP packet
 must always be followed by an :const:`ESC_END` or an :const:`ESC_ESC` byte;
 anything else is a protocol error.
+
+Low level Usage
+---------------
+
+.. automodule:: sliplib.slip
+
+High Level Usage
+----------------
+
+.. automodule:: sliplib.slipwrapper
+.. automodule:: sliplib.slipstream
+.. automodule:: sliplib.slipsocket
+.. automodule:: sliplib.sliprequesthandler
+
+Exceptions
+----------
+
+.. currentmodule:: sliplib
+.. autoexception:: ProtocolError
 """
 
 from .slip import *
-from .sliprequesthandler import *
+from .slipwrapper import *
 from .slipsocket import *
 from .slipstream import *
+from .sliprequesthandler import *
 from .version import __version__
 
-__all__ = ['encode',
-           'decode',
-           'is_valid',
-           'Driver',
-           'SlipWrapper',
-           'SlipSocket',
-           'SlipRequestHandler',
-           'SlipStream',
-           'ProtocolError',
-           'END',
-           'ESC',
-           'ESC_END',
-           'ESC_ESC',
-           '__version__']
+__all__ = [
+    'encode',
+    'decode',
+    'is_valid',
+    'Driver',
+    'SlipWrapper',
+    'SlipSocket',
+    'SlipRequestHandler',
+    'SlipStream',
+    'ProtocolError',
+    'END',
+    'ESC',
+    'ESC_END',
+    'ESC_ESC',
+    '__version__',
+]

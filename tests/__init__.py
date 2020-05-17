@@ -2,6 +2,6 @@
 #  This file is part of the SlipLib project which is released under the MIT license.
 #  See https://github.com/rhjdjong/SlipLib for details.
 
-"""Indicates the version of sliplib."""
+"""Tests for SLipLib"""
 
-__version__ = '0.6.0'
+# pylint: disable=attribute-defined-outside-init
