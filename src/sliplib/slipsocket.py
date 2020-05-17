@@ -110,18 +110,20 @@ class SlipSocket(SlipWrapper):
     _chunk_size = 4096
 
     def __init__(self, sock):
+        # pylint: disable=missing-raises-doc
         """
         To instantiate a :class:`SlipSocket`, the user must provide
         a pre-constructed TCP `socket`.
         An alternative way to instantiate s SlipSocket is to use the
         class method :meth:`create_connection`.
 
-        :param socket.socket sock: an existing TCP socket, i.e.
-           a socket with type :const:`socket.SOCK_STREAM`
+        Args:
+            sock (socket.socket): An existing TCP socket, i.e.
+                a socket with type :const:`socket.SOCK_STREAM`
         """
 
         if not isinstance(sock, socket.socket) or sock.type != socket.SOCK_STREAM:
-            raise ValueError('Only sockets with type SOCK_STREAM are supported')  # pylint: disable=missing-raises-doc
+            raise ValueError('Only sockets with type SOCK_STREAM are supported')
         super().__init__(sock)
         self.socket = self.stream
 

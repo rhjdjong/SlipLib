@@ -58,7 +58,8 @@ class SlipWrapper:
         To instantiate a :class:`SlipWrapper`, the user must provide
         an existing byte stream
 
-        :param stream: the byte stream that will be wrapped..
+        Args:
+            stream (bytestream): The byte stream that will be wrapped.
         """
         self.stream = stream
         self.driver = Driver()
@@ -73,7 +74,8 @@ class SlipWrapper:
 
         Derived classes must implement this method.
 
-        :param bytes packet: the packet to send over the stream
+        Args:
+            packet (bytes): the packet to send over the stream
         """
         raise NotImplementedError
 
@@ -90,15 +92,16 @@ class SlipWrapper:
             be received. Derived implementations must ensure that
             this convention is followed.
 
-        :return: bytes received from the stream
-        :rtype: bytes
+        Returns:
+            bytes: The bytes received from the stream
         """
         raise NotImplementedError
 
     def send_msg(self, message):
         """Send a SLIP-encoded message over the stream.
 
-        :param bytes message: The message to encode and send
+        Args:
+            message (bytes): The message to encode and send
         """
         packet = self.driver.send(message)
         self.send_bytes(packet)
@@ -106,11 +109,13 @@ class SlipWrapper:
     def recv_msg(self):
         """Receive a single message from the stream.
 
-        :return: A SLIP-decoded message
-        :rtype: bytes
-        :raises ProtocolError: when a SLIP protocol error has been encountered.
-           A subsequent call to :meth:`recv_msg` (after handling the exception)
-           will return the message from the next packet.
+        Returns:
+            bytes:  A SLIP-decoded message
+
+        Raises:
+            ProtocolError: when a SLIP protocol error has been encountered.
+                A subsequent call to :meth:`recv_msg` (after handling the exception)
+                will return the message from the next packet.
         """
 
         # First check if there are any pending messages

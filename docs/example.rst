@@ -11,4 +11,4 @@ The directory :file:`examples` in
 `SlipLib's GitHub repository <https://github.com/rhjdjong/SlipLib/>`_
 contains some basic examples on how the :mod:`sliplib` module can be used.
 
-.. automodule:: examples.EchoServer
+.. automodule:: examples.echoserver

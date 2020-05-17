@@ -55,18 +55,20 @@ class SlipStream(SlipWrapper):
 
     """
     def __init__(self, stream, chunk_size=io.DEFAULT_BUFFER_SIZE):
+        # pylint: disable=missing-raises-doc
         """
         To instantiate a :class:`SlipStream` object, the user must provide
         a pre-constructed open byte stream that is ready for reading and/or writing
 
-        :param stream: an existing byte stream.
-        :param chunk_size: the number of bytes to read per read operation.
+        Args:
+            stream (bytestream): The byte stream that will be wrapped.
 
-            The default value for `chunck_size` is `io.DEFAULT_BUFFER_SIZE`.
-            Setting the `chunk_size` is useful when the stream has a low bandwidth
-            and/or bursty data (e.g. a serial port interface).
-            In such cases it is useful to have a `chunk_size` of 1, to avoid that the application
-            hangs or becomes unresponsive.
+            chunk_size (int): the number of bytes to read per read operation.
+                The default value for `chunck_size` is `io.DEFAULT_BUFFER_SIZE`.
+                Setting the `chunk_size` is useful when the stream has a low bandwidth
+                and/or bursty data (e.g. a serial port interface).
+                In such cases it is useful to have a `chunk_size` of 1, to avoid that the application
+                hangs or becomes unresponsive.
 
         .. versionadded:: 0.6
            The `chunk_size` parameter.
@@ -103,7 +105,6 @@ class SlipStream(SlipWrapper):
     @property
     def readable(self):
         """Indicates if the wrapped stream is readable.
-
         The value is `True` if the readability of the wrapped stream
         cannot be determined.
         """
@@ -112,7 +113,6 @@ class SlipStream(SlipWrapper):
     @property
     def writable(self):
         """Indicates if the wrapped stream is writable.
-
         The value is `True` if the writabilty of the wrapped stream
         cannot be determined.
         """
@@ -121,7 +121,6 @@ class SlipStream(SlipWrapper):
     @property
     def _stream_is_closed(self):
         """Indicates if the wrapped stream is closed.
-
         The value is `False` if it cannot be determined if the wrapped stream is closed.
         """
         return getattr(self.stream, 'closed', False)

@@ -67,9 +67,11 @@ class ProtocolError(ValueError):
 def encode(msg):
     """Encodes a message (a byte sequence) into a SLIP-encoded packet.
 
-    :param bytes msg: The message that must be encoded
-    :return: The SLIP-encoded message
-    :rtype: bytes
+    Args:
+        msg (bytes): The message that must be encoded
+
+    Returns:
+        bytes: The SLIP-encoded message
     """
     msg = bytes(msg)
     return END + msg.replace(ESC, ESC + ESC_ESC).replace(END, ESC + ESC_END) + END
@@ -78,14 +80,17 @@ def encode(msg):
 def decode(packet):
     """Retrieves the message from the SLIP-encoded packet.
 
-    :param bytes packet: The SLIP-encoded message.
+    Args:
+        packet (bytes): The SLIP-encoded message.
            Note that this must be exactly one complete packet.
            The :func:`decode` function does not provide any buffering
            for incomplete packages, nor does it provide support
            for decoding data with multiple packets.
-    :return: The decoded message
-    :rtype: bytes
-    :raises ProtocolError: if the packet contains an invalid byte sequence.
+    Returns:
+        bytes: The decoded message
+
+    Raises:
+        ProtocolError: if the packet contains an invalid byte sequence.
     """
     packet = bytes(packet).strip(END)
     if not is_valid(packet):
@@ -101,9 +106,11 @@ def is_valid(packet):
     * It contains no :const:`END` bytes other than leading and/or trailing :const:`END` bytes, and
     * Each :const:`ESC` byte is followed by either an :const:`ESC_END` or an :const:`ESC_ESC` byte.
 
-    :param bytes packet: The packet to inspect.
-    :return: :const:`True` if the packet is valid, :const:`False` otherwise
-    :rtype: bool
+    Args:
+        packet (bytes): The packet to inspect.
+
+    Returns:
+        bool: :const:`True` if the packet is valid, :const:`False` otherwise
     """
     packet = packet.strip(END)
     return not (END in packet or
@@ -128,9 +135,11 @@ class Driver:
 
         The message can be any arbitrary byte sequence.
 
-        :param bytes message: The message that must be encoded.
-        :return: A packet with the SLIP-encoded message.
-        :rtype: bytes
+        Args:
+            message (bytes): The message that must be encoded.
+
+        Returns:
+            bytes: A packet with the SLIP-encoded message.
         """
         return encode(message)
 
@@ -143,12 +152,16 @@ class Driver:
         Any non-terminated SLIP packets in :obj:`data`
         are buffered, and processed with the next call to :meth:`receive`.
 
-        :param bytes data: The bytes-like object to be processed.
-            An empty :obj:`data` parameter forces the internal
-            buffer to be flushed and decoded.
-        :return: A (possibly empty) list of decoded messages.
-        :rtype: list(bytes)
-        :raises ProtocolError: An invalid byte sequence has been detected.
+        Args:
+            data (bytes): The bytes-like object to be processed.
+                An empty :obj:`data` parameter forces the internal
+                buffer to be flushed and decoded.
+
+        Returns:
+            list(bytes): A (possibly empty) list of decoded messages.
+
+        Raises:
+            ProtocolError: When the data contains an invalid byte sequence.
         """
 
         # Empty data indicates that the data reception is complete.
@@ -188,9 +201,11 @@ class Driver:
         of received packets after a :exc:`ProtocolError`
         has been handled.
 
-        :return: A (possibly empty) list of decoded messages from the buffered packets.
-        :rtype: list(bytes)
-        :raises ProtocolError: An invalid byte sequence has been detected.
+        Returns:
+            list(bytes): A (possibly empty) list of decoded messages from the buffered packets.
+
+        Raises:
+            ProtocolError: When any of the buffered packets contains an invalid byte sequence.
         """
         messages = []
         while self._packets:
