@@ -29,6 +29,18 @@ class TestEncoding:
         packet = END + msg + END
         assert encode(msg) == packet
 
+    def test_single_byte_encoding(self):
+        """Verify that single bytes are encoded correctly"""
+        msg = b'x'
+        packet = END + msg + END
+        assert encode(msg) == packet
+
+    def test_message_with_zero_byte_decoding(self):
+        """A message that contains a NULL byte must be encoded correctly."""
+        msg = b'a\0b'
+        packet = END + msg + END
+        assert encode(msg) == packet
+
     @pytest.mark.parametrize("msg,packet", [
         (END, ESC + ESC_END),
         (ESC, ESC + ESC_ESC),
@@ -56,6 +68,18 @@ class TestDecoding:
     def test_simple_message_decoding(self):
         """A packet without the special escape sequences should result in a message without special bytes."""
         msg = b'hallo'
+        packet = END + msg + END
+        assert decode(packet) == msg
+
+    def test_single_byte_decoding(self):
+        """A packet with a single byte between END bytes must be decoded correctly."""
+        msg = b'x'
+        packet = END + msg + END
+        assert decode(packet) == msg
+
+    def test_message_with_zero_byte_decoding(self):
+        """A packet that contains a NULL byte must be decoded correctly."""
+        msg = b'a\0b'
         packet = END + msg + END
         assert decode(packet) == msg
 
@@ -122,11 +146,13 @@ class TestDriver:
         assert self.driver.receive(packet) == msgs
 
     def test_split_message_decoding(self):
-        """Test that receives only returns the message after the complete packet has been received."""
-        msg = b'hallo'
+        """Test that receives only returns the message after the complete packet has been received.
+
+        The message contains a NULL byte to test the correct handling of this when single bytes are received."""
+        msg = b'hallo\0bye'
         packet = END + msg
         for byte_ in packet:
-            assert self.driver.receive(bytes((byte_,))) == []
+            assert self.driver.receive(byte_) == []
         assert self.driver.receive(END) == [msg]
 
     def test_flush_buffers_with_empty_packet(self):

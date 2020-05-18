@@ -153,7 +153,7 @@ class Driver:
         are buffered, and processed with the next call to :meth:`receive`.
 
         Args:
-            data (bytes): The bytes-like object to be processed.
+            data (bytes|int): The bytes-like object to be processed.
                 An empty :obj:`data` parameter forces the internal
                 buffer to be flushed and decoded.
 
@@ -163,6 +163,12 @@ class Driver:
         Raises:
             ProtocolError: When the data contains an invalid byte sequence.
         """
+
+        # When a single byte is fed into this function
+        # it is received as an integer, not as a bytes object.
+        # It must first be converted into a bytes object.
+        if isinstance(data, int):
+            data = bytes((data,))
 
         # Empty data indicates that the data reception is complete.
         # To force a buffer flush, an END byte is added, so that the
