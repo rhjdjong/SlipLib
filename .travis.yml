@@ -20,4 +20,5 @@ install:
 
 script:
  - pytest
+ - mypy examples src tests
 

@@ -53,6 +53,7 @@ test_script:
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
   - cmd: python -m pip install .[test]
   - cmd: python -m pytest
+  - cmd: python -m mypy
 
   # Linux and Mac
   - sh: python -VV
@@ -60,3 +61,4 @@ test_script:
   - sh: pip install .[test]
   - sh: PATH=/home/appveyor/.local/bin:${PATH}
   - sh: pytest
+  - sh: mypy
