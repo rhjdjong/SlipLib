@@ -47,11 +47,11 @@ class TestSlipSocket:
     """Tests for SlipSocket"""
 
     @pytest.fixture(autouse=True, params=[
-        (socket.AF_INET,
+        (socket.AF_INET,  # pylint: disable=no-member
          ('93.184.216.34', 54321),  # example.com IPv4 address
          ('127.0.0.1', 12345)  # localhost IPv4 address
          ),
-        (socket.AF_INET6,
+        (socket.AF_INET6,  # pylint: disable=no-member
          ('2606:2800:220:1:248:1893:25c8:1946', 54321, 0, 0),  # example.com IPv6 address
          ('::1', 12345, 0, 0)  # localhost IPv6 address
          )
@@ -61,7 +61,7 @@ class TestSlipSocket:
 
         self.family, self.far_address, self.near_address = request.param
         self.sock_mock = mocker.Mock(spec=socket.socket(family=self.family), family=self.family,
-                                     type=socket.SOCK_STREAM, proto=0)
+                                     type=socket.SOCK_STREAM, proto=0)  # pylint: disable=no-member
         self.slipsocket = SlipSocket(self.sock_mock)
         yield
         self.sock_mock.close()
@@ -70,13 +70,13 @@ class TestSlipSocket:
     def test_slipsocket_instantiation(self):
         """Test that the slipsocket has been created properly."""
         assert self.slipsocket.family == self.family
-        assert self.slipsocket.type == socket.SOCK_STREAM
+        assert self.slipsocket.type == socket.SOCK_STREAM  # pylint: disable=no-member
         assert self.slipsocket.proto == 0
         assert self.slipsocket.socket is self.sock_mock
 
     def test_slipsocket_requires_tcp_socket(self):
         """Test that non-TCP sockets are rejected."""
-        self.sock_mock.configure_mock(type=socket.SOCK_DGRAM)
+        self.sock_mock.configure_mock(type=socket.SOCK_DGRAM)  # pylint: disable=no-member
         with pytest.raises(ValueError):
             SlipSocket(self.sock_mock)
 
@@ -174,8 +174,8 @@ class TestSlipSocket:
 
     def test_accept_method(self, mocker):
         """Test that the accept method is delegated to the socket, and that the result is a SlipSocket."""
-        new_socket = mocker.Mock(spec=socket.socket(family=self.family), family=self.family, type=socket.SOCK_STREAM,
-                                 proto=0)
+        new_socket = mocker.Mock(spec=socket.socket(family=self.family), family=self.family,
+                                 type=socket.SOCK_STREAM, proto=0)  # pylint: disable=no-member
         self.sock_mock.accept = mocker.Mock(return_value=(new_socket, self.far_address))
         new_slip_socket, address = self.slipsocket.accept()
         self.sock_mock.accept.assert_called_once_with()
@@ -209,15 +209,17 @@ class TestSlipSocket:
 
     def test_getpeername_method(self, mocker):
         """Test that the getpeername method is delegated to the socket."""
-        self.sock_mock.getpeername = mocker.Mock()
-        self.slipsocket.getpeername()
+        self.sock_mock.getpeername = mocker.Mock(return_value=self.far_address)
+        peername = self.slipsocket.getpeername()
         self.sock_mock.getpeername.assert_called_once_with()
+        assert peername == self.far_address
 
     def test_getsockname_method(self, mocker):
         """Test that the getsockname method is delegated to the socket."""
-        self.sock_mock.getsockname = mocker.Mock()
-        self.slipsocket.getsockname()
+        self.sock_mock.getsockname = mocker.Mock(return_value=self.near_address)
+        sockname = self.slipsocket.getsockname()
         self.sock_mock.getsockname.assert_called_once_with()
+        assert sockname == self.near_address
 
     def test_listen_method(self, mocker):
         """Test that the listen method (with or without arguments) is delegated to the socket."""
@@ -264,8 +266,8 @@ class TestSlipSocket:
 
     def test_create_connection(self, mocker):
         """Test that create_connection gives a SlipSocket."""
-        new_sock_mock = mocker.Mock(spec=socket.socket(self.family), family=self.family, type=socket.SOCK_STREAM,
-                                    proto=0)
+        new_sock_mock = mocker.Mock(spec=socket.socket(self.family), family=self.family,
+                                    type=socket.SOCK_STREAM, proto=0)  # pylint: disable=no-member
         create_connection_mock = mocker.patch('sliplib.socket.create_connection', return_value=new_sock_mock)
         sock = SlipSocket.create_connection(self.far_address)
         assert isinstance(sock, SlipSocket)

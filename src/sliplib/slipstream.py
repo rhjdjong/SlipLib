@@ -18,9 +18,22 @@ SlipStream
 
 import io
 import warnings
-
+from typing import Any
+try:
+    from typing import Protocol
+except ImportError:
+    from typing_extensions import Protocol  # type: ignore
 from .slipwrapper import SlipWrapper
 
+
+class _ProtoStream(Protocol):
+    """Protocol class for wrappable streams"""
+
+    def read(self, chunksize: int) -> bytes:
+        """Read `chunksize` bytes from the stream"""
+
+    def write(self, data: bytes) -> int:
+        """Write data to the stream."""
 
 class SlipStream(SlipWrapper):
     """Class that wraps an IO stream with a :class:`Driver`
@@ -54,7 +67,7 @@ class SlipStream(SlipWrapper):
        will be removed in version 1.0
 
     """
-    def __init__(self, stream, chunk_size=io.DEFAULT_BUFFER_SIZE):
+    def __init__(self, stream: _ProtoStream, chunk_size: int = io.DEFAULT_BUFFER_SIZE):
         # pylint: disable=missing-raises-doc
         """
         To instantiate a :class:`SlipStream` object, the user must provide
@@ -63,7 +76,7 @@ class SlipStream(SlipWrapper):
         Args:
             stream (bytestream): The byte stream that will be wrapped.
 
-            chunk_size (int): the number of bytes to read per read operation.
+            chunk_size: the number of bytes to read per read operation.
                 The default value for `chunck_size` is `io.DEFAULT_BUFFER_SIZE`.
                 Setting the `chunk_size` is useful when the stream has a low bandwidth
                 and/or bursty data (e.g. a serial port interface).
@@ -92,18 +105,18 @@ class SlipStream(SlipWrapper):
         self._chunk_size = chunk_size if chunk_size > 0 else io.DEFAULT_BUFFER_SIZE
         super().__init__(stream)
 
-    def send_bytes(self, packet):
+    def send_bytes(self, packet: bytes) -> None:
         """See base class"""
         while packet:
             number_of_bytes_written = self.stream.write(packet)
             packet = packet[number_of_bytes_written:]
 
-    def recv_bytes(self):
+    def recv_bytes(self) -> bytes:
         """See base class"""
         return b'' if self._stream_is_closed else self.stream.read(self._chunk_size)
 
     @property
-    def readable(self):
+    def readable(self) -> bool:
         """Indicates if the wrapped stream is readable.
         The value is `True` if the readability of the wrapped stream
         cannot be determined.
@@ -111,7 +124,7 @@ class SlipStream(SlipWrapper):
         return getattr(self.stream, 'readable', True)
 
     @property
-    def writable(self):
+    def writable(self) -> bool:
         """Indicates if the wrapped stream is writable.
         The value is `True` if the writabilty of the wrapped stream
         cannot be determined.
@@ -119,13 +132,13 @@ class SlipStream(SlipWrapper):
         return getattr(self.stream, 'writable', True)
 
     @property
-    def _stream_is_closed(self):
+    def _stream_is_closed(self) -> bool:
         """Indicates if the wrapped stream is closed.
         The value is `False` if it cannot be determined if the wrapped stream is closed.
         """
         return getattr(self.stream, 'closed', False)
 
-    def __getattr__(self, attribute):
+    def __getattr__(self, attribute: str) -> Any:
         if attribute.startswith('read') or attribute.startswith('write') or attribute in (
                 'detach', 'flushInput', 'flushOutput', 'getbuffer', 'getvalue', 'peek', 'raw', 'reset_input_buffer',
                 'reset_output_buffer', 'seek', 'seekable', 'tell', 'truncate'

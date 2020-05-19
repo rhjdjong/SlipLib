@@ -34,9 +34,17 @@ def read_long_description(*filenames, **kwargs):
 
 long_description = read_long_description('README.rst')
 
-TEST_REQUIRES = ['pytest', 'pytest-mock', 'pytest-cov']
-DOC_REQUIRES = ['sphinx_rtd_theme']
-DEV_REQUIRES = ['tox', 'mypy', 'wheel', 'twine', 'pylint']
+TEST_REQUIRES = ['pytest', 'pytest-mock', 'pytest-cov', 'pytest-pylint', 'mypy', 'pylint']
+DOC_REQUIRES = ['sphinx', 'sphinx_rtd_theme']
+DEV_REQUIRES = ['tox', 'wheel', 'twine']
+INSTALL_REQUIRES = []
+
+try:
+    from typing import Protocol
+except ImportError:
+    INSTALL_REQUIRES.append('typing-extensions')
+else:
+    del Protocol
 
 setup(
     name='sliplib',
@@ -65,7 +73,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
@@ -73,7 +81,6 @@ setup(
         # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: MIT License',
 
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
@@ -89,7 +96,7 @@ setup(
     # simple. Or you can use find_packages().
     package_dir={'': 'src'},
     packages=find_packages('src'),
-
+    install_requires=INSTALL_REQUIRES,
     extras_require={
         'dev': DEV_REQUIRES + DOC_REQUIRES + TEST_REQUIRES,
         'test': TEST_REQUIRES

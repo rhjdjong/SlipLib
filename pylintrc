@@ -10,11 +10,12 @@ fail-under=10
 
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
-ignore=docs
+ignore=
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
-ignore-patterns=setup\.py
+ignore-patterns=docs,
+        setup\.py
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().

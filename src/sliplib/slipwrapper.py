@@ -29,6 +29,8 @@ SlipWrapper
 
 import collections
 import sys
+from types import TracebackType
+from typing import Any, Deque, Optional
 
 from .slip import Driver, ProtocolError
 
@@ -53,7 +55,7 @@ class SlipWrapper:
        Allow iteration over a :class:`SlipWrapper` instance.
     """
 
-    def __init__(self, stream):
+    def __init__(self, stream: Any):
         """
         To instantiate a :class:`SlipWrapper`, the user must provide
         an existing byte stream
@@ -63,23 +65,23 @@ class SlipWrapper:
         """
         self.stream = stream
         self.driver = Driver()
-        self._messages = collections.deque()
-        self._protocol_error = None
-        self._traceback = None
+        self._messages = collections.deque()  # type: Deque[bytes]
+        self._protocol_error = None  # type: Optional[ProtocolError]
+        self._traceback = None  # type: Optional[TracebackType]
         self._flush_needed = False
         self._stream_closed = False
 
-    def send_bytes(self, packet):
+    def send_bytes(self, packet: bytes) -> None:
         """Send a packet over the stream.
 
         Derived classes must implement this method.
 
         Args:
-            packet (bytes): the packet to send over the stream
+            packet: the packet to send over the stream
         """
         raise NotImplementedError
 
-    def recv_bytes(self):
+    def recv_bytes(self) -> bytes:
         """Receive data from the stream.
 
         Derived classes must implement this method.
@@ -93,11 +95,11 @@ class SlipWrapper:
             this convention is followed.
 
         Returns:
-            bytes: The bytes received from the stream
+            The bytes received from the stream
         """
         raise NotImplementedError
 
-    def send_msg(self, message):
+    def send_msg(self, message: bytes) -> None:
         """Send a SLIP-encoded message over the stream.
 
         Args:
@@ -106,7 +108,7 @@ class SlipWrapper:
         packet = self.driver.send(message)
         self.send_bytes(packet)
 
-    def recv_msg(self):
+    def recv_msg(self) -> bytes:
         """Receive a single message from the stream.
 
         Returns:
@@ -124,8 +126,7 @@ class SlipWrapper:
 
         # No pending messages left. If a ProtocolError has occurred
         # it must be re-raised here:
-        if self._protocol_error:
-            self._handle_pending_protocol_error()
+        self._handle_pending_protocol_error()
 
         while not self._messages and not self._stream_closed:
             # As long as no messages are available,
@@ -151,18 +152,17 @@ class SlipWrapper:
         if self._messages:
             return self._messages.popleft()
 
-        if self._protocol_error:
-            self._handle_pending_protocol_error()
-        else:
-            return b''
+        self._handle_pending_protocol_error()
+        return b''
 
-    def _handle_pending_protocol_error(self):
-        try:
-            raise self._protocol_error.with_traceback(self._traceback)
-        finally:
-            self._protocol_error = None
-            self._traceback = None
-            self._flush_needed = True
+    def _handle_pending_protocol_error(self) -> None:
+        if self._protocol_error:
+            try:
+                raise self._protocol_error.with_traceback(self._traceback)
+            finally:
+                self._protocol_error = None
+                self._traceback = None
+                self._flush_needed = True
 
     def __iter__(self):
         while True:

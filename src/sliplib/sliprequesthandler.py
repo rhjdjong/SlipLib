@@ -38,7 +38,7 @@ class SlipRequestHandler(BaseRequestHandler):
     :attr:`self.request` to send and receive SLIP-encoded messages.
     """
 
-    def setup(self):
+    def setup(self) -> None:
         """Initializes the request handler.
 
         The original socket (available via :code:`self.request`)
@@ -52,7 +52,7 @@ class SlipRequestHandler(BaseRequestHandler):
             # noinspection PyTypeChecker
             self.request = SlipSocket(self.request)
 
-    def handle(self):
+    def handle(self) -> None:
         """Services the request. Must be defined by a derived class.
 
         Note that in general it does not make sense
@@ -73,7 +73,7 @@ class SlipRequestHandler(BaseRequestHandler):
                     # Do something with the message
         """
 
-    def finish(self):
+    def finish(self) -> None:
         """Performs any cleanup actions.
 
         The default implementation does nothing.

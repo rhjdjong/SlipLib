@@ -18,12 +18,14 @@ and sends it back to the client.
 """
 
 import socket
+import sys
 from socketserver import TCPServer
-from _socket import dup
+
+from _socket import dup  # type: ignore
 from sliplib import SlipRequestHandler
 
 
-class ChattySocket(socket.socket):
+class _ChattySocket(socket.socket):
     """A socket subclass that prints the raw data that is received and sent."""
 
     def __init__(self, sock):
@@ -45,7 +47,8 @@ class SlipHandler(SlipRequestHandler):
     """A SlipRequestHandler that echoes the received message with the bytes in reversed order."""
 
     def setup(self):
-        self.request = ChattySocket(self.request)
+        self.request = _ChattySocket(self.request)
+        print("Incoming connection from {}".format(self.request.getpeername()))
         super().setup()
 
     # Dedicated handler to show the encoded bytes.
@@ -60,7 +63,15 @@ class SlipHandler(SlipRequestHandler):
                 break
 
 
+class TCPServerIPv6(TCPServer):
+    """An IPv6 TCPServer"""
+    address_family = socket.AF_INET6
+
+
 if __name__ == '__main__':
-    server = TCPServer(('localhost', 0), SlipHandler)
-    print('Slip server listening on', server.server_address)
+    if len(sys.argv) > 1 and sys.argv[1].lower() == 'ipv6':
+        server = TCPServerIPv6(('localhost', 0), SlipHandler)  # type: TCPServer
+    else:
+        server = TCPServer(('localhost', 0), SlipHandler)
+    print('Slip server listening on localhost, port', server.server_address[1])
     server.handle_request()

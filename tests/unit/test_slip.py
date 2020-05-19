@@ -101,15 +101,14 @@ class TestDecoding:
         b'abc' + ESC,
         b'a' + END + b'z',
     ])
-    def test_protocol_error_raises_protocol_error(self, packet):
+    def test_invalid_packet_raises_protocol_error(self, packet):
         """A packet with an invalid escape sequence should result in a ProtocolError."""
         packet = END + packet + END
         with pytest.raises(ProtocolError) as exc_info:
             decode(packet)
-        assert exc_info.value.args == (packet.strip(END),)
+        assert exc_info.value.args == (packet,)
 
 
-# noinspection PyAttributeOutsideInit,PyPep8Naming
 class TestDriver:
     """Tests for the Driver class."""
 

@@ -6,13 +6,15 @@
 
 """Tests for SlipRequestHandler"""
 
-import socket
+from socket import AF_INET, AF_INET6  # pylint: disable=no-name-in-module
+from socket import socket
 import socketserver
 import threading
 
 import pytest
 
 from sliplib import SlipRequestHandler, SlipSocket, END
+
 
 class DummySlipRequestHandler(SlipRequestHandler):
     """SlipRequestHandler subclass that handles a single packet."""
@@ -25,9 +27,10 @@ class DummySlipRequestHandler(SlipRequestHandler):
 
 class TestSlipRequestHandler:
     """Tests for SlipRequestHandler."""
+
     @pytest.fixture(autouse=True, params=[
-        (socket.AF_INET, ('127.0.0.1', 0)),
-        (socket.AF_INET6, ('::1', 0, 0, 0))
+        (AF_INET, ('127.0.0.1', 0)),
+        (AF_INET6, ('::1', 0, 0, 0))
     ])
     def setup(self, request):
         """Prepare the test."""
@@ -37,7 +40,7 @@ class TestSlipRequestHandler:
         self.server_class = type('SlipServer',
                                  (socketserver.TCPServer,),
                                  {"address_family": self.family})
-        self.client_socket = socket.socket(family=self.family)
+        self.client_socket = socket(family=self.family)
         self.server_is_running = threading.Event()
         yield
         self.client_socket.close()

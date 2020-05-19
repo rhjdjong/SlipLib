@@ -42,6 +42,7 @@ Classes
 
 import collections
 import re
+from typing import Deque, List, Union
 
 END = b'\xc0'
 ESC = b'\xdb'
@@ -64,41 +65,40 @@ class ProtocolError(ValueError):
     """
 
 
-def encode(msg):
+def encode(msg: bytes) -> bytes:
     """Encodes a message (a byte sequence) into a SLIP-encoded packet.
 
     Args:
-        msg (bytes): The message that must be encoded
+        msg: The message that must be encoded
 
     Returns:
-        bytes: The SLIP-encoded message
+        The SLIP-encoded message
     """
     msg = bytes(msg)
     return END + msg.replace(ESC, ESC + ESC_ESC).replace(END, ESC + ESC_END) + END
 
 
-def decode(packet):
+def decode(packet: bytes) -> bytes:
     """Retrieves the message from the SLIP-encoded packet.
 
     Args:
-        packet (bytes): The SLIP-encoded message.
+        packet: The SLIP-encoded message.
            Note that this must be exactly one complete packet.
            The :func:`decode` function does not provide any buffering
            for incomplete packages, nor does it provide support
            for decoding data with multiple packets.
     Returns:
-        bytes: The decoded message
+        The decoded message
 
     Raises:
         ProtocolError: if the packet contains an invalid byte sequence.
     """
-    packet = bytes(packet).strip(END)
     if not is_valid(packet):
         raise ProtocolError(packet)
     return packet.strip(END).replace(ESC + ESC_END, END).replace(ESC + ESC_ESC, ESC)
 
 
-def is_valid(packet):
+def is_valid(packet: bytes) -> bool:
     """Indicates if the packet's contents conform to the SLIP specification.
 
     A packet is valid if:
@@ -107,10 +107,10 @@ def is_valid(packet):
     * Each :const:`ESC` byte is followed by either an :const:`ESC_END` or an :const:`ESC_ESC` byte.
 
     Args:
-        packet (bytes): The packet to inspect.
+        packet: The packet to inspect.
 
     Returns:
-        bool: :const:`True` if the packet is valid, :const:`False` otherwise
+        :const:`True` if the packet is valid, :const:`False` otherwise
     """
     packet = packet.strip(END)
     return not (END in packet or
@@ -125,25 +125,25 @@ class Driver:
     messages according to the SLIP protocol.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._recv_buffer = b''
-        self._packets = collections.deque()
-        self._messages = []
+        self._packets = collections.deque()  # type: Deque[bytes]
+        self._messages = []  # type: List[bytes]
 
-    def send(self, message):  # pylint: disable=no-self-use
+    def send(self, message: bytes) -> bytes:  # pylint: disable=no-self-use
         """Encodes a message into a SLIP-encoded packet.
 
         The message can be any arbitrary byte sequence.
 
         Args:
-            message (bytes): The message that must be encoded.
+            message: The message that must be encoded.
 
         Returns:
-            bytes: A packet with the SLIP-encoded message.
+            A packet with the SLIP-encoded message.
         """
         return encode(message)
 
-    def receive(self, data):
+    def receive(self, data: Union[bytes, int]) -> List[bytes]:
         """Decodes data and gives a list of decoded messages.
 
         Processes :obj:`data`, which must be a bytes-like object,
@@ -153,15 +153,19 @@ class Driver:
         are buffered, and processed with the next call to :meth:`receive`.
 
         Args:
-            data (bytes|int): The bytes-like object to be processed.
+            data: A bytes-like object to be processed.
+
                 An empty :obj:`data` parameter forces the internal
                 buffer to be flushed and decoded.
 
+                To accommodate iteration over byte sequences, an
+                integer in the range(0, 256) is also accepted.
+
         Returns:
-            list(bytes): A (possibly empty) list of decoded messages.
+            A (possibly empty) list of decoded messages.
 
         Raises:
-            ProtocolError: When the data contains an invalid byte sequence.
+            ProtocolError: When `data` contains an invalid byte sequence.
         """
 
         # When a single byte is fed into this function
@@ -199,7 +203,7 @@ class Driver:
         # Process the buffered packets
         return self.flush()
 
-    def flush(self):
+    def flush(self) -> List[bytes]:
         """Gives a list of decoded messages.
 
         Decodes the packets in the internal buffer.
@@ -208,12 +212,12 @@ class Driver:
         has been handled.
 
         Returns:
-            list(bytes): A (possibly empty) list of decoded messages from the buffered packets.
+            A (possibly empty) list of decoded messages from the buffered packets.
 
         Raises:
             ProtocolError: When any of the buffered packets contains an invalid byte sequence.
         """
-        messages = []
+        messages = []  # type: List[bytes]
         while self._packets:
             packet = self._packets.popleft()
             try:
@@ -226,7 +230,7 @@ class Driver:
         return messages
 
     @property
-    def messages(self):
+    def messages(self) -> List[bytes]:
         """A list of decoded messages.
 
         The read-only attribute :attr:`messages` contains
