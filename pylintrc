@@ -164,7 +164,7 @@ msg-template={abspath}:{line}: [{msg_id}({symbol}), {obj}] {msg}
 # Set the output format. Available formats are text, parseable, colorized, json
 # and msvs (visual studio). You can also give a reporter class, e.g.
 # mypackage.mymodule.MyReporterClass.
-output-format=parseable
+output-format=text
 
 # Tells whether to display a full report or only the messages.
 reports=no
