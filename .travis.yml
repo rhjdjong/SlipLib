@@ -10,17 +10,44 @@ python:
   - 3.7
   - 3.8
 
+matrix:
+  include:
+    - os: linux
+      language: python
+    - os: osx
+      python: 3.5
+      env: PYTHON=35
+    - os: osx
+      python: 3.6
+      env: PYTHON=36
+    - os: osx
+      python: 3.7
+      env: PYTHON=37
+    - os: osx
+      python: 3.8
+      env: PYTHON=38
+
 before_script:
  - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
      sudo sh -c 'echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6';
    fi
 
 before_install:
-  - python --version
+  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+      curl -LO https://raw.githubusercontent.com/GiovanniBussi/macports-ci/master/macports-ci;
+      source ./macports-ci install;
+      yes | sudo port install python$PYTHON;
+      yes | sudo port install py$PYTHON-pip;
+      sudo port select --set python3 python$PYTHON;
+      sudo port select --set pip pip$PYTHON;
+      export PATH=$PATH:$(python3 -c "import site; print(site.USER_BASE)")/bin;
+    fi
   - pip install -U pip
+  - python3 --version
+  - pip --version
 
 install:
- - pip install .[test]
+ - pip install --user .[test]
 
 script:
  - pytest
