@@ -1,7 +1,3 @@
-os:
-  - linux
-  - osx
-
 matrix:
   include:
     - os: linux
@@ -50,9 +46,9 @@ before_install:
 
 install:
   - if [ "{TRAVIS_OS_NAME}" == "osx" ]; then
-      pip install --user .[test]
+      pip install --user .[test];
     else
-      pip install .[test]
+      pip install .[test];
     fi
 
 
