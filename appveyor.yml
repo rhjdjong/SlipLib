@@ -1,7 +1,5 @@
 image:
   - Visual Studio 2019
-  - Ubuntu
-  - macOS
 
 platform:
   - x86
@@ -30,16 +28,6 @@ matrix:
   exclude:
     - platform: x86
       PYTHON_BUILD: '-x64'
-    - image: Ubuntu
-      platform: x86
-    - image: Ubuntu
-      platform: x64
-      PYTHON_BUILD: ''
-    - image: macOS
-      platform: x86
-    - image: macOS
-      platform: x64
-      PYTHON_BUILD: ''
 
 stack: python %PYTHON_VERSION%
 
@@ -54,11 +42,3 @@ test_script:
   - cmd: python -m pip install .[test]
   - cmd: python -m pytest
   - cmd: python -m mypy examples src tests
-
-  # Linux and Mac
-  - sh: python -VV
-  - sh: python -c "import struct; print(struct.calcsize('P') * 8)"
-  - sh: pip install .[test]
-  - sh: PATH=/home/appveyor/.local/bin:${PATH}
-  - sh: pytest
-  - sh: mypy examples src tests
