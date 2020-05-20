@@ -286,5 +286,5 @@ class SlipSocket(SlipWrapper):
         See Also:
             :func:`socket.create_connection`
         """
-        sock = socket.create_connection(address, timeout, source_address)  # type: ignore
+        sock = socket.create_connection(address[0:2], timeout, source_address)  # type: ignore
         return cls(sock)

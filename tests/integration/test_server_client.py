@@ -9,6 +9,7 @@ This module tests SlipSocket using a SLIP echo server, similar to the one in the
 """
 
 from multiprocessing import Pipe, Process
+import socket
 from socketserver import TCPServer
 import pytest
 from sliplib import SlipRequestHandler, SlipSocket
@@ -28,8 +29,14 @@ class SlipEchoHandler(SlipRequestHandler):
 
 class SlipEchoServer:  # pylint: disable=too-few-public-methods
     """Execution helper for the echo server. Sends the server address back over the pipe."""
-    def __init__(self, pipe):
-        self.server = TCPServer(('localhost', 0), SlipEchoHandler)
+
+    server_class = {
+        socket.AF_INET: TCPServer,
+        socket.AF_INET6: type('TCPServerIPv6', (TCPServer,), {'address_family': socket.AF_INET6}),
+    }
+
+    def __init__(self, address_family, pipe):
+        self.server = self.server_class[address_family](('localhost', 0), SlipEchoHandler)
         pipe.send(self.server.server_address)
         self.server.handle_request()
 
@@ -51,11 +58,12 @@ class SlipEchoClient:
 
 class TestEchoServer:
     """Test for the SLIP echo server"""
-    @pytest.fixture(autouse=True)
-    def setup(self):
+    @pytest.fixture(autouse=True, params=[socket.AF_INET, socket.AF_INET6])
+    def setup(self, request):
         """Prepare the server and client"""
         near, far = Pipe()
-        self.server = Process(target=SlipEchoServer, args=(far,))
+        address_family = request.param
+        self.server = Process(target=SlipEchoServer, args=(address_family, far))
         self.server.start()
         server_address = near.recv()
         self.client = SlipEchoClient(server_address)

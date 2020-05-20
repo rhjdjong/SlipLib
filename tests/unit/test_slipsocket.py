@@ -272,7 +272,7 @@ class TestSlipSocket:
         sock = SlipSocket.create_connection(self.far_address)
         assert isinstance(sock, SlipSocket)
         assert sock.socket is new_sock_mock
-        create_connection_mock.assert_called_once_with(self.far_address, None, None)
+        create_connection_mock.assert_called_once_with(self.far_address[0:2], None, None)
 
     def test_slip_socket_iteration(self, mocker):
         """Test that a SlipSocket can be iterated over."""
