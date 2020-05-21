@@ -73,7 +73,7 @@ wraps an instance of the `Driver` class with a user-provided stream.
 
 Two concrete subclasses of `SlipWrapper` are provided:
 
-* `SlipStream` allows the wrapping of a buffered IO stream.
+* `SlipStream` allows the wrapping of a byte IO stream.
 * `SlipSocket` allows the wrapping of a TCP socket.
 
 In addition, the module also provides a `SlipRequestHandler`

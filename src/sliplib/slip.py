@@ -1,9 +1,48 @@
-# Copyright (c) 2017 Ruud de Jong
-# This file is part of the SlipLib project which is released under the MIT license.
-# See https://github.com/rhjdjong/SlipLib for details.
+#  Copyright (c) 2020. Ruud de Jong
+#  This file is part of the SlipLib project which is released under the MIT license.
+#  See https://github.com/rhjdjong/SlipLib for details.
+
+"""
+Constants
+---------
+
+.. data:: END
+.. data:: ESC
+.. data:: ESC_END
+.. data:: ESC_ESC
+
+   These constants represent the special bytes
+   used by SLIP for delimiting and encoding messages.
+
+Functions
+---------
+
+The following are lower-level functions, that should normally not be used directly.
+
+.. autofunction:: encode
+.. autofunction:: decode
+.. autofunction:: is_valid
+
+Classes
+-------
+
+.. autoclass:: Driver
+
+   Class :class:`Driver` offers the following methods:
+
+   .. automethod:: send
+   .. automethod:: receive
+
+   To enable recovery from a :exc:`ProtocolError`, the
+   :class:`Driver` class offers the following attribute and method:
+
+   .. autoattribute:: messages
+   .. automethod:: flush
+"""
 
 import collections
 import re
+from typing import Deque, List, Union
 
 END = b'\xc0'
 ESC = b'\xdb'
@@ -26,51 +65,52 @@ class ProtocolError(ValueError):
     """
 
 
-def encode(msg):
-    """encode(msg) -> SLIP-encoded message.
+def encode(msg: bytes) -> bytes:
+    """Encodes a message (a byte sequence) into a SLIP-encoded packet.
 
-    Encodes a message (a byte sequence) into a
-    SLIP-encoded packet.
+    Args:
+        msg: The message that must be encoded
 
-    :param bytes msg: The message that must be encoded
-    :return: The SLIP-encoded message
-    :rtype: bytes
+    Returns:
+        The SLIP-encoded message
     """
     msg = bytes(msg)
     return END + msg.replace(ESC, ESC + ESC_ESC).replace(END, ESC + ESC_END) + END
 
 
-def decode(packet):
-    """decode(packet) -> message from SLIP-encoded packet
+def decode(packet: bytes) -> bytes:
+    """Retrieves the message from the SLIP-encoded packet.
 
-    Retrieves the message from the SLIP-encoded packet.
-
-    :param bytes packet: The SLIP-encoded message.
+    Args:
+        packet: The SLIP-encoded message.
            Note that this must be exactly one complete packet.
            The :func:`decode` function does not provide any buffering
            for incomplete packages, nor does it provide support
            for decoding data with multiple packets.
-    :return: The decoded message
-    :rtype: bytes
-    :raises ProtocolError: if the packet contains an invalid byte sequence.
+    Returns:
+        The decoded message
+
+    Raises:
+        ProtocolError: if the packet contains an invalid byte sequence.
     """
-    packet = bytes(packet).strip(END)
     if not is_valid(packet):
         raise ProtocolError(packet)
     return packet.strip(END).replace(ESC + ESC_END, END).replace(ESC + ESC_ESC, ESC)
 
 
-def is_valid(packet):
-    """is_valid(packet) -> indicates if the packet's contents conform to the SLIP specification.
-    
+def is_valid(packet: bytes) -> bool:
+    """Indicates if the packet's contents conform to the SLIP specification.
+
     A packet is valid if:
 
     * It contains no :const:`END` bytes other than leading and/or trailing :const:`END` bytes, and
     * Each :const:`ESC` byte is followed by either an :const:`ESC_END` or an :const:`ESC_ESC` byte.
 
-    :param bytes packet: The packet to inspect.
-    :return: :const:`True` if the packet is valid, :const:`False` otherwise
-    :rtype: bool
+    Args:
+        packet: The packet to inspect.
+
+    Returns:
+        :const:`True` if the packet is valid, :const:`False` otherwise
     """
     packet = packet.strip(END)
     return not (END in packet or
@@ -85,26 +125,26 @@ class Driver:
     messages according to the SLIP protocol.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._recv_buffer = b''
-        self._packets = collections.deque()
-        self._messages = []
+        self._packets = collections.deque()  # type: Deque[bytes]
+        self._messages = []  # type: List[bytes]
 
-    # noinspection PyMethodMayBeStatic
-    def send(self, message):
-        """send(message) -> SLIP-encoded message.
+    def send(self, message: bytes) -> bytes:  # pylint: disable=no-self-use
+        """Encodes a message into a SLIP-encoded packet.
 
-        Encodes a message (any arbitrary byte-string) into a
-        SLIP-encoded packet.
+        The message can be any arbitrary byte sequence.
 
-        :param bytes message: The message that must be encoded.
-        :return: A packet with the SLIP-encoded message.
-        :rtype: bytes
+        Args:
+            message: The message that must be encoded.
+
+        Returns:
+            A packet with the SLIP-encoded message.
         """
         return encode(message)
 
-    def receive(self, data):
-        """receive(data) -> List of decoded messages.
+    def receive(self, data: Union[bytes, int]) -> List[bytes]:
+        """Decodes data and gives a list of decoded messages.
 
         Processes :obj:`data`, which must be a bytes-like object,
         and returns a (possibly empty) list with :class:`bytes` objects,
@@ -112,13 +152,27 @@ class Driver:
         Any non-terminated SLIP packets in :obj:`data`
         are buffered, and processed with the next call to :meth:`receive`.
 
-        :param bytes data: The bytes-like object to be processed.
-            An empty :obj:`data` parameter forces the internal
-            buffer to be flushed and decoded.
-        :return: A (possibly empty) list of decoded messages.
-        :rtype: list(bytes)
-        :raises ProtocolError: An invalid byte sequence has been detected.
+        Args:
+            data: A bytes-like object to be processed.
+
+                An empty :obj:`data` parameter forces the internal
+                buffer to be flushed and decoded.
+
+                To accommodate iteration over byte sequences, an
+                integer in the range(0, 256) is also accepted.
+
+        Returns:
+            A (possibly empty) list of decoded messages.
+
+        Raises:
+            ProtocolError: When `data` contains an invalid byte sequence.
         """
+
+        # When a single byte is fed into this function
+        # it is received as an integer, not as a bytes object.
+        # It must first be converted into a bytes object.
+        if isinstance(data, int):
+            data = bytes((data,))
 
         # Empty data indicates that the data reception is complete.
         # To force a buffer flush, an END byte is added, so that the
@@ -149,23 +203,25 @@ class Driver:
         # Process the buffered packets
         return self.flush()
 
-    def flush(self):
-        """flush() -> List of decoded messages.
+    def flush(self) -> List[bytes]:
+        """Gives a list of decoded messages.
 
         Decodes the packets in the internal buffer.
         This enables the continuation of the processing
         of received packets after a :exc:`ProtocolError`
         has been handled.
 
-        :return: A (possibly empty) list of decoded messages from the buffered packets.
-        :rtype: list(bytes)
-        :raises ProtocolError: An invalid byte sequence has been detected.
+        Returns:
+            A (possibly empty) list of decoded messages from the buffered packets.
+
+        Raises:
+            ProtocolError: When any of the buffered packets contains an invalid byte sequence.
         """
-        messages = []
+        messages = []  # type: List[bytes]
         while self._packets:
-            p = self._packets.popleft()
+            packet = self._packets.popleft()
             try:
-                msg = decode(p)
+                msg = decode(packet)
             except ProtocolError:
                 # Add any already decoded messages to the exception
                 self._messages = messages
@@ -174,8 +230,8 @@ class Driver:
         return messages
 
     @property
-    def messages(self):
-        """messages -> List of decoded messages
+    def messages(self) -> List[bytes]:
+        """A list of decoded messages.
 
         The read-only attribute :attr:`messages` contains
         the messages that were

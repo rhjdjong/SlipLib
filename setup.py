@@ -1,34 +1,50 @@
-# Copyright (c) 2017 Ruud de Jong
+# Copyright (c) 2020 Ruud de Jong
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
 
-from setuptools import setup, find_packages  # Always prefer setuptools over distutils
+"""
+Setup.py for module sliplib
+
+Use ``pip install sliplib[test]`` to allow the tests to be run
+Use ``pip install sliplib[dev]`` for development (including documentation)
+"""
+
 import os.path
+from setuptools import setup, find_packages  # Always prefer setuptools over distutils
 
 
 version_dict = {}
 with open(os.path.join('src', 'sliplib', 'version.py')) as version_file:
-    exec(version_file.read(), version_dict)
+    exec(version_file.read(), version_dict)  # pylint: disable=exec-used
 __version__ = version_dict['__version__']
 del version_dict
 
 
-# Get the long description from the relevant file
 def read_long_description(*filenames, **kwargs):
+    """Get the long description from the relevant file"""
+
     encoding = kwargs.get('encoding', 'utf-8')
-    seperator = kwargs.get('sep', '\n')
+    separator = kwargs.get('sep', '\n')
     buf = []
     for filename in filenames:
         with open(filename, encoding=encoding) as f:
             buf.append(f.read())
-    return seperator.join(buf)
+    return separator.join(buf)
 
 
 long_description = read_long_description('README.rst')
 
-TEST_REQUIRES = ['pytest', 'pytest-mock', 'pytest-cov']
-DOC_REQUIRES = ['sphinx_rtd_theme']
-DEV_REQUIRES = ['tox', 'mypy', 'wheel', 'twine']
+TEST_REQUIRES = ['pytest>=5.4', 'pytest-mock', 'pytest-cov', 'pytest-pylint', 'mypy', 'pylint']
+DOC_REQUIRES = ['sphinx', 'sphinx_rtd_theme']
+DEV_REQUIRES = ['tox', 'wheel', 'twine']
+INSTALL_REQUIRES = []
+
+try:
+    from typing import Protocol
+except ImportError:
+    INSTALL_REQUIRES.append('typing-extensions')
+else:
+    del Protocol
 
 setup(
     name='sliplib',
@@ -57,7 +73,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
@@ -65,7 +81,6 @@ setup(
         # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: MIT License',
 
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
@@ -81,7 +96,7 @@ setup(
     # simple. Or you can use find_packages().
     package_dir={'': 'src'},
     packages=find_packages('src'),
-
+    install_requires=INSTALL_REQUIRES,
     extras_require={
         'dev': DEV_REQUIRES + DOC_REQUIRES + TEST_REQUIRES,
         'test': TEST_REQUIRES
