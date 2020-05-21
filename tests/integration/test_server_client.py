@@ -30,13 +30,14 @@ class SlipEchoHandler(SlipRequestHandler):
 class SlipEchoServer:  # pylint: disable=too-few-public-methods
     """Execution helper for the echo server. Sends the server address back over the pipe."""
 
-    server_class = {
-        socket.AF_INET: TCPServer,
-        socket.AF_INET6: type('TCPServerIPv6', (TCPServer,), {'address_family': socket.AF_INET6}),
+    server_data = {
+        socket.AF_INET: (TCPServer, '127.0.0.1'),
+        socket.AF_INET6: (type('TCPServerIPv6', (TCPServer,), {'address_family': socket.AF_INET6}), '::1'),
     }
 
     def __init__(self, address_family, pipe):
-        self.server = self.server_class[address_family](('localhost', 0), SlipEchoHandler)
+        server_class, localhost = self.server_data[address_family]
+        self.server = server_class((localhost, 0), SlipEchoHandler)
         pipe.send(self.server.server_address)
         self.server.handle_request()
 
