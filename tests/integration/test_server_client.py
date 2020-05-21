@@ -59,13 +59,18 @@ class SlipEchoClient:
 class TestEchoServer:
     """Test for the SLIP echo server"""
     @pytest.fixture(autouse=True, params=[socket.AF_INET, socket.AF_INET6])
-    def setup(self, request):
+    def setup(self, request, capfd):
         """Prepare the server and client"""
         near, far = Pipe()
         address_family = request.param
         self.server = Process(target=SlipEchoServer, args=(address_family, far))
         self.server.start()
-        server_address = near.recv()
+        address_available = near.poll(0.5)
+        if address_available:
+            server_address = near.recv()
+        else:
+            captured = capfd.readouterr()
+            assert captured == ''
         self.client = SlipEchoClient(server_address)
         yield
         self.client.close()
