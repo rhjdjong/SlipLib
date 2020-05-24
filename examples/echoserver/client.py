@@ -6,7 +6,7 @@
 Client
 ++++++
 
-The :file:`client.py` example file is a client for the demonstrator echo server .
+The :file:`client.py` example file is a client for the demonstrator echo server.
 It prompts the user for a message,
 encodes it in a Slip packet, sends it to the server,
 and prints the decoded reply it gets back from the server.
