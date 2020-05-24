@@ -74,7 +74,7 @@ class SlipSocket(SlipWrapper):
 
     :class:`SlipSocket` combines a :class:`Driver` instance with a
     :class:`socket`.
-    The :class:`SlipStream` class has all the methods from its base class :class:`SlipWrapper`.
+    The :class:`SlipSocket` class has all the methods from its base class :class:`SlipWrapper`.
     In addition it directly exposes all methods and attributes of
     the contained :obj:`socket`, except for the following:
 

@@ -18,7 +18,7 @@ Usage
 +++++
 
 Open a terminal window in the :file:`echoserver` directory
-and run the :file:`server_ipv6.py` script. This will start the server
+and run the :file:`server.py` script. This will start the server
 and print the address on which the server is listening.
 
 .. code:: bash
