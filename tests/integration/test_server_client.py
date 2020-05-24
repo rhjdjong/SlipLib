@@ -66,12 +66,12 @@ class TestEchoServer:
         address_family = request.param
         self.server = Process(target=SlipEchoServer, args=(address_family, far))
         self.server.start()
-        address_available = near.poll(0.5)
+        address_available = near.poll(1.5)  # AppVeyor sometimes takes a long time to run the server.
         if address_available:
             server_address = near.recv()
         else:
             captured = capfd.readouterr()
-            assert captured == ''
+            pytest.fail(captured.err)
         self.client = SlipEchoClient(server_address)
         yield
         self.client.close()

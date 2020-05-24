@@ -98,6 +98,7 @@ setup(
     packages=find_packages('src'),
     install_requires=INSTALL_REQUIRES,
     extras_require={
+        'docs': DOC_REQUIRES,
         'dev': DEV_REQUIRES + DOC_REQUIRES + TEST_REQUIRES,
         'test': TEST_REQUIRES
     }

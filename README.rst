@@ -1,6 +1,6 @@
 
 .. image:: https://readthedocs.org/projects/sliplib/badge/?version=latest
-   :target: http://sliplib.readthedocs.org/en/latest/?badge=latest
+   :target: http://sliplib.readthedocs.org/en/master/?badge=master
    :alt: ReadTheDocs Documentation Status
 
 .. image:: https://travis-ci.org/rhjdjong/SlipLib.svg
@@ -23,7 +23,7 @@ It defines encoding, decoding, and validation functions,
 as well as a  driver class that can be used to implement
 a SLIP protocol stack, and higher-level classes that
 apply the SLIP protocol to TCP connections or IO streams.
-Read the `documentation <http://sliplib.readthedocs.org/en/latest/>`_
+Read the `documentation <http://sliplib.readthedocs.org/en/master/>`_
 for detailed information.
 
 Background
@@ -48,6 +48,15 @@ to frame variable length data structures.
 
 Usage
 =====
+
+Installation
+------------
+
+To install the `sliplib` module, use
+
+.. code::
+
+    pip install sliplib
 
 Low-level usage
 ---------------
@@ -87,11 +96,11 @@ Error Handling
 Contrary to the reference implementation described in :rfc:`1055`,
 which chooses to essentially ignore protocol errors,
 the functions and classes in the `sliplib` module
-uses a `ProtocolError` exception
+use a `ProtocolError` exception
 to indicate protocol errors, i.e. SLIP packets with invalid byte sequences.
 The `Driver` class raises the `ProtocolError` exception
-as soon as a SLIP packet with an invalid byte sequence is received .
+as soon as a complete SLIP packet with an invalid byte sequence is received .
 The `SlipWrapper` class and its subclasses catch the `ProtocolError`\s
 raised by the `Driver` class, and re-raise them when
-an attempt is made to read the contents of a SLIP packet with invalid data.
-
+an attempt is made to read the contents of a SLIP packet that contained
+invalid data.
