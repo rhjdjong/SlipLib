@@ -102,6 +102,5 @@ The `Driver` class raises the `ProtocolError` exception
 as soon as a complete SLIP packet with an invalid byte sequence is received .
 The `SlipWrapper` class and its subclasses catch the `ProtocolError`\s
 raised by the `Driver` class, and re-raise them when
-an attempt is made to read the contents of the SLIP packet that contained
-the invalid data.
-
+an attempt is made to read the contents of a SLIP packet that contained
+invalid data.
