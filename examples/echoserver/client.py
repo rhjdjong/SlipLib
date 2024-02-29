@@ -22,9 +22,9 @@ if __name__ == '__main__':
         print("Usage: python client.py <port>")
         sys.exit(1)
     port = sys.argv[1]
-    print("Connecting to server on port {}".format(port))
+    print(f"Connecting to server on port {port}")
     sock = sliplib.SlipSocket.create_connection(('localhost', int(port)))
-    print("Connected to {}".format(sock.getpeername()))
+    print(f"Connected to {sock.getpeername()}")
 
     while True:
         message = input('Message>')

@@ -9,7 +9,6 @@
 
 import pytest
 
-
 data = [
     b'line 1',
     b'line with embedded\nnewline',
@@ -26,4 +25,3 @@ class BaseFileTest:
         testdir = tmp_path / "slip"
         testdir.mkdir()
         self.filepath = testdir / "read.txt"
-        yield

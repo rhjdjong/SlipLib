@@ -19,6 +19,7 @@ SlipStream
 import io
 import warnings
 from typing import Any
+
 try:
     from typing import Protocol
 except ImportError:
@@ -35,7 +36,7 @@ class _ProtoStream(Protocol):
     def write(self, data: bytes) -> int:
         """Write data to the stream."""
 
-class SlipStream(SlipWrapper):
+class SlipStream(SlipWrapper[_ProtoStream]):
     """Class that wraps an IO stream with a :class:`Driver`
 
     :class:`SlipStream` combines a :class:`Driver` instance with a concrete byte stream.
@@ -99,9 +100,9 @@ class SlipStream(SlipWrapper):
         """
         for method in ('read', 'write'):
             if not hasattr(stream, method) or not callable(getattr(stream, method)):
-                raise TypeError('{} object has no method {}'.format(stream.__class__.__name__, method))
+                raise TypeError(f'{stream.__class__.__name__} object has no method {method}')
         if hasattr(stream, 'encoding'):
-            raise TypeError('{} object is not a byte stream'.format(stream.__class__.__name__))
+            raise TypeError(f'{stream.__class__.__name__} object is not a byte stream')
         self._chunk_size = chunk_size if chunk_size > 0 else io.DEFAULT_BUFFER_SIZE
         super().__init__(stream)
 
@@ -143,8 +144,7 @@ class SlipStream(SlipWrapper):
                 'detach', 'flushInput', 'flushOutput', 'getbuffer', 'getvalue', 'peek', 'raw', 'reset_input_buffer',
                 'reset_output_buffer', 'seek', 'seekable', 'tell', 'truncate'
         ):
-            raise AttributeError("'{}' object has no attribute '{}'".
-                                 format(self.__class__.__name__, attribute))
+            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{attribute}'")
         warnings.warn("Direct access to the enclosed stream attributes and methods will be removed in version 1.0",
                       DeprecationWarning, stacklevel=2)
         return getattr(self.stream, attribute)

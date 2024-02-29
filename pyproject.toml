@@ -1,0 +1,124 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sliplib"
+dynamic = ["version"]
+description = "Slip package"
+readme = "README.rst"
+license = "MIT"
+authors = [
+    { name = "Ruud de Jong", email = "ruud.de.jong@xs4all.nl" },
+]
+keywords = [
+    "RFC1055",
+    "framing",
+    "message",
+    "protocol",
+    "slip",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.8",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.8"
+dependencies = []
+
+[project.urls]
+"Source code" = "https://github.com/rhjdjong/SlipLib"
+
+[tool.hatch.version]
+path = "src/sliplib/version.py"
+
+[tool.hatch.envs.default]
+dependencies = [
+    "coverage[toml]>=6.5",
+    "pytest",
+    "pytest-mock",
+]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+test-cov = "coverage run -m pytest {args:tests}"
+cov-report = [
+    "- coverage combine",
+    "coverage report",
+]
+cov = [
+    "test-cov",
+    "cov-report",
+]
+
+[[tool.hatch.envs.all.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+[tool.hatch.envs.types]
+dependencies = [
+    "pytest",
+    "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --strict --install-types --non-interactive {args:src/sliplib tests}"
+
+[tool.coverage.run]
+source_pkgs = ["sliplib", "tests"]
+branch = true
+parallel = true
+omit = [
+    "src/sliplib/__about__.py",
+]
+
+[tool.coverage.paths]
+sliplib = ["src/sliplib", "*/SlipLib/src/sliplib"]
+tests = ["tests", "*/SlipLib/tests"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "no cov",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+#[project.optional-dependencies]
+#dev = [
+#    "mypy",
+#    "pylint",
+#    "pytest-cov",
+#    "pytest-mock",
+#    "pytest-pylint",
+#    "pytest>=5.4",
+#    "sphinx",
+#    "sphinx_rtd_theme",
+#    "tox",
+#    "twine",
+#    "wheel",
+#]
+#docs = [
+#    "sphinx",
+#    "sphinx_rtd_theme",
+#]
+#test = [
+#    "mypy",
+#    "pylint",
+#    "pytest-cov",
+#    "pytest-mock",
+#    "pytest-pylint",
+#    "pytest>=5.4",
+#]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src",
+]
+
+[tool.hatch.envs.doc]
+python = "3.12"
+dependencies = [
+    "sphinx",
+    "sphinx_rtd_theme",
+]

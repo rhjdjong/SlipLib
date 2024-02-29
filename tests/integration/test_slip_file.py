@@ -6,8 +6,9 @@
 
 """Test using SlipStream with a buffered file"""
 
-from sliplib import encode, SlipStream
-from .test_data import data, BaseFileTest
+from sliplib import SlipStream, encode
+
+from .test_data import BaseFileTest, data
 
 
 class TestBufferedFileAccess(BaseFileTest):

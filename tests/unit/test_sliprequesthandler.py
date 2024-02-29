@@ -6,14 +6,13 @@
 
 """Tests for SlipRequestHandler"""
 
-from socket import AF_INET, AF_INET6  # pylint: disable=no-name-in-module
-from socket import socket
 import socketserver
 import threading
+from socket import AF_INET, AF_INET6, socket  # pylint: disable=no-name-in-module
 
 import pytest
 
-from sliplib import SlipRequestHandler, SlipSocket, END
+from sliplib import END, SlipRequestHandler, SlipSocket
 
 
 class DummySlipRequestHandler(SlipRequestHandler):

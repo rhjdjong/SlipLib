@@ -77,10 +77,10 @@ Exceptions
 """
 
 from .slip import *
-from .slipwrapper import *
+from .sliprequesthandler import *
 from .slipsocket import *
 from .slipstream import *
-from .sliprequesthandler import *
+from .slipwrapper import *
 from .version import __version__
 
 __all__ = [

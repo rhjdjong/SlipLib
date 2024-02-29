@@ -6,8 +6,10 @@
 
 """Test using SlipStream with an unbuffered file"""
 
-from sliplib import encode, SlipStream
-from .test_data import data, BaseFileTest
+from sliplib import SlipStream, encode
+
+from .test_data import BaseFileTest, data
+
 
 class TestUnbufferedFileAccess(BaseFileTest):
     """Test unbuffered SLIP file access."""

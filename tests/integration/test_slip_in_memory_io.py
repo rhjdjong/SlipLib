@@ -7,8 +7,10 @@
 """Test using SlipStream with an in-memory bytestream"""
 
 import io
+
 import pytest
-from sliplib import SlipStream, END
+
+from sliplib import END, SlipStream
 
 
 class TestSlipStreamWithBytesIO:

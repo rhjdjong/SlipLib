@@ -11,8 +11,9 @@ import socket
 import warnings
 
 import pytest
+
 import sliplib
-from sliplib import ProtocolError, SlipSocket, END, ESC
+from sliplib import END, ESC, ProtocolError, SlipSocket
 
 SOCKET_METHODS = [attr for attr in dir(socket.socket) if
                   callable(getattr(socket.socket, attr)) and not attr.startswith('_')]

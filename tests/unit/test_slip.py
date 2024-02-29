@@ -9,7 +9,7 @@ This module contains the tests for the low-level SLIP functions and classes.
 """
 import pytest
 
-from sliplib import END, ESC, ESC_END, ESC_ESC, encode, decode, Driver, ProtocolError
+from sliplib import END, ESC, ESC_END, ESC_ESC, Driver, ProtocolError, decode, encode
 
 
 class TestEncoding:

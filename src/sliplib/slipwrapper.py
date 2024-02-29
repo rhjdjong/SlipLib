@@ -29,13 +29,14 @@ SlipWrapper
 
 import collections
 import sys
+from typing import Any, Deque, Generic, Iterator, Optional, TypeVar
 from types import TracebackType
-from typing import Any, Deque, Optional
-
 from .slip import Driver, ProtocolError
 
+S = TypeVar("S")
 
-class SlipWrapper:
+
+class SlipWrapper(Generic[S]):
     """Base class that provides a message based interface to a byte stream
 
     :class:`SlipWrapper` combines a :class:`Driver` instance with a byte stream.
@@ -55,7 +56,7 @@ class SlipWrapper:
        Allow iteration over a :class:`SlipWrapper` instance.
     """
 
-    def __init__(self, stream: Any):
+    def __init__(self, stream: S):
         """
         To instantiate a :class:`SlipWrapper`, the user must provide
         an existing byte stream
@@ -164,7 +165,7 @@ class SlipWrapper:
                 self._traceback = None
                 self._flush_needed = True
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[bytes]:
         while True:
             msg = self.recv_msg()
             if not msg:

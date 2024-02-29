@@ -8,8 +8,10 @@
 
 import io
 import warnings
+
 import pytest
-from sliplib import SlipStream, END, ESC, ProtocolError
+
+from sliplib import END, ESC, ProtocolError, SlipStream
 
 
 def test_slip_stream_fails_if_instantiated_with_non_io_stream_argument():
@@ -35,7 +37,6 @@ class TestSlipStreamBasics:
         self.stream_mock.read = mocker.Mock()
         self.stream_mock.write = mocker.Mock()
         self.slipstream = SlipStream(self.stream_mock)
-        yield
 
     def test_slipstream_creation(self):
         """Verify the creation of the SlipStream instance."""

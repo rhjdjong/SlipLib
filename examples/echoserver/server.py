@@ -22,6 +22,7 @@ import sys
 from socketserver import TCPServer
 
 from _socket import dup  # type: ignore
+
 from sliplib import SlipRequestHandler
 
 
@@ -48,7 +49,7 @@ class SlipHandler(SlipRequestHandler):
 
     def setup(self):
         self.request = _ChattySocket(self.request)
-        print("Incoming connection from {}".format(self.request.getpeername()))
+        print(f"Incoming connection from {self.request.getpeername()}")
         super().setup()
 
     # Dedicated handler to show the encoded bytes.

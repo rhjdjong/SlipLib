@@ -8,10 +8,12 @@
 This module tests SlipSocket using a SLIP echo server, similar to the one in the examples directory.
 """
 
-from multiprocessing import Pipe, Process
 import socket
+from multiprocessing import Pipe, Process
 from socketserver import TCPServer
+
 import pytest
+
 from sliplib import SlipRequestHandler, SlipSocket
 
 

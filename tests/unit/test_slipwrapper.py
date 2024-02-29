@@ -7,6 +7,7 @@
 """Tests for SlipWrapper."""
 
 import pytest
+
 from sliplib import SlipWrapper
 
 
@@ -18,7 +19,6 @@ class TestSlipWrapper:
         """Prepare the test."""
         self.slipwrapper = SlipWrapper('not a valid byte stream')
         self.subwrapper = type('SubSlipWrapper', (SlipWrapper,), {})(None)  # Dummy subclass without implementation
-        yield
 
     def test_slip_wrapper_recv_msg_is_not_implemented(self):
         """Verify that calling recv_msg on a SlipWrapper calls that does not implement read_bytes fails."""
