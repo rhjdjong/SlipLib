@@ -26,10 +26,11 @@ SlipWrapper
    .. automethod:: send_bytes
    .. automethod:: recv_bytes
 """
+from __future__ import annotations
 
 import collections
 import sys
-from typing import Any, Deque, Generic, Iterator, Optional, TypeVar
+from typing import Deque, Generic, Iterator, Optional, TypeVar
 from types import TracebackType
 from .slip import Driver, ProtocolError
 
@@ -66,9 +67,9 @@ class SlipWrapper(Generic[S]):
         """
         self.stream = stream
         self.driver = Driver()
-        self._messages = collections.deque()  # type: Deque[bytes]
-        self._protocol_error = None  # type: Optional[ProtocolError]
-        self._traceback = None  # type: Optional[TracebackType]
+        self._messages: Deque[bytes] = collections.deque()
+        self._protocol_error: Optional[ProtocolError] = None
+        self._traceback: Optional[TracebackType] = None
         self._flush_needed = False
         self._stream_closed = False
 

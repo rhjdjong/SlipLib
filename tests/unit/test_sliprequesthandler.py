@@ -9,15 +9,17 @@
 import socketserver
 import threading
 from socket import AF_INET, AF_INET6, socket  # pylint: disable=no-name-in-module
+from typing import Generator
 
 import pytest
+from pytest import FixtureRequest
 
 from sliplib import END, SlipRequestHandler, SlipSocket
-
+from sliplib.slipsocket import Address
 
 class DummySlipRequestHandler(SlipRequestHandler):
     """SlipRequestHandler subclass that handles a single packet."""
-    def handle(self):
+    def handle(self) -> None:
         assert isinstance(self.request, SlipSocket)
         msg = self.request.recv_msg()
         assert msg == b'hallo'
@@ -31,7 +33,7 @@ class TestSlipRequestHandler:
         (AF_INET, ('127.0.0.1', 0)),
         (AF_INET6, ('::1', 0, 0, 0))
     ])
-    def setup(self, request):
+    def setup(self, request: FixtureRequest) -> Generator[None, None, None]:
         """Prepare the test."""
         self.family = request.param[0]
         self.bind_address = request.param[1]
@@ -44,14 +46,14 @@ class TestSlipRequestHandler:
         yield
         self.client_socket.close()
 
-    def server(self, bind_address):
+    def server(self, bind_address: Address) -> None:
         """Create a server."""
         srv = self.server_class(bind_address, DummySlipRequestHandler)
         self.server_address = srv.server_address
         self.server_is_running.set()
         srv.handle_request()
 
-    def test_working_of_sliprequesthandler(self):
+    def test_working_of_sliprequesthandler(self) -> None:
         """Verify that the server returns the message with the bytes in reversed order."""
         server_thread = threading.Thread(target=self.server, args=(self.bind_address,))
         server_thread.start()

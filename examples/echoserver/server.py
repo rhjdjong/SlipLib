@@ -17,6 +17,8 @@ and then reverses the order of the bytes in the encoded message
 and sends it back to the client.
 """
 
+# ruff: noqa: T201
+
 import socket
 import sys
 from socketserver import TCPServer

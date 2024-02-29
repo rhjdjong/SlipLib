@@ -13,12 +13,13 @@ and prints the decoded reply it gets back from the server.
 This is repeated until the user enters an empty message.
 """
 
+# ruff: noqa: F201
 import sys
 
 import sliplib
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 2:  # noqa: PLR2004
         print("Usage: python client.py <port>")
         sys.exit(1)
     port = sys.argv[1]

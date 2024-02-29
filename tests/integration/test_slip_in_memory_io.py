@@ -7,6 +7,7 @@
 """Test using SlipStream with an in-memory bytestream"""
 
 import io
+from typing import Generator
 
 import pytest
 
@@ -17,14 +18,14 @@ class TestSlipStreamWithBytesIO:
     """Test SlipStream with BytesIO."""
 
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def setup(self) -> Generator[None, None, None]:
         """Setup the test"""
         self.basestream = io.BytesIO()
         self.slipstream = SlipStream(self.basestream)
         yield
         self.basestream.close()
 
-    def test_stream_reading(self):
+    def test_stream_reading(self) -> None:
         """Test reading from the bytestream"""
 
         msg_list = [b'hallo', b'bye']
@@ -35,7 +36,7 @@ class TestSlipStreamWithBytesIO:
         # No more messages
         assert self.slipstream.recv_msg() == b''
 
-    def test_stream_reading_single_bytes(self):
+    def test_stream_reading_single_bytes(self) -> None:
         """Test reading single bytes from the bytestream"""
 
         msg_list = [b'hallo', b'bye']
@@ -47,7 +48,7 @@ class TestSlipStreamWithBytesIO:
         # No more messages
         assert self.slipstream.recv_msg() == b''
 
-    def test_stream_writing(self):
+    def test_stream_writing(self) -> None:
         """Test writing to the bytestream"""
 
         msg_list = [b'hallo', b'bye']

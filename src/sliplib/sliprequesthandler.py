@@ -19,6 +19,7 @@ SlipRequestHandler
    .. automethod:: handle
    .. automethod:: finish
 """
+from __future__ import annotations
 
 from socketserver import BaseRequestHandler
 

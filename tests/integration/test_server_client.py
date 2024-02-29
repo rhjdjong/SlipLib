@@ -10,16 +10,20 @@ This module tests SlipSocket using a SLIP echo server, similar to the one in the
 
 import socket
 from multiprocessing import Pipe, Process
+from multiprocessing.connection import Connection
 from socketserver import TCPServer
+from typing import Dict, Generator, Tuple, Type
 
 import pytest
+from pytest import CaptureFixture, FixtureRequest
 
 from sliplib import SlipRequestHandler, SlipSocket
+from sliplib.slipsocket import Address
 
 
 class SlipEchoHandler(SlipRequestHandler):
     """SLIP request handler that echoes the received message, but with the bytes in reversed order."""
-    def handle(self):
+    def handle(self) -> None:
         while True:
             message = self.request.recv_msg()
             if not message:
@@ -35,9 +39,9 @@ class SlipEchoServer:  # pylint: disable=too-few-public-methods
     server_data = {
         socket.AF_INET: (TCPServer, '127.0.0.1'),
         socket.AF_INET6: (type('TCPServerIPv6', (TCPServer,), {'address_family': socket.AF_INET6}), '::1'),
-    }
+    } # type: Dict[int, Tuple[Type[TCPServer], str]]
 
-    def __init__(self, address_family, pipe):
+    def __init__(self, address_family: int, pipe: Connection) -> None:
         server_class, localhost = self.server_data[address_family]
         self.server = server_class((localhost, 0), SlipEchoHandler)
         pipe.send(self.server.server_address)
@@ -46,15 +50,15 @@ class SlipEchoServer:  # pylint: disable=too-few-public-methods
 
 class SlipEchoClient:
     """Client for the SLIP echo server"""
-    def __init__(self, address):
+    def __init__(self, address: Address) -> None:
         self.sock = SlipSocket.create_connection(address)
 
-    def echo(self, msg):
+    def echo(self, msg: bytes) -> bytes:
         """Send message to the SLIP server and returns the response."""
         self.sock.send_msg(msg)
         return self.sock.recv_msg()
 
-    def close(self):
+    def close(self) -> None:
         """Close the SLIP socket"""
         self.sock.close()
 
@@ -62,7 +66,7 @@ class SlipEchoClient:
 class TestEchoServer:
     """Test for the SLIP echo server"""
     @pytest.fixture(autouse=True, params=[socket.AF_INET, socket.AF_INET6])
-    def setup(self, request, capfd):
+    def setup(self, request: FixtureRequest, capfd: CaptureFixture[str]) -> Generator[None, None, None]:
         """Prepare the server and client"""
         near, far = Pipe()
         address_family = request.param
@@ -79,7 +83,7 @@ class TestEchoServer:
         self.client.close()
         self.server.join()
 
-    def test_echo_server(self):
+    def test_echo_server(self) -> None:
         """Test the echo server"""
         data = [
             (b'hallo', b'ollah'),

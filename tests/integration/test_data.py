@@ -6,6 +6,7 @@
 # pylint: disable=too-few-public-methods
 
 """Common data for file-related tests"""
+import pathlib
 
 import pytest
 
@@ -20,7 +21,7 @@ class BaseFileTest:
     """Base class for filebased SLIP tests."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, tmp_path):
+    def setup(self, tmp_path: pathlib.Path) -> None:
         """Prepare the test."""
         testdir = tmp_path / "slip"
         testdir.mkdir()

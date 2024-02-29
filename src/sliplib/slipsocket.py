@@ -61,6 +61,7 @@ SlipSocket
    .. autoattribute:: type
    .. autoattribute:: proto
 """
+from __future__ import annotations
 
 import socket
 import warnings
@@ -139,7 +140,7 @@ class SlipSocket(SlipWrapper[socket.socket]):
         """See base class"""
         return self.socket.recv(self._chunk_size)
 
-    def accept(self) -> Tuple['SlipSocket', Address]:
+    def accept(self) -> Tuple[SlipSocket, Address]:
         """Accepts an incoming connection.
 
         Returns:
@@ -268,7 +269,7 @@ class SlipSocket(SlipWrapper[socket.socket]):
 
     @classmethod
     def create_connection(cls, address: Address, timeout: Optional[float] = None,
-                          source_address: Optional[Address] = None) -> 'SlipSocket':
+                          source_address: Optional[Address] = None) -> SlipSocket:
         """Create a SlipSocket connection.
 
         This convenience method creates a connection to a socket at the specified address

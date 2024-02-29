@@ -40,6 +40,8 @@ Classes
    .. automethod:: flush
 """
 
+from __future__ import annotations
+
 import collections
 import re
 from typing import Deque, List, Union
@@ -127,8 +129,8 @@ class Driver:
 
     def __init__(self) -> None:
         self._recv_buffer = b''
-        self._packets = collections.deque()  # type: Deque[bytes]
-        self._messages = []  # type: List[bytes]
+        self._packets: Deque[bytes] = collections.deque()
+        self._messages: List[bytes] = []
 
     def send(self, message: bytes) -> bytes:  # pylint: disable=no-self-use
         """Encodes a message into a SLIP-encoded packet.

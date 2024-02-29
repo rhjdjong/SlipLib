@@ -15,15 +15,13 @@ SlipStream
    .. autoattribute:: readable
    .. autoattribute:: writable
 """
+from __future__ import annotations
 
 import io
 import warnings
 from typing import Any
 
-try:
-    from typing import Protocol
-except ImportError:
-    from typing_extensions import Protocol  # type: ignore
+from typing import Protocol
 from .slipwrapper import SlipWrapper
 
 

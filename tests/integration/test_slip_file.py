@@ -14,7 +14,7 @@ from .test_data import BaseFileTest, data
 class TestBufferedFileAccess(BaseFileTest):
     """Test buffered SLIP file access"""
 
-    def test_reading_slip_file(self):
+    def test_reading_slip_file(self) -> None:
         """Test reading encoded SLIP messages"""
 
         self.filepath.write_bytes(b''.join(encode(msg) for msg in data))
@@ -24,7 +24,7 @@ class TestBufferedFileAccess(BaseFileTest):
                 assert exp == act
 
 
-    def test_writing_slip_file(self):
+    def test_writing_slip_file(self) -> None:
         """Test writing encoded SLIP messages"""
 
         with self.filepath.open(mode='wb') as f:
