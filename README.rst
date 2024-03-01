@@ -99,7 +99,7 @@ the functions and classes in the `sliplib` module
 use a `ProtocolError` exception
 to indicate protocol errors, i.e. SLIP packets with invalid byte sequences.
 The `Driver` class raises the `ProtocolError` exception
-as soon as a complete SLIP packet with an invalid byte sequence is received .
+as soon as a complete SLIP packet with an invalid byte sequence is received.
 The `SlipWrapper` class and its subclasses catch the `ProtocolError`\s
 raised by the `Driver` class, and re-raise them when
 an attempt is made to read the contents of a SLIP packet that contained
