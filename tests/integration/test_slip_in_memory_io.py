@@ -28,30 +28,33 @@ class TestSlipStreamWithBytesIO:
     def test_stream_reading(self) -> None:
         """Test reading from the bytestream"""
 
-        msg_list = [b'hallo', b'bye']
+        msg_list = [b"hallo", b"bye"]
         self.basestream.write(END + msg_list[0] + END + END + msg_list[1] + END)
         self.basestream.seek(0)
         assert self.slipstream.recv_msg() == msg_list[0]
         assert self.slipstream.recv_msg() == msg_list[1]
         # No more messages
-        assert self.slipstream.recv_msg() == b''
+        assert self.slipstream.recv_msg() == b""
 
     def test_stream_reading_single_bytes(self) -> None:
         """Test reading single bytes from the bytestream"""
 
-        msg_list = [b'hallo', b'bye']
+        msg_list = [b"hallo", b"bye"]
         self.basestream.write(END + msg_list[0] + END + END + msg_list[1] + END)
         self.basestream.seek(0)
         self.slipstream = SlipStream(self.basestream, 1)
         assert self.slipstream.recv_msg() == msg_list[0]
         assert self.slipstream.recv_msg() == msg_list[1]
         # No more messages
-        assert self.slipstream.recv_msg() == b''
+        assert self.slipstream.recv_msg() == b""
 
     def test_stream_writing(self) -> None:
         """Test writing to the bytestream"""
 
-        msg_list = [b'hallo', b'bye']
+        msg_list = [b"hallo", b"bye"]
         for msg in msg_list:
             self.slipstream.send_msg(msg)
-        assert self.basestream.getvalue() == END + msg_list[0] + END + END + msg_list[1] + END
+        assert (
+            self.basestream.getvalue()
+            == END + msg_list[0] + END + END + msg_list[1] + END
+        )

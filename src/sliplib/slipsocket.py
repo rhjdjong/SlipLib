@@ -65,7 +65,7 @@ from __future__ import annotations
 
 import socket
 import warnings
-from typing import Any, cast, Optional, Tuple, Union
+from typing import Any, Optional, Tuple, Union, cast
 
 from .slipwrapper import SlipWrapper
 
@@ -112,6 +112,7 @@ class SlipSocket(SlipWrapper[socket.socket]):
       datagrams are delivered in the correct order.
 
     """
+
     _chunk_size = 4096
 
     def __init__(self, sock: socket.SocketType):
@@ -128,7 +129,7 @@ class SlipSocket(SlipWrapper[socket.socket]):
         """
 
         if not isinstance(sock, socket.socket) or sock.type != socket.SOCK_STREAM:
-            raise ValueError('Only sockets with type SOCK_STREAM are supported')
+            raise ValueError("Only sockets with type SOCK_STREAM are supported")
         super().__init__(sock)
         self.socket = self.stream
 
@@ -259,17 +260,33 @@ class SlipSocket(SlipWrapper[socket.socket]):
         return self.socket.proto
 
     def __getattr__(self, attribute: str) -> Any:
-        if attribute.startswith('recv') or attribute.startswith('send') or attribute in (
-                'makefile', 'share', 'dup',
+        if (
+            attribute.startswith("recv")
+            or attribute.startswith("send")
+            or attribute
+            in (
+                "makefile",
+                "share",
+                "dup",
+            )
         ):
-            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{attribute}'")
-        warnings.warn("Direct access to the enclosed socket attributes and methods will be removed in version 1.0",
-                      DeprecationWarning, stacklevel=2)
+            raise AttributeError(
+                f"'{self.__class__.__name__}' object has no attribute '{attribute}'"
+            )
+        warnings.warn(
+            "Direct access to the enclosed socket attributes and methods will be removed in version 1.0",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return getattr(self.socket, attribute)
 
     @classmethod
-    def create_connection(cls, address: Address, timeout: Optional[float] = None,
-                          source_address: Optional[Address] = None) -> SlipSocket:
+    def create_connection(
+        cls,
+        address: Address,
+        timeout: Optional[float] = None,
+        source_address: Optional[Address] = None,
+    ) -> SlipSocket:
         """Create a SlipSocket connection.
 
         This convenience method creates a connection to a socket at the specified address

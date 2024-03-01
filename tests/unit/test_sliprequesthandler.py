@@ -17,30 +17,31 @@ from pytest import FixtureRequest
 from sliplib import END, SlipRequestHandler, SlipSocket
 from sliplib.slipsocket import Address
 
+
 class DummySlipRequestHandler(SlipRequestHandler):
     """SlipRequestHandler subclass that handles a single packet."""
+
     def handle(self) -> None:
         assert isinstance(self.request, SlipSocket)
         msg = self.request.recv_msg()
-        assert msg == b'hallo'
+        assert msg == b"hallo"
         self.request.send_msg(bytes(reversed(msg)))
 
 
 class TestSlipRequestHandler:
     """Tests for SlipRequestHandler."""
 
-    @pytest.fixture(autouse=True, params=[
-        (AF_INET, ('127.0.0.1', 0)),
-        (AF_INET6, ('::1', 0, 0, 0))
-    ])
+    @pytest.fixture(
+        autouse=True, params=[(AF_INET, ("127.0.0.1", 0)), (AF_INET6, ("::1", 0, 0, 0))]
+    )
     def setup(self, request: FixtureRequest) -> Generator[None, None, None]:
         """Prepare the test."""
         self.family = request.param[0]
         self.bind_address = request.param[1]
         # Cannot use standard TCPServer, because that is hardcoded to IPv4
-        self.server_class = type('SlipServer',
-                                 (socketserver.TCPServer,),
-                                 {"address_family": self.family})
+        self.server_class = type(
+            "SlipServer", (socketserver.TCPServer,), {"address_family": self.family}
+        )
         self.client_socket = socket(family=self.family)
         self.server_is_running = threading.Event()
         yield
@@ -59,7 +60,7 @@ class TestSlipRequestHandler:
         server_thread.start()
         self.server_is_running.wait(0.5)
         self.client_socket.connect(self.server_address)
-        self.client_socket.sendall(END + b'hallo' + END)
+        self.client_socket.sendall(END + b"hallo" + END)
         response = self.client_socket.recv(4096)
-        assert response == END + b'ollah' + END
+        assert response == END + b"ollah" + END
         server_thread.join()

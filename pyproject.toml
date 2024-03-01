@@ -65,6 +65,26 @@ dependencies = [
 [tool.hatch.envs.types.scripts]
 check = "mypy --strict --install-types --non-interactive {args:src/sliplib tests}"
 
+[tool.hatch.envs.style]
+dependencies = [
+    "isort",
+    "black",
+]
+
+[tool.hatch.envs.style.scripts]
+isort-check = "isort --check-only {args:src tests}"
+black-check = "black --check {args:src tests}"
+isort-fix = "isort {args:src tests}"
+black-fix = "black {args:src tests}"
+check = [
+    "- isort-check",
+    "black-check",
+]
+fix = [
+    "isort-fix",
+    "black-fix",
+]
+
 [tool.coverage.run]
 source_pkgs = ["sliplib", "tests"]
 branch = true
@@ -85,33 +105,6 @@ exclude_lines = [
     "if TYPE_CHECKING:",
 ]
 
-#[project.optional-dependencies]
-#dev = [
-#    "mypy",
-#    "pylint",
-#    "pytest-cov",
-#    "pytest-mock",
-#    "pytest-pylint",
-#    "pytest>=5.4",
-#    "sphinx",
-#    "sphinx_rtd_theme",
-#    "tox",
-#    "twine",
-#    "wheel",
-#]
-#docs = [
-#    "sphinx",
-#    "sphinx_rtd_theme",
-#]
-#test = [
-#    "mypy",
-#    "pylint",
-#    "pytest-cov",
-#    "pytest-mock",
-#    "pytest-pylint",
-#    "pytest>=5.4",
-#]
-
 [tool.hatch.build.targets.sdist]
 include = [
     "src",
@@ -123,3 +116,6 @@ dependencies = [
     "sphinx",
     "sphinx_rtd_theme",
 ]
+
+[tool.isort]
+profile = "black"

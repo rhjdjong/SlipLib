@@ -19,9 +19,8 @@ from __future__ import annotations
 
 import io
 import warnings
-from typing import Any
+from typing import Any, Protocol
 
-from typing import Protocol
 from .slipwrapper import SlipWrapper
 
 
@@ -33,6 +32,7 @@ class _ProtoStream(Protocol):
 
     def write(self, data: bytes) -> int:
         """Write data to the stream."""
+
 
 class SlipStream(SlipWrapper[_ProtoStream]):
     """Class that wraps an IO stream with a :class:`Driver`
@@ -66,6 +66,7 @@ class SlipStream(SlipWrapper[_ProtoStream]):
        will be removed in version 1.0
 
     """
+
     def __init__(self, stream: _ProtoStream, chunk_size: int = io.DEFAULT_BUFFER_SIZE):
         # pylint: disable=missing-raises-doc
         """
@@ -96,11 +97,13 @@ class SlipStream(SlipWrapper[_ProtoStream]):
                     # Do something with the message
 
         """
-        for method in ('read', 'write'):
+        for method in ("read", "write"):
             if not hasattr(stream, method) or not callable(getattr(stream, method)):
-                raise TypeError(f'{stream.__class__.__name__} object has no method {method}')
-        if hasattr(stream, 'encoding'):
-            raise TypeError(f'{stream.__class__.__name__} object is not a byte stream')
+                raise TypeError(
+                    f"{stream.__class__.__name__} object has no method {method}"
+                )
+        if hasattr(stream, "encoding"):
+            raise TypeError(f"{stream.__class__.__name__} object is not a byte stream")
         self._chunk_size = chunk_size if chunk_size > 0 else io.DEFAULT_BUFFER_SIZE
         super().__init__(stream)
 
@@ -112,7 +115,7 @@ class SlipStream(SlipWrapper[_ProtoStream]):
 
     def recv_bytes(self) -> bytes:
         """See base class"""
-        return b'' if self._stream_is_closed else self.stream.read(self._chunk_size)
+        return b"" if self._stream_is_closed else self.stream.read(self._chunk_size)
 
     @property
     def readable(self) -> bool:
@@ -120,7 +123,7 @@ class SlipStream(SlipWrapper[_ProtoStream]):
         The value is `True` if the readability of the wrapped stream
         cannot be determined.
         """
-        return getattr(self.stream, 'readable', True)
+        return getattr(self.stream, "readable", True)
 
     @property
     def writable(self) -> bool:
@@ -128,21 +131,42 @@ class SlipStream(SlipWrapper[_ProtoStream]):
         The value is `True` if the writabilty of the wrapped stream
         cannot be determined.
         """
-        return getattr(self.stream, 'writable', True)
+        return getattr(self.stream, "writable", True)
 
     @property
     def _stream_is_closed(self) -> bool:
         """Indicates if the wrapped stream is closed.
         The value is `False` if it cannot be determined if the wrapped stream is closed.
         """
-        return getattr(self.stream, 'closed', False)
+        return getattr(self.stream, "closed", False)
 
     def __getattr__(self, attribute: str) -> Any:
-        if attribute.startswith('read') or attribute.startswith('write') or attribute in (
-                'detach', 'flushInput', 'flushOutput', 'getbuffer', 'getvalue', 'peek', 'raw', 'reset_input_buffer',
-                'reset_output_buffer', 'seek', 'seekable', 'tell', 'truncate'
+        if (
+            attribute.startswith("read")
+            or attribute.startswith("write")
+            or attribute
+            in (
+                "detach",
+                "flushInput",
+                "flushOutput",
+                "getbuffer",
+                "getvalue",
+                "peek",
+                "raw",
+                "reset_input_buffer",
+                "reset_output_buffer",
+                "seek",
+                "seekable",
+                "tell",
+                "truncate",
+            )
         ):
-            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{attribute}'")
-        warnings.warn("Direct access to the enclosed stream attributes and methods will be removed in version 1.0",
-                      DeprecationWarning, stacklevel=2)
+            raise AttributeError(
+                f"'{self.__class__.__name__}' object has no attribute '{attribute}'"
+            )
+        warnings.warn(
+            "Direct access to the enclosed stream attributes and methods will be removed in version 1.0",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return getattr(self.stream, attribute)

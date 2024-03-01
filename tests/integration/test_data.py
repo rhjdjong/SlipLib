@@ -11,9 +11,9 @@ import pathlib
 import pytest
 
 data = [
-    b'line 1',
-    b'line with embedded\nnewline',
-    b'last line',
+    b"line 1",
+    b"line with embedded\nnewline",
+    b"last line",
 ]
 
 

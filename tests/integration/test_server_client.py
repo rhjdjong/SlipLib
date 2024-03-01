@@ -23,6 +23,7 @@ from sliplib.slipsocket import Address
 
 class SlipEchoHandler(SlipRequestHandler):
     """SLIP request handler that echoes the received message, but with the bytes in reversed order."""
+
     def handle(self) -> None:
         while True:
             message = self.request.recv_msg()
@@ -37,9 +38,12 @@ class SlipEchoServer:  # pylint: disable=too-few-public-methods
     """Execution helper for the echo server. Sends the server address back over the pipe."""
 
     server_data = {
-        socket.AF_INET: (TCPServer, '127.0.0.1'),
-        socket.AF_INET6: (type('TCPServerIPv6', (TCPServer,), {'address_family': socket.AF_INET6}), '::1'),
-    } # type: Dict[int, Tuple[Type[TCPServer], str]]
+        socket.AF_INET: (TCPServer, "127.0.0.1"),
+        socket.AF_INET6: (
+            type("TCPServerIPv6", (TCPServer,), {"address_family": socket.AF_INET6}),
+            "::1",
+        ),
+    }  # type: Dict[int, Tuple[Type[TCPServer], str]]
 
     def __init__(self, address_family: int, pipe: Connection) -> None:
         server_class, localhost = self.server_data[address_family]
@@ -50,6 +54,7 @@ class SlipEchoServer:  # pylint: disable=too-few-public-methods
 
 class SlipEchoClient:
     """Client for the SLIP echo server"""
+
     def __init__(self, address: Address) -> None:
         self.sock = SlipSocket.create_connection(address)
 
@@ -65,14 +70,19 @@ class SlipEchoClient:
 
 class TestEchoServer:
     """Test for the SLIP echo server"""
+
     @pytest.fixture(autouse=True, params=[socket.AF_INET, socket.AF_INET6])
-    def setup(self, request: FixtureRequest, capfd: CaptureFixture[str]) -> Generator[None, None, None]:
+    def setup(
+        self, request: FixtureRequest, capfd: CaptureFixture[str]
+    ) -> Generator[None, None, None]:
         """Prepare the server and client"""
         near, far = Pipe()
         address_family = request.param
         self.server = Process(target=SlipEchoServer, args=(address_family, far))
         self.server.start()
-        address_available = near.poll(1.5)  # AppVeyor sometimes takes a long time to run the server.
+        address_available = near.poll(
+            1.5
+        )  # AppVeyor sometimes takes a long time to run the server.
         if address_available:
             server_address = near.recv()
         else:
@@ -85,9 +95,6 @@ class TestEchoServer:
 
     def test_echo_server(self) -> None:
         """Test the echo server"""
-        data = [
-            (b'hallo', b'ollah'),
-            (b'goodbye', b'eybdoog')
-        ]
+        data = [(b"hallo", b"ollah"), (b"goodbye", b"eybdoog")]
         for snd_msg, expected_reply in data:
             assert self.client.echo(snd_msg) == expected_reply

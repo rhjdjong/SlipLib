@@ -46,10 +46,10 @@ import collections
 import re
 from typing import Deque, List, Union
 
-END = b'\xc0'
-ESC = b'\xdb'
-ESC_END = b'\xdc'
-ESC_ESC = b'\xdd'
+END = b"\xc0"
+ESC = b"\xdb"
+ESC_END = b"\xdc"
+ESC_ESC = b"\xdd"
 """These constants represent the special SLIP bytes"""
 
 
@@ -115,9 +115,11 @@ def is_valid(packet: bytes) -> bool:
         :const:`True` if the packet is valid, :const:`False` otherwise
     """
     packet = packet.strip(END)
-    return not (END in packet or
-                packet.endswith(ESC) or
-                re.search(ESC + b'[^' + ESC_END + ESC_ESC + b']', packet))
+    return not (
+        END in packet
+        or packet.endswith(ESC)
+        or re.search(ESC + b"[^" + ESC_END + ESC_ESC + b"]", packet)
+    )
 
 
 class Driver:
@@ -128,7 +130,7 @@ class Driver:
     """
 
     def __init__(self) -> None:
-        self._recv_buffer = b''
+        self._recv_buffer = b""
         self._packets: Deque[bytes] = collections.deque()
         self._messages: List[bytes] = []
 
@@ -199,7 +201,7 @@ class Driver:
             # If _recv_buffer contains one or more trailing END bytes,
             # (meaning that there are no incomplete packets), then the last element,
             # and therefore the new _recv_buffer, is an empty bytes object.
-            self._packets.extend(re.split(END + b'+', self._recv_buffer))
+            self._packets.extend(re.split(END + b"+", self._recv_buffer))
             self._recv_buffer = self._packets.pop()
 
         # Process the buffered packets

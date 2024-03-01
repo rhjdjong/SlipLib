@@ -30,8 +30,9 @@ from __future__ import annotations
 
 import collections
 import sys
-from typing import Deque, Generic, Iterator, Optional, TypeVar
 from types import TracebackType
+from typing import Deque, Generic, Iterator, Optional, TypeVar
+
 from .slip import Driver, ProtocolError
 
 S = TypeVar("S")
@@ -140,9 +141,11 @@ class SlipWrapper(Generic[S]):
                     self._messages.extend(self.driver.flush())
                 else:
                     data = self.recv_bytes()
-                    if data == b'':
+                    if data == b"":
                         self._stream_closed = True
-                    if isinstance(data, int):  # Single byte reads are represented as integers
+                    if isinstance(
+                        data, int
+                    ):  # Single byte reads are represented as integers
                         data = bytes([data])
                     self._messages.extend(self.driver.receive(data))
             except ProtocolError as protocol_error:
@@ -155,7 +158,7 @@ class SlipWrapper(Generic[S]):
             return self._messages.popleft()
 
         self._handle_pending_protocol_error()
-        return b''
+        return b""
 
     def _handle_pending_protocol_error(self) -> None:
         if self._protocol_error:
