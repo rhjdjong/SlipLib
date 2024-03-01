@@ -5,6 +5,11 @@
 """
 SlipStream
 ----------
+.. autoclass:: IOStream
+   :show-inheritance:
+
+   .. automethod:: read
+   .. automethod:: write
 
 .. autoclass:: SlipStream(stream, [chunk_size])
    :show-inheritance:
@@ -24,17 +29,38 @@ from typing import Any, Protocol
 from .slipwrapper import SlipWrapper
 
 
-class _ProtoStream(Protocol):
-    """Protocol class for wrappable streams"""
+class IOStream(Protocol):
+    """Protocol class for wrappable byte streams.
+
+    An IOStream must be a byte stream that has `read()` and `write()` methods.
+    This can be e.g. a subclass of :class:`io.RawIOBase`, :class:`io.BufferedIOBase`,
+    :class:`io.FileIO`, but any class that contains the two required methods can be used.
+    """
 
     def read(self, chunksize: int) -> bytes:
-        """Read `chunksize` bytes from the stream"""
+        """Read `chunksize` bytes from the stream
+
+        Args:
+            chunksize: The number of bytes to read from the `IOStream`.
+
+        Returns:
+            The bytes read from the `IOStream`. May be less than the number
+            specified by `chunksize`.
+        """
 
     def write(self, data: bytes) -> int:
-        """Write data to the stream."""
+        """Write data to the stream.
+
+        Args:
+            data: The bytes to write on to `IOStream`.
+
+        Returns:
+            The number of bytes actually written. This may be less than the
+            number of bytes contained in `data`.
+        """
 
 
-class SlipStream(SlipWrapper[_ProtoStream]):
+class SlipStream(SlipWrapper[IOStream]):
     """Class that wraps an IO stream with a :class:`Driver`
 
     :class:`SlipStream` combines a :class:`Driver` instance with a concrete byte stream.
@@ -67,14 +93,14 @@ class SlipStream(SlipWrapper[_ProtoStream]):
 
     """
 
-    def __init__(self, stream: _ProtoStream, chunk_size: int = io.DEFAULT_BUFFER_SIZE):
+    def __init__(self, stream: IOStream, chunk_size: int = io.DEFAULT_BUFFER_SIZE):
         # pylint: disable=missing-raises-doc
         """
         To instantiate a :class:`SlipStream` object, the user must provide
         a pre-constructed open byte stream that is ready for reading and/or writing
 
         Args:
-            stream (bytestream): The byte stream that will be wrapped.
+            stream: The byte stream that will be wrapped.
 
             chunk_size: the number of bytes to read per read operation.
                 The default value for `chunck_size` is `io.DEFAULT_BUFFER_SIZE`.

@@ -6,25 +6,23 @@
 SlipWrapper
 -----------
 
+.. autoclass:: ByteStream
+
 .. autoclass:: SlipWrapper
+   :show-inheritance:
 
    Class :class:`SlipWrapper` offers the following methods and attributes:
 
-   .. automethod:: send_msg
    .. automethod:: recv_msg
-
-   .. attribute:: driver
-
-      The :class:`SlipWrapper`'s :class:`Driver` instance.
-
-   .. attribute:: stream
-
-      The wrapped `stream`.
+   .. automethod:: send_msg
+   .. autoattribute:: driver
+   .. autoattribute:: stream
 
    In addition, :class:`SlipWrapper` requires that derived classes implement the following methods:
 
-   .. automethod:: send_bytes
    .. automethod:: recv_bytes
+   .. automethod:: send_bytes
+
 """
 from __future__ import annotations
 
@@ -35,13 +33,14 @@ from typing import Deque, Generic, Iterator, Optional, TypeVar
 
 from .slip import Driver, ProtocolError
 
-S = TypeVar("S")
+#: ByteStream is a :class:`TypeVar` that stands for a generic byte stream.
+ByteStream = TypeVar("ByteStream")
 
 
-class SlipWrapper(Generic[S]):
+class SlipWrapper(Generic[ByteStream]):
     """Base class that provides a message based interface to a byte stream
 
-    :class:`SlipWrapper` combines a :class:`Driver` instance with a byte stream.
+    :class:`SlipWrapper` combines a :class:`Driver` instance with a (generic) byte stream.
     The :class:`SlipWrapper` class is an abstract base class.
     It offers the methods :meth:`send_msg` and :meth:`recv_msg` to send and
     receive single messages over the byte stream, but it does not of itself
@@ -58,15 +57,17 @@ class SlipWrapper(Generic[S]):
        Allow iteration over a :class:`SlipWrapper` instance.
     """
 
-    def __init__(self, stream: S):
+    def __init__(self, stream: ByteStream):
         """
         To instantiate a :class:`SlipWrapper`, the user must provide
         an existing byte stream
 
         Args:
-            stream (bytestream): The byte stream that will be wrapped.
+            stream: The byte stream that will be wrapped.
         """
+        #: The wrapped :class:`ByteStream`.
         self.stream = stream
+        #: The :class:`SlipWrapper`'s :class:`Driver` instance.
         self.driver = Driver()
         self._messages: Deque[bytes] = collections.deque()
         self._protocol_error: Optional[ProtocolError] = None
