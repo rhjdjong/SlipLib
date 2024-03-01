@@ -9,8 +9,6 @@ import sys
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 
-
-
 project = "SlipLib"
 copyright = "2024, Ruud de Jong"
 author = "Ruud de Jong"
@@ -40,12 +38,10 @@ autoclass_content = "both"
 autodoc_typehints = "description"
 autodoc_type_aliases = {
     "IPAddress": "IPAddress",
-    "Tuple[SlipSocket, IPAddress]": "Tuple[SlipSocket, IPAddress]"
+    "Tuple[SlipSocket, IPAddress]": "Tuple[SlipSocket, IPAddress]",
 }
 add_module_names = False
-intersphinx_mapping = {
-    "python": ("https://docs.python.org/3", None)
-}
+intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
