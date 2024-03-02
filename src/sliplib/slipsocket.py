@@ -6,7 +6,7 @@
 SlipSocket
 ----------
 
-.. autoclass:: IPAddress
+.. autoclass:: TCPAddress
 
 .. autoclass:: SlipSocket(sock)
    :show-inheritance:
@@ -71,9 +71,12 @@ from typing import Any, Optional, Tuple, TypeAlias, Union, cast
 
 from .slipwrapper import SlipWrapper
 
-#: IPAddress stands for either an IPv4 address, i.e. a (host, port) tuple,
+#: TCPAddress stands for either an IPv4 address, i.e. a (host, port) tuple,
 #: or an IPv6 address, i.e. a (host, port, flowinfo, scope_id) tuple.
-IPAddress: TypeAlias = Union[Tuple[Optional[str], int], Tuple[Optional[str], int, int, int]]
+TCPAddress: TypeAlias = Union[
+    Tuple[Optional[str], int], Tuple[Optional[str], int, int, int]
+]
+
 
 class SlipSocket(SlipWrapper[socket.socket]):
     """Class that wraps a TCP :class:`socket` with a :class:`Driver`
@@ -144,11 +147,11 @@ class SlipSocket(SlipWrapper[socket.socket]):
         """See base class"""
         return self.socket.recv(self._chunk_size)
 
-    def accept(self) -> Tuple[SlipSocket, IPAddress]:
+    def accept(self) -> Tuple[SlipSocket, TCPAddress]:
         """Accepts an incoming connection.
 
         Returns:
-            (:class:`SlipSocket`, :class:`IPAddress`):
+            (:class:`SlipSocket`, :class:`TCPAddress`):
             A tuple with a :class:`SlipSocket` object and the remote IP address.
 
         See Also:
@@ -157,11 +160,11 @@ class SlipSocket(SlipWrapper[socket.socket]):
         conn, address = self.socket.accept()
         return self.__class__(conn), address
 
-    def bind(self, address: IPAddress) -> None:
+    def bind(self, address: TCPAddress) -> None:
         """Bind the `SlipSocket` to `address`.
 
         Args:
-            address (:class:`IPAddress`):  The IP address to bind to.
+            address (:class:`TCPAddress`):  The address to bind to.
 
         See Also:
             :meth:`socket.socket.bind`
@@ -171,54 +174,55 @@ class SlipSocket(SlipWrapper[socket.socket]):
     def close(self) -> None:
         """Close the `SlipSocket`.
 
+
         See Also:
             :meth:`socket.socket.close`
         """
         self.socket.close()
 
-    def connect(self, address: IPAddress) -> None:
+    def connect(self, address: TCPAddress) -> None:
         """Connect `SlipSocket` to a remote socket at `address`.
 
         Args:
-            address (:class:`IPAddress`): The IP address of the remote socket.
+            address (:class:`TCPAddress`): The IP address of the remote socket.
 
         See Also:
            :meth:`socket.socket.connect`
         """
         self.socket.connect(address)
 
-    def connect_ex(self, address: IPAddress) -> None:
+    def connect_ex(self, address: TCPAddress) -> None:
         """Connect `SlipSocket` to a remote socket at `address`.
 
         Args:
-            address (:class:`IPAddress`): The IP address of the remote socket.
+            address (:class:`TCPAddress`): The IP address of the remote socket.
 
         See Also:
            :meth:`socket.socket.connect_ex`
         """
         self.socket.connect_ex(address)
 
-    def getpeername(self) -> IPAddress:
+    def getpeername(self) -> TCPAddress:
         """Get the IP address of the remote socket to which `SlipSocket` is connected.
 
         Returns:
-            :class:`IPAddress`: The remote IP address.
+            :class:`TCPAddress`: The remote IP address.
 
         See Also:
            :meth:`socket.socket.getpeername`
         """
-        return cast(IPAddress, self.socket.getpeername())
+        return cast(TCPAddress, self.socket.getpeername())
 
-    def getsockname(self) -> IPAddress:
+    def getsockname(self) -> TCPAddress:
         """Get `SlipSocket`'s own address.
 
         Returns:
-            :class:`IPAddress`: The local IP address.
+            :class:`TCPAddress`: The local IP address.
 
         See Also:
            :meth:`socket.socket.getsockname`
         """
-        return cast(IPAddress, self.socket.getsockname())
+        return cast(TCPAddress, self.socket.getsockname())
 
     def listen(self, backlog: Optional[int] = None) -> None:
         """Enable a `SlipSocket` server to accept connections.
@@ -285,9 +289,9 @@ class SlipSocket(SlipWrapper[socket.socket]):
     @classmethod
     def create_connection(
         cls,
-        address: IPAddress,
+        address: TCPAddress,
         timeout: Optional[float] = None,
-        source_address: Optional[IPAddress] = None,
+        source_address: Optional[TCPAddress] = None,
     ) -> SlipSocket:
         """Create a SlipSocket connection.
 
@@ -297,9 +301,9 @@ class SlipSocket(SlipWrapper[socket.socket]):
         a :class:`SlipSocket` object.
 
         Args:
-            address (:class:`IPAddress`): The remote address.
+            address (:class:`TCPAddress`): The remote address.
             timeout (float): Optional timeout value.
-            source_address (:class:`IPAddress`): Optional local address for the near socket.
+            source_address (:class:`TCPAddress`): Optional local address for the near socket.
 
         Returns:
             :class:`~SlipSocket`: A `SlipSocket` that is connected to the socket at the remote address.
