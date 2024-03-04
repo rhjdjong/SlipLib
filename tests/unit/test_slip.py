@@ -2,7 +2,7 @@
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
 
-# pylint: disable=attribute-defined-outside-init
+# ruff: noqa: UP035
 
 """
 This module contains the tests for the low-level SLIP functions and classes.
@@ -44,7 +44,7 @@ class TestEncoding:
         assert encode(msg) == packet
 
     @pytest.mark.parametrize(
-        "msg,packet",
+        ("msg", "packet"),
         [
             (END, ESC + ESC_END),
             (ESC, ESC + ESC_ESC),
@@ -89,7 +89,7 @@ class TestDecoding:
         assert decode(packet) == msg
 
     @pytest.mark.parametrize(
-        "packet,msg",
+        ("packet", "msg"),
         [
             (ESC + ESC_ESC, ESC),
             (ESC + ESC_END, END),

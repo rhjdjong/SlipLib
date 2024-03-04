@@ -2,7 +2,6 @@ name: test
 
 on:
   push:
-    branches: [main, master]
   pull_request:
     branches: [main, master]
 
@@ -35,8 +34,14 @@ jobs:
     - name: Install Hatch
       run: pip install --upgrade hatch
 
+    - name: Run style check
+      run: hatch run style:check
+
+    - name: Check types
+      run: hatch run types:check
+
     - name: Run static analysis
       run: hatch fmt --check
 
     - name: Run tests
-      run: hatch run cov
+      run: hatch run test:cov

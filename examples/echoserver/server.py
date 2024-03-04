@@ -19,11 +19,20 @@ and sends it back to the client.
 
 # ruff: noqa: T201
 
+from __future__ import annotations
+
 import socket
 import sys
 from socketserver import TCPServer
+from typing import TYPE_CHECKING, Any
 
-from _socket import dup  # type: ignore
+if TYPE_CHECKING:
+    if sys.version_info >= (3, 12):  # noqa: UP036
+        from collections.abc import Buffer
+    else:
+        from typing_extensions import Buffer
+
+from _socket import dup
 
 from sliplib import SlipRequestHandler
 
@@ -31,50 +40,51 @@ from sliplib import SlipRequestHandler
 class _ChattySocket(socket.socket):
     """A socket subclass that prints the raw data that is received and sent."""
 
-    def __init__(self, sock):
+    def __init__(self, sock: socket.socket) -> None:
         fd = dup(sock.fileno())
         super().__init__(sock.family, sock.type, sock.proto, fileno=fd)
         super().settimeout(sock.gettimeout())
 
-    def recv(self, chunksize):
-        data = super().recv(chunksize)
-        print('Raw data received:', data)
+    def recv(self, chunksize: int, *args: Any) -> bytes:
+        data = super().recv(chunksize, *args)
+        print("Raw data received:", data)
         return data
 
-    def sendall(self, data):
-        print('Sending raw data:', data)
-        super().sendall(data)
+    def sendall(self, data: Buffer, *args: Any) -> None:
+        print("Sending raw data:", data)
+        super().sendall(data, *args)
 
 
 class SlipHandler(SlipRequestHandler):
     """A SlipRequestHandler that echoes the received message with the bytes in reversed order."""
 
-    def setup(self):
+    def setup(self) -> None:
         self.request = _ChattySocket(self.request)
         print(f"Incoming connection from {self.request.getpeername()}")
         super().setup()
 
     # Dedicated handler to show the encoded bytes.
-    def handle(self):
+    def handle(self) -> None:
         while True:
             message = self.request.recv_msg()
-            print('Decoded data:', message)
+            print("Decoded data:", message)
             if message:
                 self.request.send_msg(bytes(reversed(message)))
             else:
-                print('Closing down')
+                print("Closing down")
                 break
 
 
 class TCPServerIPv6(TCPServer):
     """An IPv6 TCPServer"""
+
     address_family = socket.AF_INET6
 
 
-if __name__ == '__main__':
-    if len(sys.argv) > 1 and sys.argv[1].lower() == 'ipv6':
-        server = TCPServerIPv6(('localhost', 0), SlipHandler)  # type: TCPServer
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1].lower() == "ipv6":
+        server = TCPServerIPv6(("localhost", 0), SlipHandler)  # type: TCPServer
     else:
-        server = TCPServer(('localhost', 0), SlipHandler)
-    print('Slip server listening on localhost, port', server.server_address[1])
+        server = TCPServer(("localhost", 0), SlipHandler)
+    print("Slip server listening on localhost, port", server.server_address[1])
     server.handle_request()

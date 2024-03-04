@@ -2,8 +2,7 @@
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
 
-# pylint: disable=attribute-defined-outside-init
-# pylint: disable=too-many-public-methods
+# ruff: noqa: UP035
 
 """Tests for SlipSocket"""
 
@@ -12,16 +11,13 @@ import warnings
 from typing import Generator
 
 import pytest
-from pytest import FixtureRequest
 from pytest_mock import MockerFixture
 
 import sliplib
 from sliplib import END, ESC, ProtocolError, SlipSocket
 
 SOCKET_METHODS = [
-    attr
-    for attr in dir(socket.socket)
-    if callable(getattr(socket.socket, attr)) and not attr.startswith("_")
+    attr for attr in dir(socket.socket) if callable(getattr(socket.socket, attr)) and not attr.startswith("_")
 ]
 
 EXPLICITLY_EXPOSED_SOCKET_METHODS = (
@@ -40,17 +36,14 @@ DELEGATED_METHODS = tuple(
     attr
     for attr in SOCKET_METHODS
     if not (
-        attr.startswith("recv")
-        or attr.startswith("send")
+        attr.startswith(("recv", "send"))
         or attr in ("dup", "makefile", "share")
         or attr in EXPLICITLY_EXPOSED_SOCKET_METHODS
     )
 )
 
 NOT_DELEGATED_METHODS = tuple(
-    attr
-    for attr in SOCKET_METHODS
-    if attr not in DELEGATED_METHODS and attr not in EXPLICITLY_EXPOSED_SOCKET_METHODS
+    attr for attr in SOCKET_METHODS if attr not in DELEGATED_METHODS and attr not in EXPLICITLY_EXPOSED_SOCKET_METHODS
 )
 
 
@@ -77,9 +70,7 @@ class TestSlipSocket:
             ),
         ],
     )
-    def setup(
-        self, request: FixtureRequest, mocker: MockerFixture
-    ) -> Generator[None, None, None]:
+    def setup(self, request: pytest.FixtureRequest, mocker: MockerFixture) -> Generator[None, None, None]:
         """Prepare the test."""
 
         self.family, self.far_address, self.near_address = request.param
@@ -103,19 +94,15 @@ class TestSlipSocket:
 
     def test_slipsocket_requires_tcp_socket(self) -> None:
         """Test that non-TCP sockets are rejected."""
-        self.sock_mock.configure_mock(
-            type=socket.SOCK_DGRAM
-        )  # pylint: disable=no-member
-        with pytest.raises(ValueError):
+        self.sock_mock.configure_mock(type=socket.SOCK_DGRAM)
+        with pytest.raises(ValueError, match="type SOCK_STREAM"):
             SlipSocket(self.sock_mock)
 
     def test_sending_data(self, mocker: MockerFixture) -> None:
         """Test that the sendall method on the socket is called when sending a message."""
         self.slipsocket.send_msg(b"hallo")
         self.slipsocket.send_msg(b"bye")
-        self.sock_mock.sendall.assert_has_calls(
-            [mocker.call(END + b"hallo" + END), mocker.call(END + b"bye" + END)]
-        )
+        self.sock_mock.sendall.assert_has_calls([mocker.call(END + b"hallo" + END), mocker.call(END + b"bye" + END)])
 
     def test_receiving_data(self, mocker: MockerFixture) -> None:
         """Test that the recv method on the socket is called when receiving a message.
@@ -132,7 +119,7 @@ class TestSlipSocket:
         self.sock_mock.recv = mocker.Mock(side_effect=socket_data_generator())
         assert self.slipsocket.recv_msg() == b"hallo"
         # noinspection PyProtectedMember
-        chunk_size = sliplib.SlipSocket._chunk_size  # pylint: disable=protected-access
+        chunk_size = sliplib.SlipSocket._chunk_size  # noqa: SLF001
         expected_calls = [mocker.call.recv(chunk_size)] * 2
         self.sock_mock.recv.assert_has_calls(expected_calls)
         assert self.slipsocket.recv_msg() == b"bye"
@@ -156,13 +143,11 @@ class TestSlipSocket:
         assert self.slipsocket.recv_msg() == b"hallo"
         assert self.slipsocket.recv_msg() == b"bye"
         assert self.slipsocket.recv_msg() == b""
-        chunk_size = sliplib.SlipSocket._chunk_size  # pylint: disable=protected-access
+        chunk_size = sliplib.SlipSocket._chunk_size  # noqa: SLF001
         expected_calls = [mocker.call.recv(chunk_size)] * 4
         self.sock_mock.recv.assert_has_calls(expected_calls)
 
-    def test_exception_on_protocol_error_in_first_packet(
-        self, mocker: MockerFixture
-    ) -> None:
+    def test_exception_on_protocol_error_in_first_packet(self, mocker: MockerFixture) -> None:
         """Test that an invalid packet causes a ProtocolError.
 
         Packets after the invalid packet are handled correctly."""
@@ -177,9 +162,7 @@ class TestSlipSocket:
         assert self.slipsocket.recv_msg() == b"hallo"
         assert self.slipsocket.recv_msg() == b"bye"
 
-    def test_exception_on_protocol_error_in_subsequent_packet(
-        self, mocker: MockerFixture
-    ) -> None:
+    def test_exception_on_protocol_error_in_subsequent_packet(self, mocker: MockerFixture) -> None:
         """Test that an invalid packet causes a ProtocolError
 
         Packets before the invalid packet are decoded correctly."""
@@ -193,9 +176,7 @@ class TestSlipSocket:
             self.slipsocket.recv_msg()
         assert exc.value.args == (ESC + b"error",)
 
-    def test_exceptions_on_consecutive_invalid_packets(
-        self, mocker: MockerFixture
-    ) -> None:
+    def test_exceptions_on_consecutive_invalid_packets(self, mocker: MockerFixture) -> None:
         """Test that multiple invalid packets result in a ProtocolError for each invalid packet."""
 
         def socket_data_generator() -> Generator[bytes, None, None]:
@@ -313,15 +294,11 @@ class TestSlipSocket:
             type=socket.SOCK_STREAM,
             proto=0,
         )  # pylint: disable=no-member
-        create_connection_mock = mocker.patch(
-            "sliplib.socket.create_connection", return_value=new_sock_mock
-        )
+        create_connection_mock = mocker.patch("sliplib.slipsocket.socket.create_connection", return_value=new_sock_mock)
         sock = SlipSocket.create_connection(self.far_address)
         assert isinstance(sock, SlipSocket)
         assert sock.socket is new_sock_mock
-        create_connection_mock.assert_called_once_with(
-            self.far_address[0:2], None, None
-        )
+        create_connection_mock.assert_called_once_with(self.far_address[0:2], None, None)
 
     def test_slip_socket_iteration(self, mocker: MockerFixture) -> None:
         """Test that a SlipSocket can be iterated over."""
@@ -335,7 +312,7 @@ class TestSlipSocket:
 
         self.sock_mock.recv = mocker.Mock(side_effect=socket_data_generator())
         expected = (b"hallo", b"bye")
-        for exp, act in zip(expected, self.slipsocket):
+        for exp, act in zip(expected, self.slipsocket):  # noqa: B905
             assert exp == act
 
 

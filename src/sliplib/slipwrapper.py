@@ -6,7 +6,8 @@
 SlipWrapper
 -----------
 
-.. autoclass:: ByteStream
+.. autotypevar:: ByteStream
+   :no-type:
 
 .. autoclass:: SlipWrapper
    :show-inheritance:
@@ -26,12 +27,16 @@ SlipWrapper
 """
 from __future__ import annotations
 
-import collections
 import sys
-from types import TracebackType
-from typing import Deque, Generic, Iterator, Optional, TypeVar
+from types import TracebackType  # noqa: TCH003
+from typing import TYPE_CHECKING, Generic, TypeVar
 
-from .slip import Driver, ProtocolError
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+from collections import deque
+
+from sliplib.slip import Driver, ProtocolError
 
 #: ByteStream is a :class:`TypeVar` that stands for a generic byte stream.
 ByteStream = TypeVar("ByteStream")
@@ -69,9 +74,9 @@ class SlipWrapper(Generic[ByteStream]):
         self.stream = stream
         #: The :class:`SlipWrapper`'s :class:`Driver` instance.
         self.driver = Driver()
-        self._messages: Deque[bytes] = collections.deque()
-        self._protocol_error: Optional[ProtocolError] = None
-        self._traceback: Optional[TracebackType] = None
+        self._messages: deque[bytes] = deque()
+        self._protocol_error: ProtocolError | None = None
+        self._traceback: TracebackType | None = None
         self._flush_needed = False
         self._stream_closed = False
 
@@ -144,9 +149,7 @@ class SlipWrapper(Generic[ByteStream]):
                     data = self.recv_bytes()
                     if data == b"":
                         self._stream_closed = True
-                    if isinstance(
-                        data, int
-                    ):  # Single byte reads are represented as integers
+                    if isinstance(data, int):  # Single byte reads are represented as integers
                         data = bytes([data])
                     self._messages.extend(self.driver.receive(data))
             except ProtocolError as protocol_error:

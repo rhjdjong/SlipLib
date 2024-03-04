@@ -6,13 +6,18 @@
 Constants
 ---------
 
-.. data:: END
-.. data:: ESC
-.. data:: ESC_END
-.. data:: ESC_ESC
+The following constants represent the special bytes
+used by SLIP for delimiting and encoding messages.
 
-   These constants represent the special bytes
-   used by SLIP for delimiting and encoding messages.
+.. autovariable:: END
+   :no-type:
+.. autovariable:: ESC
+   :no-type:
+.. autovariable:: ESC_END
+   :no-type:
+.. autovariable:: ESC_ESC
+   :no-type:
+
 
 Functions
 ---------
@@ -44,13 +49,11 @@ from __future__ import annotations
 
 import collections
 import re
-from typing import Deque, List, Union
 
-END = b"\xc0"
-ESC = b"\xdb"
-ESC_END = b"\xdc"
-ESC_ESC = b"\xdd"
-"""These constants represent the special SLIP bytes"""
+END = b"\xc0"  #: The SLIP `END` byte.
+ESC = b"\xdb"  #: The SLIP `ESC` byte.
+ESC_END = b"\xdc"  #: The SLIP byte that, when preceded by an `ESC` byte, represents an escaped `END` byte.
+ESC_ESC = b"\xdd"  #: The SLIP byte that, when preceded by an `ESC` byte, represents an escaped `ESC` byte.
 
 
 class ProtocolError(ValueError):
@@ -115,11 +118,7 @@ def is_valid(packet: bytes) -> bool:
         :const:`True` if the packet is valid, :const:`False` otherwise
     """
     packet = packet.strip(END)
-    return not (
-        END in packet
-        or packet.endswith(ESC)
-        or re.search(ESC + b"[^" + ESC_END + ESC_ESC + b"]", packet)
-    )
+    return not (END in packet or packet.endswith(ESC) or re.search(ESC + b"[^" + ESC_END + ESC_ESC + b"]", packet))
 
 
 class Driver:
@@ -131,8 +130,8 @@ class Driver:
 
     def __init__(self) -> None:
         self._recv_buffer = b""
-        self._packets: Deque[bytes] = collections.deque()
-        self._messages: List[bytes] = []
+        self._packets: collections.deque[bytes] = collections.deque()
+        self._messages: list[bytes] = []
 
     def send(self, message: bytes) -> bytes:  # pylint: disable=no-self-use
         """Encodes a message into a SLIP-encoded packet.
@@ -147,7 +146,7 @@ class Driver:
         """
         return encode(message)
 
-    def receive(self, data: Union[bytes, int]) -> List[bytes]:
+    def receive(self, data: bytes | int) -> list[bytes]:
         """Decodes data and gives a list of decoded messages.
 
         Processes :obj:`data`, which must be a bytes-like object,
@@ -207,7 +206,7 @@ class Driver:
         # Process the buffered packets
         return self.flush()
 
-    def flush(self) -> List[bytes]:
+    def flush(self) -> list[bytes]:
         """Gives a list of decoded messages.
 
         Decodes the packets in the internal buffer.
@@ -221,7 +220,7 @@ class Driver:
         Raises:
             ProtocolError: When any of the buffered packets contains an invalid byte sequence.
         """
-        messages = []  # type: List[bytes]
+        messages: list[bytes] = []
         while self._packets:
             packet = self._packets.popleft()
             try:
@@ -234,7 +233,7 @@ class Driver:
         return messages
 
     @property
-    def messages(self) -> List[bytes]:
+    def messages(self) -> list[bytes]:
         """A list of decoded messages.
 
         The read-only attribute :attr:`messages` contains

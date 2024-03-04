@@ -2,7 +2,7 @@
 #  This file is part of the SlipLib project which is released under the MIT license.
 #  See https://github.com/rhjdjong/SlipLib for details.
 
-# pylint: disable=attribute-defined-outside-init
+# ruff: noqa: UP035
 
 """Test using SlipStream with an in-memory bytestream"""
 
@@ -54,7 +54,4 @@ class TestSlipStreamWithBytesIO:
         msg_list = [b"hallo", b"bye"]
         for msg in msg_list:
             self.slipstream.send_msg(msg)
-        assert (
-            self.basestream.getvalue()
-            == END + msg_list[0] + END + END + msg_list[1] + END
-        )
+        assert self.basestream.getvalue() == END + msg_list[0] + END + END + msg_list[1] + END

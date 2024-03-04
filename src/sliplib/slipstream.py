@@ -5,11 +5,8 @@
 """
 SlipStream
 ----------
-.. autoclass:: IOStream
+.. autoprotocol:: IOStream
    :show-inheritance:
-
-   .. automethod:: read
-   .. automethod:: write
 
 .. autoclass:: SlipStream(stream, [chunk_size])
    :show-inheritance:
@@ -26,25 +23,26 @@ import io
 import warnings
 from typing import Any, Protocol
 
-from .slipwrapper import SlipWrapper
+from sliplib.slipwrapper import SlipWrapper
 
 
 class IOStream(Protocol):
-    """Protocol class for wrappable byte streams.
+    """
+    Protocol class for wrappable byte streams.
 
-    An IOStream must be a byte stream that has `read()` and `write()` methods.
-    This can be e.g. a subclass of :class:`io.RawIOBase`, :class:`io.BufferedIOBase`,
-    :class:`io.FileIO`, but any class that contains the two required methods can be used.
+    Any object that produces and consumes a byte stream and contains the two required methods can be used.
+    Typically, an IOStream is a subclass of :class:`io.RawIOBase`, :class:`io.BufferedIOBase`,
+    :class:`io.FileIO`, or similar classes, but this is not required.
     """
 
     def read(self, chunksize: int) -> bytes:
         """Read `chunksize` bytes from the stream
 
         Args:
-            chunksize: The number of bytes to read from the `IOStream`.
+            chunksize: The number of bytes to read from the :protocol:`IOStream`.
 
         Returns:
-            The bytes read from the `IOStream`. May be less than the number
+            The bytes read from the :protocol:`IOStream`. May be less than the number
             specified by `chunksize`.
         """
 
@@ -72,7 +70,7 @@ class SlipStream(SlipWrapper[IOStream]):
 
     The :class:`SlipStream` class has all the methods and attributes
     from its base class :class:`SlipWrapper`.
-    In addition it directly exposes all methods and attributes of
+    In addition, it directly exposes all methods and attributes of
     the contained :obj:`stream`, except for the following:
 
      * :meth:`read*` and :meth:`write*`. These methods are not
@@ -83,7 +81,7 @@ class SlipStream(SlipWrapper[IOStream]):
      * :meth:`raw`, :meth:`detach` and other methods that provide access to or manipulate
        the stream's internal data.
 
-    In stead of the :meth:`read*` and :meth:`write*` methods
+    Instead of the :meth:`read*` and :meth:`write*` methods
     a :class:`SlipStream` object provides the method :meth:`recv_msg` and :meth:`send_msg`
     to read and write SLIP-encoded messages.
 
@@ -94,7 +92,6 @@ class SlipStream(SlipWrapper[IOStream]):
     """
 
     def __init__(self, stream: IOStream, chunk_size: int = io.DEFAULT_BUFFER_SIZE):
-        # pylint: disable=missing-raises-doc
         """
         To instantiate a :class:`SlipStream` object, the user must provide
         a pre-constructed open byte stream that is ready for reading and/or writing
@@ -104,6 +101,7 @@ class SlipStream(SlipWrapper[IOStream]):
 
             chunk_size: the number of bytes to read per read operation.
                 The default value for `chunck_size` is `io.DEFAULT_BUFFER_SIZE`.
+
                 Setting the `chunk_size` is useful when the stream has a low bandwidth
                 and/or bursty data (e.g. a serial port interface).
                 In such cases it is useful to have a `chunk_size` of 1, to avoid that the application
@@ -125,11 +123,11 @@ class SlipStream(SlipWrapper[IOStream]):
         """
         for method in ("read", "write"):
             if not hasattr(stream, method) or not callable(getattr(stream, method)):
-                raise TypeError(
-                    f"{stream.__class__.__name__} object has no method {method}"
-                )
+                error_msg = f"{stream.__class__.__name__} object has no method {method}"
+                raise TypeError(error_msg)
         if hasattr(stream, "encoding"):
-            raise TypeError(f"{stream.__class__.__name__} object is not a byte stream")
+            error_msg = f"{stream.__class__.__name__} object is not a byte stream"
+            raise TypeError(error_msg)
         self._chunk_size = chunk_size if chunk_size > 0 else io.DEFAULT_BUFFER_SIZE
         super().__init__(stream)
 
@@ -167,32 +165,26 @@ class SlipStream(SlipWrapper[IOStream]):
         return getattr(self.stream, "closed", False)
 
     def __getattr__(self, attribute: str) -> Any:
-        if (
-            attribute.startswith("read")
-            or attribute.startswith("write")
-            or attribute
-            in (
-                "detach",
-                "flushInput",
-                "flushOutput",
-                "getbuffer",
-                "getvalue",
-                "peek",
-                "raw",
-                "reset_input_buffer",
-                "reset_output_buffer",
-                "seek",
-                "seekable",
-                "tell",
-                "truncate",
-            )
+        if attribute.startswith(("read", "write")) or attribute in (
+            "detach",
+            "flushInput",
+            "flushOutput",
+            "getbuffer",
+            "getvalue",
+            "peek",
+            "raw",
+            "reset_input_buffer",
+            "reset_output_buffer",
+            "seek",
+            "seekable",
+            "tell",
+            "truncate",
         ):
-            raise AttributeError(
-                f"'{self.__class__.__name__}' object has no attribute '{attribute}'"
-            )
-        warnings.warn(
-            "Direct access to the enclosed stream attributes and methods will be removed in version 1.0",
-            DeprecationWarning,
-            stacklevel=2,
-        )
+            error_msg = f"'{self.__class__.__name__}' object has no attribute '{attribute}'"
+            raise AttributeError(error_msg)
+
+        # Deprecation warning
+        warning_msg = "Direct access to the enclosed stream attributes and methods will be removed in version 1.0"
+        warnings.warn(warning_msg, DeprecationWarning, stacklevel=2)
+
         return getattr(self.stream, attribute)

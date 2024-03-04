@@ -18,9 +18,7 @@ class TestSlipWrapper:
     def setup(self) -> None:
         """Prepare the test."""
         self.slipwrapper = SlipWrapper("not a valid byte stream")
-        self.subwrapper = type("SubSlipWrapper", (SlipWrapper,), {})(
-            None
-        )  # Dummy subclass without implementation
+        self.subwrapper = type("SubSlipWrapper", (SlipWrapper,), {})(None)  # Dummy subclass without implementation
 
     def test_slip_wrapper_recv_msg_is_not_implemented(self) -> None:
         """Verify that calling recv_msg on a SlipWrapper calls that does not implement read_bytes fails."""

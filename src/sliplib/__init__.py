@@ -76,12 +76,11 @@ Exceptions
 .. autoexception:: ProtocolError
 """
 
-from .slip import *
-from .sliprequesthandler import *
-from .slipsocket import *
-from .slipstream import *
-from .slipwrapper import *
-from .version import __version__
+from sliplib.slip import END, ESC, ESC_END, ESC_ESC, Driver, ProtocolError, decode, encode, is_valid
+from sliplib.sliprequesthandler import SlipRequestHandler
+from sliplib.slipsocket import SlipSocket
+from sliplib.slipstream import SlipStream
+from sliplib.slipwrapper import SlipWrapper
 
 __all__ = [
     "encode",
@@ -97,5 +96,4 @@ __all__ = [
     "ESC",
     "ESC_END",
     "ESC_ESC",
-    "__version__",
 ]

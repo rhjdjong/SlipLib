@@ -2,11 +2,12 @@
 #  This file is part of the SlipLib project which is released under the MIT license.
 #  See https://github.com/rhjdjong/SlipLib for details.
 
+# ruff: noqa: UP007 UP006 UP035
 """
 SlipSocket
 ----------
 
-.. autoclass:: TCPAddress
+.. autodata:: TCPAddress
 
 .. autoclass:: SlipSocket(sock)
    :show-inheritance:
@@ -28,6 +29,7 @@ SlipSocket
    The following commonly used :class:`socket.socket` methods are exposed through
    a :class:`SlipSocket` object.
    These methods are simply delegated to the wrapped `socket` instance.
+   See the documentation for :mod:`socket.socket` for more information on these methods.
 
    .. automethod:: bind
    .. automethod:: close
@@ -51,14 +53,11 @@ SlipSocket
       In particular, do not use any of the :meth:`recv*` or :meth:`send*` methods
       on the :attr:`socket` attribute.
 
-   A :class:`SlipSocket` instance has the following attributes in addition to the attributes
+   A :class:`SlipSocket` instance has the following attributes
+   and read-only properties in addition to the attributes
    offered by its base class :class:`SlipWrapper`:
 
-   .. attribute:: socket
-
-      The wrapped `socket`.
-      This is actually just an alias for the :attr:`stream` attribute in the base class.
-
+   .. autoattribute:: socket
    .. autoattribute:: family
    .. autoattribute:: type
    .. autoattribute:: proto
@@ -67,15 +66,13 @@ from __future__ import annotations
 
 import socket
 import warnings
-from typing import Any, Optional, Tuple, TypeAlias, Union, cast
+from typing import Any, Optional, Tuple, Union, cast
 
-from .slipwrapper import SlipWrapper
+from sliplib.slipwrapper import SlipWrapper
 
 #: TCPAddress stands for either an IPv4 address, i.e. a (host, port) tuple,
 #: or an IPv6 address, i.e. a (host, port, flowinfo, scope_id) tuple.
-TCPAddress: TypeAlias = Union[
-    Tuple[Optional[str], int], Tuple[Optional[str], int, int, int]
-]
+TCPAddress = Union[Tuple[Optional[str], int], Tuple[Optional[str], int, int, int]]
 
 
 class SlipSocket(SlipWrapper[socket.socket]):
@@ -100,7 +97,7 @@ class SlipSocket(SlipWrapper[socket.socket]):
       but the socket that is returned by the :class:`socket`'s :meth:`accept` method
       is automatically wrapped in a :class:`SlipSocket` object.
 
-    In stead of the :class:`socket`'s :meth:`send*` and :meth:`recv*` methods
+    Instead of the :class:`socket`'s :meth:`send*` and :meth:`recv*` methods
     a :class:`SlipSocket` provides the method :meth:`send_msg` and :meth:`recv_msg`
     to send and receive SLIP-encoded messages.
 
@@ -135,8 +132,13 @@ class SlipSocket(SlipWrapper[socket.socket]):
         """
 
         if not isinstance(sock, socket.socket) or sock.type != socket.SOCK_STREAM:
-            raise ValueError("Only sockets with type SOCK_STREAM are supported")
+            error_msg = "Only sockets with type SOCK_STREAM are supported."
+            raise ValueError(error_msg)
         super().__init__(sock)
+
+        #: The wrapped `socket`.
+        #: This is actually just an alias for the :attr:`stream`
+        #: attribute in the base class.
         self.socket = self.stream
 
     def send_bytes(self, packet: bytes) -> None:
@@ -154,8 +156,6 @@ class SlipSocket(SlipWrapper[socket.socket]):
             (:class:`SlipSocket`, :class:`TCPAddress`):
             A tuple with a :class:`SlipSocket` object and the remote IP address.
 
-        See Also:
-            :meth:`socket.socket.accept`
         """
         conn, address = self.socket.accept()
         return self.__class__(conn), address
@@ -165,19 +165,11 @@ class SlipSocket(SlipWrapper[socket.socket]):
 
         Args:
             address (:class:`TCPAddress`):  The address to bind to.
-
-        See Also:
-            :meth:`socket.socket.bind`
         """
         self.socket.bind(address)
 
     def close(self) -> None:
-        """Close the `SlipSocket`.
-
-
-        See Also:
-            :meth:`socket.socket.close`
-        """
+        """Close the `SlipSocket`."""
         self.socket.close()
 
     def connect(self, address: TCPAddress) -> None:
@@ -185,9 +177,6 @@ class SlipSocket(SlipWrapper[socket.socket]):
 
         Args:
             address (:class:`TCPAddress`): The IP address of the remote socket.
-
-        See Also:
-           :meth:`socket.socket.connect`
         """
         self.socket.connect(address)
 
@@ -196,9 +185,6 @@ class SlipSocket(SlipWrapper[socket.socket]):
 
         Args:
             address (:class:`TCPAddress`): The IP address of the remote socket.
-
-        See Also:
-           :meth:`socket.socket.connect_ex`
         """
         self.socket.connect_ex(address)
 
@@ -207,9 +193,6 @@ class SlipSocket(SlipWrapper[socket.socket]):
 
         Returns:
             :class:`TCPAddress`: The remote IP address.
-
-        See Also:
-           :meth:`socket.socket.getpeername`
         """
         return cast(TCPAddress, self.socket.getpeername())
 
@@ -218,20 +201,14 @@ class SlipSocket(SlipWrapper[socket.socket]):
 
         Returns:
             :class:`TCPAddress`: The local IP address.
-
-        See Also:
-           :meth:`socket.socket.getsockname`
         """
         return cast(TCPAddress, self.socket.getsockname())
 
-    def listen(self, backlog: Optional[int] = None) -> None:
+    def listen(self, backlog: int | None = None) -> None:
         """Enable a `SlipSocket` server to accept connections.
 
         Args:
             backlog (int): The maximum number of waiting connections.
-
-        See Also:
-            :meth:`socket.socket.listen`
         """
         if backlog is None:
             self.socket.listen()
@@ -243,42 +220,42 @@ class SlipSocket(SlipWrapper[socket.socket]):
 
         Args:
             how: Flag to indicate which halves of the connection must be shut down.
-
-        See Also:
-            :meth:`socket.socket.shutdown`
         """
         self.socket.shutdown(how)
 
     @property
     def family(self) -> int:
         # pylint: disable=line-too-long
-        """The wrapped socket's address family. Usually :const:`socket.AF_INET` (IPv4) or :const:`socket.AF_INET6` (IPv6)."""
+        """The wrapped socket's address family.
+
+        Usually :const:`socket.AF_INET` (IPv4) or :const:`socket.AF_INET6` (IPv6).
+        """
         return self.socket.family
 
     @property
-    def type(self) -> int:
-        """The wrapped socket's type. Always :const:`socket.SOCK_STREAM`."""
+    def type(self) -> int:  # noqa: A003
+        """The wrapped socket's type.
+
+        Always :const:`socket.SOCK_STREAM`.
+        """
         return self.socket.type
 
     @property
     def proto(self) -> int:
-        """The wrapped socket's protocol number. Usually 0."""
+        """The wrapped socket's protocol number.
+
+        Usually 0.
+        """
         return self.socket.proto
 
     def __getattr__(self, attribute: str) -> Any:
-        if (
-            attribute.startswith("recv")
-            or attribute.startswith("send")
-            or attribute
-            in (
-                "makefile",
-                "share",
-                "dup",
-            )
+        if attribute.startswith(("recv", "send")) or attribute in (
+            "makefile",
+            "share",
+            "dup",
         ):
-            raise AttributeError(
-                f"'{self.__class__.__name__}' object has no attribute '{attribute}'"
-            )
+            error_msg = f"'{self.__class__.__name__}' object has no attribute '{attribute}'"
+            raise AttributeError(error_msg)
         warnings.warn(
             "Direct access to the enclosed socket attributes and methods will be removed in version 1.0",
             DeprecationWarning,
@@ -290,8 +267,8 @@ class SlipSocket(SlipWrapper[socket.socket]):
     def create_connection(
         cls,
         address: TCPAddress,
-        timeout: Optional[float] = None,
-        source_address: Optional[TCPAddress] = None,
+        timeout: float | None = None,
+        source_address: TCPAddress | None = None,
     ) -> SlipSocket:
         """Create a SlipSocket connection.
 

@@ -2,7 +2,7 @@
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
 
-# pylint: disable=attribute-defined-outside-init
+# ruff: noqa: UP006 UP035
 
 """Tests for SlipStream."""
 
@@ -35,9 +35,7 @@ class TestSlipStreamBasics:
     def setup(self, mocker: MockerFixture) -> None:
         """Prepare the test."""
 
-        self.stream_mock = mocker.Mock(
-            spec_set=("read", "write", "readable", "writable")
-        )
+        self.stream_mock = mocker.Mock(spec_set=("read", "write", "readable", "writable"))
         self.stream_mock.read = mocker.Mock()
         self.stream_mock.write = mocker.Mock()
         self.slipstream = SlipStream(self.stream_mock)
@@ -46,12 +44,8 @@ class TestSlipStreamBasics:
         """Verify the creation of the SlipStream instance."""
         assert self.slipstream.stream is self.stream_mock
 
-    @pytest.mark.parametrize(
-        "rbl, wbl", [(True, True), (True, False), (False, True), (False, False)]
-    )
-    def test_slipstream_readable_and_writable_attributes(
-        self, rbl: bool, wbl: bool
-    ) -> None:
+    @pytest.mark.parametrize(("rbl", "wbl"), [(True, True), (True, False), (False, True), (False, False)])
+    def test_slipstream_readable_and_writable_attributes(self, rbl: bool, wbl: bool) -> None:  # noqa: FBT001
         """Verify the readable and writable attributes."""
         self.stream_mock.configure_mock(readable=rbl, writable=wbl)
         assert self.slipstream.readable == rbl
@@ -68,17 +62,12 @@ class TestSlipStreamBasics:
         assert self.slipstream.recv_msg() == msg_list[1]
         # No more messages
         assert self.slipstream.recv_msg() == b""
-        assert (
-            self.stream_mock.read.mock_calls
-            == [mocker.call(io.DEFAULT_BUFFER_SIZE)] * 2
-        )
+        assert self.stream_mock.read.mock_calls == [mocker.call(io.DEFAULT_BUFFER_SIZE)] * 2
 
     def test_slipstream_reading_single_bytes(self, mocker: MockerFixture) -> None:
         """Verify that receiving messages works when reading the packets byte for byte."""
         msg_list = [b"hallo", b"bye"]
-        self.stream_mock.read.side_effect = list(
-            END + msg_list[0] + END + END + msg_list[1] + END
-        ) + [b""]
+        self.stream_mock.read.side_effect = [END, *msg_list[0], END, END, *msg_list[1], END, b""]
         self.slipstream = SlipStream(self.stream_mock, 1)
         assert self.slipstream.recv_msg() == msg_list[0]
         assert self.slipstream.recv_msg() == msg_list[1]
@@ -107,11 +96,7 @@ class TestSlipStreamBasics:
         for msg in msg_list:
             self.slipstream.send_msg(msg)
         encoded_messages = (END + msg_list[0] + END, END + msg_list[1] + END)
-        call_list = [
-            mocker.call(enc_msg[i:])
-            for enc_msg in encoded_messages
-            for i in range(len(enc_msg))
-        ]
+        call_list = [mocker.call(enc_msg[i:]) for enc_msg in encoded_messages for i in range(len(enc_msg))]
         assert self.stream_mock.write.mock_calls == call_list
 
     def test_iterating_over_slipstream(self) -> None:
@@ -141,23 +126,21 @@ class TestSlipStreamBasics:
         self.verify_error_recovery(msg_list)
 
     def test_recovery_from_protocol_error_with_unbuffered_reads(self) -> None:
-        """Verify error recover for unbuffered reads."""
+        """Verify error recovery for unbuffered reads."""
         msg_list = [b"hallo", b"bye"]
-        self.stream_mock.read.side_effect = list(
-            END + msg_list[0] + END + ESC + END + msg_list[1] + END
-        ) + [b""]
+        self.stream_mock.read.side_effect = [END, *msg_list[0], END, ESC, END, *msg_list[1], END, b""]
         self.slipstream = SlipStream(self.stream_mock, 1)
         self.verify_error_recovery(msg_list)
 
     def verify_error_recovery_during_iteration(self, msg_list: List[bytes]) -> None:
         """Helper function to verify error recovery during iteration."""
         received_message = []
-        with pytest.raises(ProtocolError):
+        with pytest.raises(ProtocolError):  # noqa: PT012
             for msg in self.slipstream:
-                received_message.append(msg)
+                received_message.append(msg)  # noqa: PERF402
         assert received_message == msg_list[:1]
         for msg in self.slipstream:
-            received_message.append(msg)
+            received_message.append(msg)  # noqa: PERF402
         assert received_message == msg_list
 
     def test_recovery_from_protocol_error_during_iteration(self) -> None:
@@ -174,9 +157,7 @@ class TestSlipStreamBasics:
     ) -> None:
         """Verify that error recovery works during iteration with unbuffered reads."""
         msg_list = [b"hallo", b"bye"]
-        self.stream_mock.read.side_effect = list(
-            END + msg_list[0] + END + ESC + END + msg_list[1] + END
-        ) + [b""]
+        self.stream_mock.read.side_effect = [END, *msg_list[0], END, ESC, END, *msg_list[1], END, b""]
         self.slipstream = SlipStream(self.stream_mock, 1)
         self.verify_error_recovery_during_iteration(msg_list)
 
@@ -187,11 +168,7 @@ class TestSlipStreamBasics:
 # Use the io.BytesIO methods for testing
 NOT_DELEGATED_METHODS = (
     [attr for attr in dir(io.BytesIO) if attr.startswith("read") and attr != "readable"]
-    + [
-        attr
-        for attr in dir(io.BytesIO)
-        if attr.startswith("write") and attr != "writable"
-    ]
+    + [attr for attr in dir(io.BytesIO) if attr.startswith("write") and attr != "writable"]
     + [
         "detach",
         "flushInput",

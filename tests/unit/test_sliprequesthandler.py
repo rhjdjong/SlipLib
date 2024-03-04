@@ -2,7 +2,7 @@
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
 
-# pylint: disable=attribute-defined-outside-init
+# ruff: noqa: UP035
 
 """Tests for SlipRequestHandler"""
 
@@ -12,10 +12,9 @@ from socket import AF_INET, AF_INET6, socket  # pylint: disable=no-name-in-modul
 from typing import Generator
 
 import pytest
-from pytest import FixtureRequest
 
 from sliplib import END, SlipRequestHandler, SlipSocket
-from sliplib.slipsocket import Address
+from sliplib.slipsocket import TCPAddress
 
 
 class DummySlipRequestHandler(SlipRequestHandler):
@@ -31,23 +30,19 @@ class DummySlipRequestHandler(SlipRequestHandler):
 class TestSlipRequestHandler:
     """Tests for SlipRequestHandler."""
 
-    @pytest.fixture(
-        autouse=True, params=[(AF_INET, ("127.0.0.1", 0)), (AF_INET6, ("::1", 0, 0, 0))]
-    )
-    def setup(self, request: FixtureRequest) -> Generator[None, None, None]:
+    @pytest.fixture(autouse=True, params=[(AF_INET, ("127.0.0.1", 0)), (AF_INET6, ("::1", 0, 0, 0))])
+    def setup(self, request: pytest.FixtureRequest) -> Generator[None, None, None]:
         """Prepare the test."""
         self.family = request.param[0]
         self.bind_address = request.param[1]
         # Cannot use standard TCPServer, because that is hardcoded to IPv4
-        self.server_class = type(
-            "SlipServer", (socketserver.TCPServer,), {"address_family": self.family}
-        )
+        self.server_class = type("SlipServer", (socketserver.TCPServer,), {"address_family": self.family})
         self.client_socket = socket(family=self.family)
         self.server_is_running = threading.Event()
         yield
         self.client_socket.close()
 
-    def server(self, bind_address: Address) -> None:
+    def server(self, bind_address: TCPAddress) -> None:
         """Create a server."""
         srv = self.server_class(bind_address, DummySlipRequestHandler)
         self.server_address = srv.server_address
