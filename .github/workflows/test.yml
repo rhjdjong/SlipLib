@@ -44,4 +44,4 @@ jobs:
       run: hatch fmt --check
 
     - name: Run tests
-      run: hatch run test.py{{ matrix.python-version }}:cov
+      run: hatch run test.py${{ matrix.python-version }}:cov
