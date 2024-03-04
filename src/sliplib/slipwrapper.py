@@ -6,39 +6,46 @@
 SlipWrapper
 -----------
 
+.. autotypevar:: ByteStream
+   :no-type:
+
 .. autoclass:: SlipWrapper
+   :show-inheritance:
 
    Class :class:`SlipWrapper` offers the following methods and attributes:
 
-   .. automethod:: send_msg
    .. automethod:: recv_msg
-
-   .. attribute:: driver
-
-      The :class:`SlipWrapper`'s :class:`Driver` instance.
-
-   .. attribute:: stream
-
-      The wrapped `stream`.
+   .. automethod:: send_msg
+   .. autoattribute:: driver
+   .. autoattribute:: stream
 
    In addition, :class:`SlipWrapper` requires that derived classes implement the following methods:
 
-   .. automethod:: send_bytes
    .. automethod:: recv_bytes
+   .. automethod:: send_bytes
+
 """
+from __future__ import annotations
 
-import collections
 import sys
-from types import TracebackType
-from typing import Any, Deque, Optional
+from types import TracebackType  # noqa: TCH003
+from typing import TYPE_CHECKING, Generic, TypeVar
 
-from .slip import Driver, ProtocolError
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+from collections import deque
+
+from sliplib.slip import Driver, ProtocolError
+
+#: ByteStream is a :class:`TypeVar` that stands for a generic byte stream.
+ByteStream = TypeVar("ByteStream")
 
 
-class SlipWrapper:
+class SlipWrapper(Generic[ByteStream]):
     """Base class that provides a message based interface to a byte stream
 
-    :class:`SlipWrapper` combines a :class:`Driver` instance with a byte stream.
+    :class:`SlipWrapper` combines a :class:`Driver` instance with a (generic) byte stream.
     The :class:`SlipWrapper` class is an abstract base class.
     It offers the methods :meth:`send_msg` and :meth:`recv_msg` to send and
     receive single messages over the byte stream, but it does not of itself
@@ -55,19 +62,21 @@ class SlipWrapper:
        Allow iteration over a :class:`SlipWrapper` instance.
     """
 
-    def __init__(self, stream: Any):
+    def __init__(self, stream: ByteStream):
         """
         To instantiate a :class:`SlipWrapper`, the user must provide
         an existing byte stream
 
         Args:
-            stream (bytestream): The byte stream that will be wrapped.
+            stream: The byte stream that will be wrapped.
         """
+        #: The wrapped :class:`ByteStream`.
         self.stream = stream
+        #: The :class:`SlipWrapper`'s :class:`Driver` instance.
         self.driver = Driver()
-        self._messages = collections.deque()  # type: Deque[bytes]
-        self._protocol_error = None  # type: Optional[ProtocolError]
-        self._traceback = None  # type: Optional[TracebackType]
+        self._messages: deque[bytes] = deque()
+        self._protocol_error: ProtocolError | None = None
+        self._traceback: TracebackType | None = None
         self._flush_needed = False
         self._stream_closed = False
 
@@ -138,7 +147,7 @@ class SlipWrapper:
                     self._messages.extend(self.driver.flush())
                 else:
                     data = self.recv_bytes()
-                    if data == b'':
+                    if data == b"":
                         self._stream_closed = True
                     if isinstance(data, int):  # Single byte reads are represented as integers
                         data = bytes([data])
@@ -153,7 +162,7 @@ class SlipWrapper:
             return self._messages.popleft()
 
         self._handle_pending_protocol_error()
-        return b''
+        return b""
 
     def _handle_pending_protocol_error(self) -> None:
         if self._protocol_error:
@@ -164,7 +173,7 @@ class SlipWrapper:
                 self._traceback = None
                 self._flush_needed = True
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[bytes]:
         while True:
             msg = self.recv_msg()
             if not msg:

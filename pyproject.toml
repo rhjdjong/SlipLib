@@ -1,0 +1,137 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sliplib"
+dynamic = ["version"]
+description = "Slip package"
+readme = "README.rst"
+license = "MIT"
+authors = [
+    { name = "Ruud de Jong", email = "ruud.de.jong@xs4all.nl" },
+]
+keywords = [
+    "RFC1055",
+    "framing",
+    "message",
+    "protocol",
+    "slip",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.8",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.8"
+dependencies = []
+
+[project.urls]
+"Source code" = "https://github.com/rhjdjong/SlipLib"
+
+[tool.hatch.version]
+path = "src/sliplib/version.py"
+
+[tool.hatch.envs.default]
+python = "3.12"
+dependencies = [
+    "pytest",
+    "pytest-mock",
+]
+
+[[tool.hatch.envs.test.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+[tool.hatch.envs.test]
+extra-dependencies = [
+    "coverage[toml]>=6.5",
+]
+
+[tool.hatch.envs.test.scripts]
+test = "pytest {args:tests}"
+test-cov = "coverage run -m pytest {args:tests}"
+cov-report = [
+    "- coverage combine",
+    "coverage report",
+]
+cov = [
+    "test-cov",
+    "cov-report",
+]
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+    "mypy>=1.0.0",
+    "typing_extensions"
+]
+
+[tool.hatch.envs.types.scripts]
+check = "mypy --strict --install-types --non-interactive {args:src tests examples}"
+
+[tool.hatch.envs.style]
+dependencies = [
+    "isort",
+    "black",
+]
+
+[tool.hatch.envs.style.scripts]
+isort-check = "isort --check-only {args:src tests examples docs}"
+black-check = "black --check {args:src tests examples docs}"
+isort-fix = "isort {args:src tests examples docs}"
+black-fix = "black {args:src tests examples docs}"
+check = [
+    "- isort-check",
+    "black-check",
+]
+fix = [
+    "isort-fix",
+    "black-fix",
+]
+
+[tool.coverage.run]
+source_pkgs = ["sliplib", "tests"]
+branch = true
+parallel = true
+omit = [
+    "src/sliplib/__about__.py",
+]
+
+[tool.coverage.paths]
+sliplib = ["src/sliplib", "*/SlipLib/src/sliplib"]
+tests = ["tests", "*/SlipLib/tests"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "no cov",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src",
+]
+
+[tool.hatch.envs.doc]
+python = "3.12"
+dependencies = [
+    "sphinx",
+    "sphinx_rtd_theme",
+    "sphinx-toolbox",
+]
+
+[tool.hatch.envs.doc.scripts]
+build = "cd {root}/docs && make {args:html}"
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.ruff]
+target-version = "py312"

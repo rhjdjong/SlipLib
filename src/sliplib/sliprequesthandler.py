@@ -9,20 +9,15 @@ SlipRequestHandler
 .. autoclass:: SlipRequestHandler
    :show-inheritance:
 
-   The interface is identical to that offered by the
-   :class:`socketserver.BaseRequestHandler` baseclass.
-   To do anything useful, a derived class must define
-   a new :meth:`handle` method, and may override any
-   of the other methods.
-
    .. automethod:: setup
    .. automethod:: handle
    .. automethod:: finish
 """
+from __future__ import annotations
 
 from socketserver import BaseRequestHandler
 
-from .slipsocket import SlipSocket
+from sliplib.slipsocket import SlipSocket
 
 
 class SlipRequestHandler(BaseRequestHandler):
@@ -32,10 +27,11 @@ class SlipRequestHandler(BaseRequestHandler):
     for the purpose of creating TCP server instances
     that can handle incoming SLIP-based connections.
 
-    To implement a specific behaviour, all that
-    is needed is to derive a class that
-    defines a :meth:`handle` method that uses
+    To do anything useful, a derived class must define
+    a new :meth:`handle` method that uses
     :attr:`self.request` to send and receive SLIP-encoded messages.
+
+    Other methods can of course also be overridden if necessary.
     """
 
     def setup(self) -> None:
@@ -61,14 +57,14 @@ class SlipRequestHandler(BaseRequestHandler):
         The purpose of the SLIP protocol is to allow separation of
         messages in a continuous byte stream.
         As such, it is expected that the :meth:`handle` method of a derived class
-        is capable of handling multiple SLIP messages:
+        is capable of handling multiple SLIP messages, for example:
 
         .. code::
 
             def handle(self):
                 while True:
                     msg = self.request.recv_msg()
-                    if msg == b'':
+                    if msg == b"":
                         break
                     # Do something with the message
         """
