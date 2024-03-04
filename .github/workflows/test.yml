@@ -38,7 +38,7 @@ jobs:
       run: hatch run style:check
 
     - name: Check types
-      run: hatch run types.py{{ matrix.python-version }}:check
+      run: hatch run types:check
 
     - name: Run static analysis
       run: hatch fmt --check
