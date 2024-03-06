@@ -2,19 +2,21 @@
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
 
-# ruff: noqa: UP035
 
 """Tests for SlipRequestHandler"""
+from __future__ import annotations
 
 import socketserver
 import threading
-from socket import AF_INET, AF_INET6, socket  # pylint: disable=no-name-in-module
-from typing import Generator
+from socket import AF_INET, AF_INET6, socket
+from typing import TYPE_CHECKING, Generator
 
 import pytest
 
 from sliplib import END, SlipRequestHandler, SlipSocket
-from sliplib.slipsocket import TCPAddress
+
+if TYPE_CHECKING:
+    from sliplib.slipsocket import TCPAddress
 
 
 class DummySlipRequestHandler(SlipRequestHandler):
@@ -42,9 +44,11 @@ class TestSlipRequestHandler:
         yield
         self.client_socket.close()
 
-    def server(self, bind_address: TCPAddress) -> None:
+    def server(
+        self, bind_address: TCPAddress, request_handler_class: type[SlipRequestHandler] = DummySlipRequestHandler
+    ) -> None:
         """Create a server."""
-        srv = self.server_class(bind_address, DummySlipRequestHandler)
+        srv = self.server_class(bind_address, request_handler_class)
         self.server_address = srv.server_address
         self.server_is_running.set()
         srv.handle_request()

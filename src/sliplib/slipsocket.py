@@ -2,7 +2,6 @@
 #  This file is part of the SlipLib project which is released under the MIT license.
 #  See https://github.com/rhjdjong/SlipLib for details.
 
-# ruff: noqa: UP007 UP006 UP035
 """
 SlipSocket
 ----------
@@ -35,9 +34,12 @@ SlipSocket
    .. automethod:: close
    .. automethod:: connect
    .. automethod:: connect_ex
+   .. automethod:: fileno
    .. automethod:: getpeername
    .. automethod:: getsockname
+   .. automethod:: getsockopt
    .. automethod:: listen([backlog])
+   .. automethod:: setsockopt
    .. automethod:: shutdown
 
    Since the wrapped socket is available as the :attr:`socket` attribute,
@@ -66,13 +68,13 @@ from __future__ import annotations
 
 import socket
 import warnings
-from typing import Any, Optional, Tuple, Union, cast
+from typing import Any, Tuple, Union, cast
 
 from sliplib.slipwrapper import SlipWrapper
 
 #: TCPAddress stands for either an IPv4 address, i.e. a (host, port) tuple,
 #: or an IPv6 address, i.e. a (host, port, flowinfo, scope_id) tuple.
-TCPAddress = Union[Tuple[Optional[str], int], Tuple[Optional[str], int, int, int]]
+TCPAddress = Union[Tuple[str, int], Tuple[str, int, int, int]]
 
 
 class SlipSocket(SlipWrapper[socket.socket]):
@@ -149,7 +151,7 @@ class SlipSocket(SlipWrapper[socket.socket]):
         """See base class"""
         return self.socket.recv(self._chunk_size)
 
-    def accept(self) -> Tuple[SlipSocket, TCPAddress]:
+    def accept(self) -> tuple[SlipSocket, TCPAddress]:
         """Accepts an incoming connection.
 
         Returns:
@@ -188,6 +190,14 @@ class SlipSocket(SlipWrapper[socket.socket]):
         """
         self.socket.connect_ex(address)
 
+    def fileno(self) -> int:
+        """Get the socket's file descriptor.
+
+        Returns:
+            The wrapped socket's file descriptor, or -1 on failure.
+        """
+        return self.socket.fileno()
+
     def getpeername(self) -> TCPAddress:
         """Get the IP address of the remote socket to which `SlipSocket` is connected.
 
@@ -204,6 +214,14 @@ class SlipSocket(SlipWrapper[socket.socket]):
         """
         return cast(TCPAddress, self.socket.getsockname())
 
+    def getsockopt(self, *args: Any) -> int | bytes:
+        """Get the socket option from the embedded socket.
+
+        Returns:
+            The integer or bytes representing the value of the socket option.
+        """
+        return self.socket.getsockopt(*args)
+
     def listen(self, backlog: int | None = None) -> None:
         """Enable a `SlipSocket` server to accept connections.
 
@@ -214,6 +232,14 @@ class SlipSocket(SlipWrapper[socket.socket]):
             self.socket.listen()
         else:
             self.socket.listen(backlog)
+
+    def setsockopt(self, *args: Any) -> None:
+        """Get the socket option from the embedded socket.
+
+        Returns:
+            The integer or bytes representing the value of the socket option.
+        """
+        return self.socket.setsockopt(*args)
 
     def shutdown(self, how: int) -> None:
         """Shutdown the connection.

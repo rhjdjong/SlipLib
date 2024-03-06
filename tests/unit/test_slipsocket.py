@@ -2,7 +2,6 @@
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
 
-# ruff: noqa: UP035
 
 """Tests for SlipSocket"""
 
@@ -26,9 +25,12 @@ EXPLICITLY_EXPOSED_SOCKET_METHODS = (
     "close",
     "connect",
     "connect_ex",
+    "fileno",
     "getpeername",
     "getsockname",
+    "getsockopt",
     "listen",
+    "setsockopt",
     "shutdown",
 )
 
@@ -54,12 +56,12 @@ class TestSlipSocket:
         autouse=True,
         params=[
             (
-                socket.AF_INET,  # pylint: disable=no-member
+                socket.AF_INET,
                 ("93.184.216.34", 54321),  # example.com IPv4 address
                 ("127.0.0.1", 12345),  # localhost IPv4 address
             ),
             (
-                socket.AF_INET6,  # pylint: disable=no-member
+                socket.AF_INET6,
                 (
                     "2606:2800:220:1:248:1893:25c8:1946",
                     54321,
@@ -79,7 +81,7 @@ class TestSlipSocket:
             family=self.family,
             type=socket.SOCK_STREAM,
             proto=0,
-        )  # pylint: disable=no-member
+        )
         self.slipsocket = SlipSocket(self.sock_mock)
         yield
         self.sock_mock.close()
@@ -137,7 +139,7 @@ class TestSlipSocket:
             yield END + END
             yield b"bye"
             yield b""
-            yield b""
+            yield b""  # no cov.  Extra byte to ensure that the previous empty byte is enough to signal end of data.
 
         self.sock_mock.recv = mocker.Mock(side_effect=socket_data_generator())
         assert self.slipsocket.recv_msg() == b"hallo"
@@ -231,6 +233,13 @@ class TestSlipSocket:
         self.slipsocket.connect_ex(self.far_address)
         self.sock_mock.connect_ex.assert_called_once_with(self.far_address)
 
+    def test_fileno_method(self, mocker: MockerFixture) -> None:
+        """Test that the fileno method is delegated to the socket."""
+        self.sock_mock.fileno = mocker.Mock(return_value=3)
+        fileno = self.slipsocket.fileno()
+        self.sock_mock.fileno.assert_called_once_with()
+        assert fileno == 3
+
     def test_getpeername_method(self, mocker: MockerFixture) -> None:
         """Test that the getpeername method is delegated to the socket."""
         self.sock_mock.getpeername = mocker.Mock(return_value=self.far_address)
@@ -245,12 +254,25 @@ class TestSlipSocket:
         self.sock_mock.getsockname.assert_called_once_with()
         assert sockname == self.near_address
 
+    def test_getsockopt_method(self, mocker: MockerFixture) -> None:
+        """Test that the getsockopt method is delegated to the socket."""
+        self.sock_mock.getsockopt = mocker.Mock(return_value=5)
+        option = self.slipsocket.getsockopt(27, 5)
+        self.sock_mock.getsockopt.assert_called_once_with(27, 5)
+        assert option == 5
+
     def test_listen_method(self, mocker: MockerFixture) -> None:
         """Test that the listen method (with or without arguments) is delegated to the socket."""
         self.sock_mock.listen = mocker.Mock()
         self.slipsocket.listen()
         self.slipsocket.listen(5)
         assert self.sock_mock.listen.mock_calls == [mocker.call(), mocker.call(5)]
+
+    def test_setsockopt_method(self, mocker: MockerFixture) -> None:
+        """Test that the getsockopt method is delegated to the socket."""
+        self.sock_mock.setsockopt = mocker.Mock()
+        self.slipsocket.setsockopt(27, 5)
+        self.sock_mock.setsockopt.assert_called_once_with(27, 5)
 
     def test_shutdown_method(self, mocker: MockerFixture) -> None:
         """Test that the shutdown method is delegated to the socket."""
@@ -312,8 +334,8 @@ class TestSlipSocket:
 
         self.sock_mock.recv = mocker.Mock(side_effect=socket_data_generator())
         expected = (b"hallo", b"bye")
-        for exp, act in zip(expected, self.slipsocket):  # noqa: B905
-            assert exp == act
+        actual = tuple(msg for msg in self.slipsocket)
+        assert expected == actual
 
 
 if __name__ == "__main__":

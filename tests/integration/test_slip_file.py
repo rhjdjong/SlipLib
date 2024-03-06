@@ -18,7 +18,7 @@ class TestBufferedFileAccess(BaseFileTest):
         self.filepath.write_bytes(b"".join(encode(msg) for msg in data))
         with self.filepath.open(mode="rb") as f:
             slipstream = SlipStream(f)
-            for exp, act in zip(data, slipstream):  # noqa: B905
+            for exp, act in zip(data, slipstream):
                 assert exp == act
 
     def test_writing_slip_file(self) -> None:

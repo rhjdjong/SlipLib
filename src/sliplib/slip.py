@@ -226,7 +226,7 @@ class Driver:
             try:
                 msg = decode(packet)
             except ProtocolError:
-                # Add any already decoded messages to the exception
+                # Add any already decoded messages to the internal message buffer
                 self._messages = messages
                 raise
             messages.append(msg)

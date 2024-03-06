@@ -2,7 +2,6 @@
 #  This file is part of the SlipLib project which is released under the MIT license.
 #  See https://github.com/rhjdjong/SlipLib for details.
 
-# pylint: disable=relative-beyond-top-level
 
 """Test using SlipStream with an unbuffered file"""
 
@@ -20,7 +19,7 @@ class TestUnbufferedFileAccess(BaseFileTest):
         self.filepath.write_bytes(b"".join(encode(msg) for msg in data))
         with self.filepath.open(mode="rb", buffering=0) as f:
             slipstream = SlipStream(f)
-            for exp, act in zip(data, slipstream):  # noqa: B905
+            for exp, act in zip(data, slipstream):
                 assert exp == act
 
     def test_writing_slip_file(self) -> None:

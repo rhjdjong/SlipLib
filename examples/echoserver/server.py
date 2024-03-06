@@ -27,7 +27,7 @@ from socketserver import TCPServer
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    if sys.version_info >= (3, 12):  # noqa: UP036
+    if sys.version_info >= (3, 12):
         from collections.abc import Buffer
     else:
         from typing_extensions import Buffer

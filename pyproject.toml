@@ -39,6 +39,7 @@ python = "3.12"
 dependencies = [
     "pytest",
     "pytest-mock",
+    "semantic-version-check",
 ]
 
 [[tool.hatch.envs.test.matrix]]
@@ -61,10 +62,8 @@ cov = [
     "cov-report",
 ]
 
-[[tool.hatch.envs.types.matrix]]
-python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
-
 [tool.hatch.envs.types]
+python = "3.12"
 extra-dependencies = [
     "mypy>=1.0.0",
     "typing_extensions"
@@ -97,6 +96,10 @@ fix = [
 source_pkgs = ["sliplib", "tests"]
 branch = true
 parallel = true
+concurrency = [
+    "multiprocessing",
+    "thread",
+]
 omit = [
     "src/sliplib/__about__.py",
 ]
@@ -136,5 +139,5 @@ line-length = 120
 profile = "black"
 line_length = 120
 
-[tool.ruff]
-target-version = "py312"
+[tool.mypy]
+python_version = "3.8"

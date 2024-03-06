@@ -2,18 +2,19 @@
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
 
-# ruff: noqa: UP006 UP035
-
 """Tests for SlipStream."""
+from __future__ import annotations
 
 import io
 import warnings
-from typing import Generator, List
+from typing import TYPE_CHECKING, Generator
 
 import pytest
-from pytest_mock import MockerFixture
 
 from sliplib import END, ESC, ProtocolError, SlipStream
+
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
 
 
 def test_slip_stream_fails_if_instantiated_with_non_io_stream_argument() -> None:
@@ -109,7 +110,7 @@ class TestSlipStreamBasics:
         for i, msg in enumerate(self.slipstream):
             assert msg_list[i] == msg
 
-    def verify_error_recovery(self, msg_list: List[bytes]) -> None:
+    def verify_error_recovery(self, msg_list: list[bytes]) -> None:
         """Helper function to verify error recovery."""
         assert self.slipstream.recv_msg() == msg_list[0]
         with pytest.raises(ProtocolError):
@@ -132,16 +133,20 @@ class TestSlipStreamBasics:
         self.slipstream = SlipStream(self.stream_mock, 1)
         self.verify_error_recovery(msg_list)
 
-    def verify_error_recovery_during_iteration(self, msg_list: List[bytes]) -> None:
+    def verify_error_recovery_during_iteration(self, msg_list: list[bytes]) -> None:
         """Helper function to verify error recovery during iteration."""
-        received_message = []
-        with pytest.raises(ProtocolError):  # noqa: PT012
+        received_messages = []
+
+        def fill_received_messages() -> None:
             for msg in self.slipstream:
-                received_message.append(msg)  # noqa: PERF402
-        assert received_message == msg_list[:1]
-        for msg in self.slipstream:
-            received_message.append(msg)  # noqa: PERF402
-        assert received_message == msg_list
+                received_messages.append(msg)  # noqa: PERF402
+
+        with pytest.raises(ProtocolError):
+            fill_received_messages()
+
+        assert received_messages == msg_list[:1]
+        fill_received_messages()
+        assert received_messages == msg_list
 
     def test_recovery_from_protocol_error_during_iteration(self) -> None:
         """Verify that error recovery works during iteration with buffered reads."""
@@ -166,24 +171,23 @@ class TestSlipStreamBasics:
 # This will be removed due to deprecation of delegating methods to the wrapped stream.
 
 # Use the io.BytesIO methods for testing
-NOT_DELEGATED_METHODS = (
-    [attr for attr in dir(io.BytesIO) if attr.startswith("read") and attr != "readable"]
-    + [attr for attr in dir(io.BytesIO) if attr.startswith("write") and attr != "writable"]
-    + [
-        "detach",
-        "flushInput",
-        "flushOutput",
-        "getbuffer",
-        "getvalue",
-        "peek",
-        "raw",
-        "reset_input_buffer",
-        "reset_output_buffer",
-        "seek",
-        "seekable",
-        "tell",
-        "truncate",
-    ]
+NOT_DELEGATED_METHODS = [
+    "detach",
+    "flushInput",
+    "flushOutput",
+    "getbuffer",
+    "getvalue",
+    "peek",
+    "raw",
+    "reset_input_buffer",
+    "reset_output_buffer",
+    "seek",
+    "seekable",
+    "tell",
+    "truncate",
+]
+NOT_DELEGATED_METHODS.extend(
+    attr for attr in dir(io.BytesIO) if attr.startswith(("read", "write")) and attr not in ("readable", "writable")
 )
 
 DELEGATED_METHODS = [

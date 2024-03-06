@@ -2,22 +2,25 @@
 #  This file is part of the SlipLib project which is released under the MIT license.
 #  See https://github.com/rhjdjong/SlipLib for details.
 
-# ruff: noqa: UP006 UP035
 
 """
 This module tests SlipSocket using a SLIP echo server, similar to the one in the examples directory.
 """
+from __future__ import annotations
 
 import socket
 from multiprocessing import Pipe, Process
-from multiprocessing.connection import Connection
 from socketserver import TCPServer
-from typing import Generator, Mapping, Tuple, Type
+from typing import TYPE_CHECKING, Generator, Mapping
 
 import pytest
 
 from sliplib import SlipRequestHandler, SlipSocket
-from sliplib.slipsocket import TCPAddress
+
+if TYPE_CHECKING:
+    from multiprocessing.connection import Connection
+
+    from sliplib.slipsocket import TCPAddress
 
 
 class SlipEchoHandler(SlipRequestHandler):
@@ -36,7 +39,7 @@ class SlipEchoHandler(SlipRequestHandler):
 class SlipEchoServer:
     """Execution helper for the echo server. Sends the server address back over the pipe."""
 
-    server_data: Mapping[int, Tuple[Type[TCPServer], str]] = {
+    server_data: Mapping[int, tuple[type[TCPServer], str]] = {
         socket.AF_INET: (TCPServer, "127.0.0.1"),
         socket.AF_INET6: (
             type("TCPServerIPv6", (TCPServer,), {"address_family": socket.AF_INET6}),
@@ -80,7 +83,7 @@ class TestEchoServer:
         address_available = near.poll(1.5)  # AppVeyor sometimes takes a long time to run the server.
         if address_available:
             server_address = near.recv()
-        else:
+        else:  # no cov
             captured = capfd.readouterr()
             pytest.fail(captured.err)
         self.client = SlipEchoClient(server_address)
