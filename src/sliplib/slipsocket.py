@@ -121,7 +121,6 @@ class SlipSocket(SlipWrapper[socket.socket]):
     _chunk_size = 4096
 
     def __init__(self, sock: socket.SocketType):
-        # pylint: disable=missing-raises-doc
         """
         To instantiate a :class:`SlipSocket`, the user must provide
         a pre-constructed TCP `socket`.
@@ -221,6 +220,14 @@ class SlipSocket(SlipWrapper[socket.socket]):
             The integer or bytes representing the value of the socket option.
         """
         return self.socket.getsockopt(*args)
+
+    def gettimeout(self) -> float | None:
+        """Get the socket option from the embedded socket.
+
+        Returns:
+            The integer or bytes representing the value of the socket option.
+        """
+        return self.socket.gettimeout()
 
     def listen(self, backlog: int | None = None) -> None:
         """Enable a `SlipSocket` server to accept connections.

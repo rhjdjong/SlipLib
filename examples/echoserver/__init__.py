@@ -56,7 +56,7 @@ The server will have printed the following information:
 
 .. code:: bash
 
-   $ python server_ipv6.py
+   $ python server.py
    Slip server listening on localhost, port 59454
    Incoming connection from ('127.0.0.1', 59458)
    Raw data received: b'\\xc0hallo\\xc0'

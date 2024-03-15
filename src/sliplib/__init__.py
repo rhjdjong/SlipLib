@@ -67,7 +67,7 @@ High Level Usage
 .. automodule:: sliplib.slipwrapper
 .. automodule:: sliplib.slipstream
 .. automodule:: sliplib.slipsocket
-.. automodule:: sliplib.sliprequesthandler
+.. automodule:: sliplib.slipserver
 
 Exceptions
 ----------

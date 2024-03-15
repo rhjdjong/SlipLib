@@ -6,14 +6,13 @@
 """Tests for SlipRequestHandler"""
 from __future__ import annotations
 
-import socketserver
 import threading
 from socket import AF_INET, AF_INET6, socket
 from typing import TYPE_CHECKING, Generator
 
 import pytest
 
-from sliplib import END, SlipRequestHandler, SlipSocket
+from sliplib import END, SlipRequestHandler, SlipServer, SlipSocket
 
 if TYPE_CHECKING:
     from sliplib.slipsocket import TCPAddress
@@ -29,33 +28,37 @@ class DummySlipRequestHandler(SlipRequestHandler):
         self.request.send_msg(bytes(reversed(msg)))
 
 
+@pytest.mark.parametrize(
+    ("family", "address"),
+    (
+        (AF_INET, ("127.0.0.1", 0)),
+        (AF_INET6, ("::1", 0, 0, 0)),
+    ),
+)
 class TestSlipRequestHandler:
     """Tests for SlipRequestHandler."""
 
-    @pytest.fixture(autouse=True, params=[(AF_INET, ("127.0.0.1", 0)), (AF_INET6, ("::1", 0, 0, 0))])
-    def setup(self, request: pytest.FixtureRequest) -> Generator[None, None, None]:
+    @pytest.fixture(autouse=True)
+    def setup(self, family: int, address: TCPAddress) -> Generator[None, None, None]:
         """Prepare the test."""
-        self.family = request.param[0]
-        self.bind_address = request.param[1]
+        self.family = family
+        self.bind_address = address
         # Cannot use standard TCPServer, because that is hardcoded to IPv4
-        self.server_class = type("SlipServer", (socketserver.TCPServer,), {"address_family": self.family})
         self.client_socket = socket(family=self.family)
         self.server_is_running = threading.Event()
         yield
         self.client_socket.close()
 
-    def server(
-        self, bind_address: TCPAddress, request_handler_class: type[SlipRequestHandler] = DummySlipRequestHandler
-    ) -> None:
+    def server(self, bind_address: TCPAddress, request_handler_class: type[SlipRequestHandler]) -> None:
         """Create a server."""
-        srv = self.server_class(bind_address, request_handler_class)
+        srv = SlipServer(bind_address, request_handler_class)
         self.server_address = srv.server_address
         self.server_is_running.set()
         srv.handle_request()
 
     def test_working_of_sliprequesthandler(self) -> None:
         """Verify that the server returns the message with the bytes in reversed order."""
-        server_thread = threading.Thread(target=self.server, args=(self.bind_address,))
+        server_thread = threading.Thread(target=self.server, args=(self.bind_address, DummySlipRequestHandler))
         server_thread.start()
         self.server_is_running.wait(0.5)
         self.client_socket.connect(self.server_address)

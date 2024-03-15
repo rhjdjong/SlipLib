@@ -42,7 +42,7 @@ class TestSlipStreamBasics:
         self.slipstream = SlipStream(self.stream_mock)
 
     def test_slipstream_creation(self) -> None:
-        """Verify the creation of the SlipStream instance."""
+        """Verify the creation of the self.slipstream instance."""
         assert self.slipstream.stream is self.stream_mock
 
     @pytest.mark.parametrize(("rbl", "wbl"), [(True, True), (True, False), (False, True), (False, False)])
@@ -69,7 +69,7 @@ class TestSlipStreamBasics:
         """Verify that receiving messages works when reading the packets byte for byte."""
         msg_list = [b"hallo", b"bye"]
         self.stream_mock.read.side_effect = [END, *msg_list[0], END, END, *msg_list[1], END, b""]
-        self.slipstream = SlipStream(self.stream_mock, 1)
+        self.slipstream.chunk_size = 1
         assert self.slipstream.recv_msg() == msg_list[0]
         assert self.slipstream.recv_msg() == msg_list[1]
         # No more messages
@@ -130,7 +130,7 @@ class TestSlipStreamBasics:
         """Verify error recovery for unbuffered reads."""
         msg_list = [b"hallo", b"bye"]
         self.stream_mock.read.side_effect = [END, *msg_list[0], END, ESC, END, *msg_list[1], END, b""]
-        self.slipstream = SlipStream(self.stream_mock, 1)
+        self.slipstream.chunk_size = 1
         self.verify_error_recovery(msg_list)
 
     def verify_error_recovery_during_iteration(self, msg_list: list[bytes]) -> None:
@@ -163,7 +163,7 @@ class TestSlipStreamBasics:
         """Verify that error recovery works during iteration with unbuffered reads."""
         msg_list = [b"hallo", b"bye"]
         self.stream_mock.read.side_effect = [END, *msg_list[0], END, ESC, END, *msg_list[1], END, b""]
-        self.slipstream = SlipStream(self.stream_mock, 1)
+        self.slipstream.chunk_size = 1
         self.verify_error_recovery_during_iteration(msg_list)
 
 

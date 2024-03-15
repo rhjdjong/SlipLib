@@ -13,7 +13,7 @@ a dedicated socket subclass that prints
 the raw data that is received and sent.
 The request handler prints the decoded message,
 and then reverses the order of the bytes in the encoded message
-(so ``abc`` becomes ``cab``),
+(so ``abc`` becomes ``cba``),
 and sends it back to the client.
 """
 
@@ -24,44 +24,34 @@ from __future__ import annotations
 import socket
 import sys
 from socketserver import TCPServer
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-if TYPE_CHECKING:
-    if sys.version_info >= (3, 12):
-        from collections.abc import Buffer
-    else:
-        from typing_extensions import Buffer
-
-from _socket import dup
-
-from sliplib import SlipRequestHandler
+from sliplib import SlipRequestHandler, SlipSocket
 
 
-class _ChattySocket(socket.socket):
-    """A socket subclass that prints the raw data that is received and sent."""
+class _ChattySocket(SlipSocket):
+    """A SlipSocket subclass that prints the raw data that is received and sent."""
 
-    def __init__(self, sock: socket.socket) -> None:
-        fd = dup(sock.fileno())
-        super().__init__(sock.family, sock.type, sock.proto, fileno=fd)
-        super().settimeout(sock.gettimeout())
-
-    def recv(self, chunksize: int, *args: Any) -> bytes:
-        data = super().recv(chunksize, *args)
+    def recv_bytes(self) -> bytes:
+        data = super().recv_bytes()
         print("Raw data received:", data)
         return data
 
-    def sendall(self, data: Buffer, *args: Any) -> None:
+    def send_bytes(self, data: bytes) -> None:
         print("Sending raw data:", data)
-        super().sendall(data, *args)
+        super().send_bytes(data)
 
 
 class SlipHandler(SlipRequestHandler):
     """A SlipRequestHandler that echoes the received message with the bytes in reversed order."""
 
-    def setup(self) -> None:
-        self.request = _ChattySocket(self.request)
-        print(f"Incoming connection from {self.request.getpeername()}")
-        super().setup()
+    def __init__(self, request: socket.socket | SlipSocket, *args: Any) -> None:
+        if isinstance(request, SlipSocket):
+            request.__class__ = _ChattySocket
+        else:
+            request = _ChattySocket(request)
+        print(f"Incoming connection from {request.getpeername()}")
+        super().__init__(request, *args)
 
     # Dedicated handler to show the encoded bytes.
     def handle(self) -> None:
@@ -81,10 +71,14 @@ class TCPServerIPv6(TCPServer):
     address_family = socket.AF_INET6
 
 
-if __name__ == "__main__":
+def main() -> None:
     if len(sys.argv) > 1 and sys.argv[1].lower() == "ipv6":
         server = TCPServerIPv6(("localhost", 0), SlipHandler)  # type: TCPServer
     else:
         server = TCPServer(("localhost", 0), SlipHandler)
     print("Slip server listening on localhost, port", server.server_address[1])
     server.handle_request()
+
+
+if __name__ == "__main__":
+    main()
