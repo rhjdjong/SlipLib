@@ -20,7 +20,8 @@ import sys
 
 import sliplib
 
-if __name__ == "__main__":
+
+def main() -> None:
     if len(sys.argv) != 2:  # noqa: PLR2004
         print("Usage: python client.py <port>")
         sys.exit(1)
@@ -37,3 +38,7 @@ if __name__ == "__main__":
         sock.send_msg(b_message)
         b_reply = sock.recv_msg()
         print("Response:", b_reply)
+
+
+if __name__ == "__main__":
+    main()

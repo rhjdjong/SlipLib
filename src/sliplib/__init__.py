@@ -67,7 +67,7 @@ High Level Usage
 .. automodule:: sliplib.slipwrapper
 .. automodule:: sliplib.slipstream
 .. automodule:: sliplib.slipsocket
-.. automodule:: sliplib.sliprequesthandler
+.. automodule:: sliplib.slipserver
 
 Exceptions
 ----------
@@ -77,7 +77,7 @@ Exceptions
 """
 
 from sliplib.slip import END, ESC, ESC_END, ESC_ESC, Driver, ProtocolError, decode, encode, is_valid
-from sliplib.sliprequesthandler import SlipRequestHandler
+from sliplib.slipserver import SlipRequestHandler, SlipServer
 from sliplib.slipsocket import SlipSocket
 from sliplib.slipstream import SlipStream
 from sliplib.slipwrapper import SlipWrapper
@@ -90,6 +90,7 @@ __all__ = [
     "SlipWrapper",
     "SlipSocket",
     "SlipRequestHandler",
+    "SlipServer",
     "SlipStream",
     "ProtocolError",
     "END",

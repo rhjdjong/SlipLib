@@ -2,7 +2,6 @@
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
 
-# ruff: noqa: UP035
 
 """
 This module contains the tests for the low-level SLIP functions and classes.
@@ -16,8 +15,6 @@ from sliplib import END, ESC, ESC_END, ESC_ESC, Driver, ProtocolError, decode, e
 
 class TestEncoding:
     """Test encoding of SLIP messages."""
-
-    # pylint: disable=no-self-use
 
     def test_empty_message_encoding(self) -> None:
         """Empty message should result in an empty packet."""
@@ -59,11 +56,8 @@ class TestEncoding:
         assert encode(msg) == END + packet + END
 
 
-# noinspection PyPep8Naming
 class TestDecoding:
     """Test decoding of SLIP packets."""
-
-    # pylint: disable=no-self-use
 
     def test_empty_packet_decoding(self) -> None:
         """An empty packet should result in an empty message."""
@@ -228,7 +222,3 @@ class TestDriver:
         assert self.driver.messages == [msgs[2]]
         assert exc_info.value.args == (msgs[3],)
         assert self.driver.flush() == [msgs[4]]
-
-
-if __name__ == "__main__":
-    pytest.main()

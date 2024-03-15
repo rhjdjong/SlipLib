@@ -14,6 +14,7 @@ SlipStream
    A :class:`SlipStream` instance has the following attributes in addition to the attributes
    offered by its base class :class:`SlipWrapper`:
 
+   .. autoattribute:: chunk_size
    .. autoattribute:: readable
    .. autoattribute:: writable
 """
@@ -99,7 +100,7 @@ class SlipStream(SlipWrapper[IOStream]):
         Args:
             stream: The byte stream that will be wrapped.
 
-            chunk_size: the number of bytes to read per read operation.
+            chunk_size: The number of bytes to read per read operation.
                 The default value for `chunck_size` is `io.DEFAULT_BUFFER_SIZE`.
 
                 Setting the `chunk_size` is useful when the stream has a low bandwidth
@@ -128,7 +129,10 @@ class SlipStream(SlipWrapper[IOStream]):
         if hasattr(stream, "encoding"):
             error_msg = f"{stream.__class__.__name__} object is not a byte stream"
             raise TypeError(error_msg)
-        self._chunk_size = chunk_size if chunk_size > 0 else io.DEFAULT_BUFFER_SIZE
+
+        #: The number of bytes to read during each read operation.
+        self.chunk_size = chunk_size if chunk_size > 0 else io.DEFAULT_BUFFER_SIZE
+
         super().__init__(stream)
 
     def send_bytes(self, packet: bytes) -> None:
@@ -139,7 +143,7 @@ class SlipStream(SlipWrapper[IOStream]):
 
     def recv_bytes(self) -> bytes:
         """See base class"""
-        return b"" if self._stream_is_closed else self.stream.read(self._chunk_size)
+        return b"" if self._stream_is_closed else self.stream.read(self.chunk_size)
 
     @property
     def readable(self) -> bool:
