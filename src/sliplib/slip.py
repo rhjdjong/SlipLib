@@ -164,6 +164,7 @@ class Driver:
 
         .. versionchanged:: 0.7
            `receive()` no longer returns a list of decoded messages.
+            None.
         """
 
         # When a single byte is fed into this function
