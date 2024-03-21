@@ -47,11 +47,8 @@ Classes
 
 from __future__ import annotations
 
-import collections
 import re
-from numbers import Number
 from queue import Empty, Queue
-from typing import Callable, Optional
 
 END = b"\xc0"  #: The SLIP `END` byte.
 ESC = b"\xdb"  #: The SLIP `ESC` byte.
@@ -168,6 +165,9 @@ class Driver:
 
         Returns:
             None.
+
+        .. versionchanged:: 0.7
+           `receive()` no longer returns a list of decoded messages.
         """
 
         # When a single byte is fed into this function
@@ -205,7 +205,7 @@ class Driver:
         for packet in new_packets:
             self._packets.put(packet)
 
-    def get(self, block: bool = True, timeout: Optional[Number] = None) -> bytes:
+    def get(self, *, block: bool = True, timeout: float | None = None) -> bytes | None:
         """Get the next decoded message.
 
         Remove and decode a SLIP packet from the internal buffer, and return the resulting message.
@@ -219,6 +219,8 @@ class Driver:
 
         Raises:
             ProtocolError: When the packet that contained the message had an invalid byte sequence.
+
+        .. versionadded:: 0.7
         """
         try:
             packet = self._packets.get(block, timeout)

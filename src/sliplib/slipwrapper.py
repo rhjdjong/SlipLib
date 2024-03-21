@@ -27,29 +27,15 @@ SlipWrapper
 """
 from __future__ import annotations
 
-import asyncio
-import sys
-from types import TracebackType  # noqa: TCH003
-from typing import Coroutine, Optional, TYPE_CHECKING, Generic, TypeVar, Union
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-from collections import deque
-
-from sliplib.slip import Driver, ProtocolError
+from sliplib.slip import Driver
 
 #: ByteStream is a :class:`TypeVar` that stands for a generic byte stream.
 ByteStream = TypeVar("ByteStream")
-
-
-def _is_async() -> bool:
-    try:
-        asyncio.get_running_loop()
-    except RuntimeError:
-        return False
-    else:
-        return True
 
 
 class SlipWrapper(Generic[ByteStream]):
@@ -84,11 +70,6 @@ class SlipWrapper(Generic[ByteStream]):
         self.stream = stream
         #: The :class:`SlipWrapper`'s :class:`Driver` instance.
         self.driver = Driver()
-        self._messages: deque[bytes] = deque()
-        self._protocol_error: ProtocolError | None = None
-        self._traceback: TracebackType | None = None
-        self._flush_needed = False
-        self._stream_closed = False
 
     def send_bytes(self, packet: bytes) -> None:
         """Send a packet over the stream.
@@ -118,46 +99,16 @@ class SlipWrapper(Generic[ByteStream]):
         """
         raise NotImplementedError
 
-    async def async_send_bytes(self, packet: bytes) -> None:
-        """Send a packet over the stream.
-
-        Derived classes must implement this method.
-
-        Args:
-            packet: the packet to send over the stream
-        """
-        raise NotImplementedError
-
-    async def async_recv_bytes(self) -> bytes:
-        """Receive data from the stream.
-
-        Derived classes must implement this method.
-
-        .. note::
-            The convention used within the :class:`SlipWrapper` class
-            is that :meth:`recv_bytes` returns an empty bytes object
-            to indicate that the end of
-            the byte stream has been reached and no further data will
-            be received. Derived implementations must ensure that
-            this convention is followed.
-
-        Returns:
-            The bytes received from the stream
-        """
-        raise NotImplementedError
-
-    def send_msg(self, message: bytes) -> Union[None, Coroutine[None, None, None]]:
+    def send_msg(self, message: bytes) -> None:
         """Send a SLIP-encoded message over the stream.
 
         Args:
             message (bytes): The message to encode and send
         """
         packet = self.driver.send(message)
-        if _is_async():
-            return self.async_send_bytes(packet)
         self.send_bytes(packet)
 
-    def recv_msg(self) -> Union[bytes, Coroutine[bytes, None, None]]:
+    def recv_msg(self) -> bytes:
         """Receive a single message from the stream.
 
         Returns:
@@ -168,98 +119,13 @@ class SlipWrapper(Generic[ByteStream]):
                 A subsequent call to :meth:`recv_msg` (after handling the exception)
                 will return the message from the next packet.
         """
-
-        if _is_async():
-            return self._async_recv_msg()
-        return self._sync_recv_msg()
-
-    def _get_message_from_buffer(self) -> Optional[bytes]:
-        if not self._messages and self._protocol_error:
-            # No pending messages left, and a ProtocolError is waiting to be handled.
-            # The ProtocolError must be re-raised here
-            try:
-                raise self._protocol_error.with_traceback(self._traceback)
-            finally:
-                self._protocol_error = None
-                self._traceback = None
-                self._flush_needed = True
-
-        if self._flush_needed:
-            # A previously raised ProtocolError has been handled, so the next valid message must be retrieved.
-            self._flush_needed = False
-            try:
-                self._messages.extend(self.driver.flush())
-            except ProtocolError as protocol_error:
-                self._messages.extend(self.driver.messages)
-                self._protocol_error = protocol_error
-                self._traceback = sys.exc_info()[2]
-
-        if self._messages:
-            return self._messages.popleft()
-        else:
-            return None
-
-
-    def _sync_recv_msg(self) -> bytes:
-        message = self._get_message_from_buffer()
-        if message is not None:
-            return message
-
-        # Get data from the wrapped stream and feed it to the driver.
-        data = self.recv_bytes()
-        if data == b"":
-            self._stream_closed = True
-        if isinstance(data, int):  # Single byte reads are represented as integers
-            data = bytes([data])
-        self._messages.extend(self.driver.receive(data))
-
-        # First check if there are any pending messages
-        if self._messages:
-            return self._messages.popleft()
-
-        # No pending messages left. If a ProtocolError has occurred
-        # it must be re-raised here:
-        self._handle_pending_protocol_error()
-
-        while not self._messages and not self._stream_closed:
-            # As long as no messages are available,
-            # flush the internal packet buffer,
-            # and try to read data
-            try:
-                if self._flush_needed:
-                    self._flush_needed = False
-                    self._messages.extend(self.driver.flush())
-                else:
-                    data = self.recv_bytes()
-                    if data == b"":
-                        self._stream_closed = True
-                    if isinstance(data, int):  # Single byte reads are represented as integers
-                        data = bytes([data])
-                    self._messages.extend(self.driver.receive(data))
-            except ProtocolError as protocol_error:
-                self._messages.extend(self.driver.messages)
-                self._protocol_error = protocol_error
-                self._traceback = sys.exc_info()[2]
-                break
-
-        if self._messages:
-            return self._messages.popleft()
-
-        self._handle_pending_protocol_error()
-        return b""
-
-    def _handle_pending_protocol_error(self) -> None:
-        if self._protocol_error:
-            try:
-                raise self._protocol_error.with_traceback(self._traceback)
-            finally:
-                self._protocol_error = None
-                self._traceback = None
-                self._flush_needed = True
+        while (message := self.driver.get(block=False)) is None:
+            data = self.recv_bytes()
+            self.driver.receive(data)
+        return message
 
     def __iter__(self) -> Iterator[bytes]:
         while True:
-            msg = self.recv_msg()
-            if not msg:
+            if not (msg := self.recv_msg()):
                 break
             yield msg
