@@ -176,11 +176,8 @@ class TestDriver:
         self.driver.receive(b"")
         assert self.driver.get(timeout=0.5) == expected_msg_list[1]
 
-    @pytest.mark.parametrize(
-        "message",
-        [b"with" + ESC + b" error", b"with trailing" + ESC]
-    )
-    def test_packet_with_protocol_error(self, message) -> None:
+    @pytest.mark.parametrize("message", [b"with" + ESC + b" error", b"with trailing" + ESC])
+    def test_packet_with_protocol_error(self, message: bytes) -> None:
         """Test that an invalid bytes sequence in the packet results in a protocol error."""
         packet = END + message + END
         self.driver.receive(packet)
