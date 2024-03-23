@@ -2,7 +2,7 @@
 [![ReadTheDocs Documentation Status](https://readthedocs.org/projects/sliplib/badge/?version=latest)](http://sliplib.readthedocs.org/en/master/?badge=master)
 
 
-# ``sliplib`` --- A module for the SLIP protocol
+# ``sliplib`` &mdash; A module for the SLIP protocol
 
 The `sliplib` module implements the encoding and decoding
 functionality for SLIP packets, as described in :rfc:`1055`.
@@ -80,5 +80,5 @@ the functions and classes in the `sliplib` module
 use a `ProtocolError` exception
 to indicate protocol errors, i.e. SLIP packets with invalid byte sequences.
 The `Driver` class raises the `ProtocolError` exception
-as when the application it tries to decode a SLIP packet with an invalid byte sequence.
+when it tries to decode a SLIP packet with an invalid byte sequence.
 Subsequent messages can be read after the exception has been handled by the application.
