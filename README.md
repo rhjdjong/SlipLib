@@ -5,7 +5,7 @@
 # ``sliplib`` &mdash; A module for the SLIP protocol
 
 The `sliplib` module implements the encoding and decoding
-functionality for SLIP packets, as described in :rfc:`1055`.
+functionality for SLIP packets, as described in [RFC 1055](https://www.rfc-editor.org/rfc/rfc1055.html).
 It defines encoding, decoding, and validation functions,
 as well as a  driver class that can be used to implement
 a SLIP protocol stack, and higher-level classes that
