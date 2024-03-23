@@ -135,23 +135,23 @@ class TestDriver:
         msg = b"hallo"
         packet = encode(msg)
         self.driver.receive(packet)
-        assert self.driver.get(timeout=0.5) == msg
+        assert self.driver.get() == msg
 
     def test_multi_message_decoding(self) -> None:
         """Test decoding of a byte string with multiple packets."""
         msgs = [b"hi", b"there"]
         packet = END + msgs[0] + END + msgs[1] + END
         self.driver.receive(packet)
-        assert self.driver.get(timeout=0.5) == msgs[0]
-        assert self.driver.get(timeout=0.5) == msgs[1]
+        assert self.driver.get() == msgs[0]
+        assert self.driver.get() == msgs[1]
 
     def test_multiple_end_bytes_are_ignored_during_decoding(self) -> None:
         """Test decoding of a byte string with multiple packets."""
         msgs = [b"hi", b"there"]
         packet = END + END + msgs[0] + END + END + END + END + msgs[1] + END + END + END
         self.driver.receive(packet)
-        assert self.driver.get(timeout=0.5) == msgs[0]
-        assert self.driver.get(timeout=0.5) == msgs[1]
+        assert self.driver.get() == msgs[0]
+        assert self.driver.get() == msgs[1]
 
     def test_split_message_decoding(self) -> None:
         """Test that receives only returns the message after the complete packet has been received.
@@ -162,19 +162,19 @@ class TestDriver:
         packet = END + msg
         for byte_ in packet:
             self.driver.receive(byte_)
-            assert self.driver.get(block=False) is None
+            assert self.driver.get() is None
         self.driver.receive(END)
-        assert self.driver.get(timeout=0.5) == msg
+        assert self.driver.get() == msg
 
     def test_flush_buffers_with_empty_packet(self) -> None:
         """Test that receiving an empty byte string results in completion of the pending packet."""
         expected_msg_list = [b"hi", b"there"]
         packet = END + expected_msg_list[0] + END + expected_msg_list[1]
         self.driver.receive(packet)
-        assert self.driver.get(timeout=0.5) == expected_msg_list[0]
-        assert self.driver.get(block=False) is None
+        assert self.driver.get() == expected_msg_list[0]
+        assert self.driver.get() is None
         self.driver.receive(b"")
-        assert self.driver.get(timeout=0.5) == expected_msg_list[1]
+        assert self.driver.get() == expected_msg_list[1]
 
     @pytest.mark.parametrize("message", [b"with" + ESC + b" error", b"with trailing" + ESC])
     def test_packet_with_protocol_error(self, message: bytes) -> None:
@@ -182,7 +182,7 @@ class TestDriver:
         packet = END + message + END
         self.driver.receive(packet)
         with pytest.raises(ProtocolError) as exc_info:
-            self.driver.get(timeout=0.5)
+            self.driver.get()
         assert exc_info.value.args == (message,)
 
     def test_messages_before_invalid_packets(self) -> None:
@@ -190,9 +190,9 @@ class TestDriver:
         msgs = [b"hallo", b"with" + ESC + b" error"]
         packet = END + END.join(msgs) + END
         self.driver.receive(packet)
-        assert self.driver.get(timeout=0.5) == msgs[0]
+        assert self.driver.get() == msgs[0]
         with pytest.raises(ProtocolError) as exc_info:
-            self.driver.get(timeout=0.5)
+            self.driver.get()
         assert exc_info.value.args == (msgs[1],)
 
     def test_messages_after_invalid_packets(self) -> None:
@@ -201,9 +201,9 @@ class TestDriver:
         packet = END + END.join(msgs) + END
         self.driver.receive(packet)
         with pytest.raises(ProtocolError) as exc_info:
-            self.driver.get(timeout=0.5)
+            self.driver.get()
         assert exc_info.value.args == (msgs[0],)
-        assert self.driver.get(timeout=0.5) == msgs[1]
+        assert self.driver.get() == msgs[1]
 
     def test_subsequent_packets_with_wrong_escape_sequence(self) -> None:
         """Test that each invalid packet results in a protocol error."""
@@ -216,12 +216,12 @@ class TestDriver:
         ]
         packet = END + END.join(msgs) + END
         self.driver.receive(packet)
-        assert self.driver.get(timeout=0.5) == msgs[0]
+        assert self.driver.get() == msgs[0]
         with pytest.raises(ProtocolError) as exc_info:
-            self.driver.get(timeout=0.5)
+            self.driver.get()
         assert exc_info.value.args == (msgs[1],)
-        assert self.driver.get(timeout=0.5) == msgs[2]
+        assert self.driver.get() == msgs[2]
         with pytest.raises(ProtocolError) as exc_info:
-            self.driver.get(timeout=0.5)
+            self.driver.get()
         assert exc_info.value.args == (msgs[3],)
-        assert self.driver.get(timeout=0.5) == msgs[4]
+        assert self.driver.get() == msgs[4]

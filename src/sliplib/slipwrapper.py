@@ -90,8 +90,8 @@ class SlipWrapper(Generic[ByteStream]):
             The convention used within the :class:`SlipWrapper` class
             is that :meth:`recv_bytes` returns an empty bytes object
             to indicate that the end of
-            the byte stream has been reached and no further data will
-            be received. Derived implementations must ensure that
+            the byte stream has been reached and no further data will follow.
+            Derived implementations must ensure that
             this convention is followed.
 
         Returns:
@@ -113,13 +113,8 @@ class SlipWrapper(Generic[ByteStream]):
 
         Returns:
             bytes:  A SLIP-decoded message
-
-        Raises:
-            ProtocolError: when a SLIP protocol error has been encountered.
-                A subsequent call to :meth:`recv_msg` (after handling the exception)
-                will return the message from the next packet.
         """
-        while (message := self.driver.get(block=False)) is None:
+        while (message := self.driver.get()) is None:
             data = self.recv_bytes()
             self.driver.receive(data)
         return message
