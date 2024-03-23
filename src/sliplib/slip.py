@@ -143,10 +143,10 @@ class Driver:
         return encode(message)
 
     def receive(self, data: bytes | int) -> None:
-        """Decodes data to extract the SLIP-encoded messages.
+        """Receive data that contains SLIP-encoded messages.
 
         Processes :obj:`data`, which must be a bytes-like object,
-        and extracts and buffers the SLIP messages contained therein.
+        and extracts and buffers the encoded SLIP messages contained therein.
 
         A non-terminated SLIP packet in :obj:`data`
         is also buffered, and processed with the next call to :meth:`receive`.
@@ -163,8 +163,7 @@ class Driver:
             None.
 
         .. versionchanged:: 0.7
-           `receive()` no longer returns a list of decoded messages.
-            None.
+           :meth:`receive()` no longer returns a list of decoded messages. Use :meth:`get()` to retrieve messages.
         """
 
         # When a single byte is fed into this function
@@ -202,17 +201,14 @@ class Driver:
         for packet in new_packets:
             self._packets.put(packet)
 
-    def get(self, *, block: bool = True, timeout: float | None = None) -> bytes | None:
+    def get(self) -> bytes | None:
         """Get the next decoded message.
 
         Remove and decode a SLIP packet from the internal buffer, and return the resulting message.
-        If `block` is `True` and `timeout` is `None`(the default), then this method blocks until a message is available.
-        If `timeout` is a positive number, the blocking will last for at most `timeout` seconds,
-        and the method will return `None` if no message became available in that time.
-        If `block` is `False` the method returns immediately with either a message or `None`.
 
         Returns:
-            A decoded SLIP message, or an empty bytestring `b""` if no further message will come available.
+            A decoded SLIP message, `None` if no messages are available,
+            or an empty bytestring `b""` if no further messages will come available.
 
         Raises:
             ProtocolError: When the packet that contained the message had an invalid byte sequence.
@@ -220,7 +216,7 @@ class Driver:
         .. versionadded:: 0.7
         """
         try:
-            packet = self._packets.get(block, timeout)
+            packet = self._packets.get(block=False)
         except Empty:
             return b"" if self._finished else None
 

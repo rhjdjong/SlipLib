@@ -40,13 +40,13 @@ class SlipRequestHandler(BaseRequestHandler):
     """
 
     def __init__(self, request: socket.socket | SlipSocket, client_address: TCPAddress, server: TCPServer):
-        """Initializes the request handler.
+        """:class:`SlipRequestHandler` must be initialized with a request (socket) and a client TCP address.
 
         The type of the :attr:`request` parameter depends on the type of server
         that instantiates the request handler.
-        If the server is a SlipServer, then :attr:`request` is a SlipSocket.
-        Otherwise, it is a regular socket, and must be wrapped in a SlipSocket
-        before it can be used.
+        If the server is a :class:`SlipServer`, then :attr:`request` is a SlipSocket.
+        Otherwise, it is a regular socket, and will be wrapped in a SlipSocket
+        before it is used.
 
         Args:
             request:
