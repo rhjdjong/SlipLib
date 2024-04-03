@@ -36,13 +36,9 @@ Classes
    Class :class:`Driver` offers the following methods:
 
    .. automethod:: send
+   .. automethod:: get
    .. automethod:: receive
 
-   To enable recovery from a :exc:`ProtocolError`, the
-   :class:`Driver` class offers the following attribute and method:
-
-   .. autoattribute:: messages
-   .. automethod:: flush
 """
 
 from __future__ import annotations
