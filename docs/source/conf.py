@@ -20,9 +20,12 @@ github_repository = "https://github.com/rhjdjong/SlipLib/"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-# Include the example directory in sys.path\
+# Include the src and example directories in sys.path
 # in order to generate the documentation for the examples
-sys.path.append(os.path.abspath(os.path.join("..", "..", "examples")))
+sys.path[0:0] = [
+    os.path.abspath(os.path.join("..", "..", "src")),
+    os.path.abspath(os.path.join("..", "..", "examples")),
+]
 
 extensions = [
     "sphinx.ext.autodoc",
