@@ -34,6 +34,9 @@ dependencies = []
 [tool.hatch.version]
 path = "src/sliplib/version.py"
 
+[tool.hatch.build.targets]
+packages = ["src/sliplib"]
+
 [tool.hatch.envs.default]
 python = "3.12"
 dependencies = [
