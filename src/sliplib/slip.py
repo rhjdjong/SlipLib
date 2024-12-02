@@ -6,13 +6,18 @@
 Constants
 ---------
 
-.. data:: END
-.. data:: ESC
-.. data:: ESC_END
-.. data:: ESC_ESC
+The following constants represent the special bytes
+used by SLIP for delimiting and encoding messages.
 
-   These constants represent the special bytes
-   used by SLIP for delimiting and encoding messages.
+.. autovariable:: END
+   :no-type:
+.. autovariable:: ESC
+   :no-type:
+.. autovariable:: ESC_END
+   :no-type:
+.. autovariable:: ESC_ESC
+   :no-type:
+
 
 Functions
 ---------
@@ -31,24 +36,20 @@ Classes
    Class :class:`Driver` offers the following methods:
 
    .. automethod:: send
+   .. automethod:: get
    .. automethod:: receive
 
-   To enable recovery from a :exc:`ProtocolError`, the
-   :class:`Driver` class offers the following attribute and method:
-
-   .. autoattribute:: messages
-   .. automethod:: flush
 """
 
-import collections
-import re
-from typing import Deque, List, Union
+from __future__ import annotations
 
-END = b'\xc0'
-ESC = b'\xdb'
-ESC_END = b'\xdc'
-ESC_ESC = b'\xdd'
-"""These constants represent the special SLIP bytes"""
+import re
+from queue import Empty, Queue
+
+END = b"\xc0"  #: The SLIP `END` byte.
+ESC = b"\xdb"  #: The SLIP `ESC` byte.
+ESC_END = b"\xdc"  #: The SLIP byte that, when preceded by an `ESC` byte, represents an escaped `END` byte.
+ESC_ESC = b"\xdd"  #: The SLIP byte that, when preceded by an `ESC` byte, represents an escaped `ESC` byte.
 
 
 class ProtocolError(ValueError):
@@ -113,9 +114,7 @@ def is_valid(packet: bytes) -> bool:
         :const:`True` if the packet is valid, :const:`False` otherwise
     """
     packet = packet.strip(END)
-    return not (END in packet or
-                packet.endswith(ESC) or
-                re.search(ESC + b'[^' + ESC_END + ESC_ESC + b']', packet))
+    return not (END in packet or packet.endswith(ESC) or re.search(ESC + b"[^" + ESC_END + ESC_ESC + b"]", packet))
 
 
 class Driver:
@@ -126,11 +125,11 @@ class Driver:
     """
 
     def __init__(self) -> None:
-        self._recv_buffer = b''
-        self._packets = collections.deque()  # type: Deque[bytes]
-        self._messages = []  # type: List[bytes]
+        self._finished = False
+        self._recv_buffer = b""
+        self._packets: Queue[bytes] = Queue()
 
-    def send(self, message: bytes) -> bytes:  # pylint: disable=no-self-use
+    def send(self, message: bytes) -> bytes:
         """Encodes a message into a SLIP-encoded packet.
 
         The message can be any arbitrary byte sequence.
@@ -143,29 +142,28 @@ class Driver:
         """
         return encode(message)
 
-    def receive(self, data: Union[bytes, int]) -> List[bytes]:
-        """Decodes data and gives a list of decoded messages.
+    def receive(self, data: bytes | int) -> None:
+        """Decodes data to extract the SLIP-encoded messages.
 
         Processes :obj:`data`, which must be a bytes-like object,
-        and returns a (possibly empty) list with :class:`bytes` objects,
-        each containing a decoded message.
-        Any non-terminated SLIP packets in :obj:`data`
-        are buffered, and processed with the next call to :meth:`receive`.
+        and extracts and buffers the SLIP messages contained therein.
+
+        A non-terminated SLIP packet in :obj:`data`
+        is also buffered, and processed with the next call to :meth:`receive`.
 
         Args:
             data: A bytes-like object to be processed.
 
-                An empty :obj:`data` parameter forces the internal
-                buffer to be flushed and decoded.
+                An empty :obj:`data` parameter indicates that no more data will follow.
 
                 To accommodate iteration over byte sequences, an
                 integer in the range(0, 256) is also accepted.
 
         Returns:
-            A (possibly empty) list of decoded messages.
+            None.
 
-        Raises:
-            ProtocolError: When `data` contains an invalid byte sequence.
+        .. versionchanged:: 0.7
+           `receive()` no longer returns a list of decoded messages.
         """
 
         # When a single byte is fed into this function
@@ -178,6 +176,7 @@ class Driver:
         # To force a buffer flush, an END byte is added, so that the
         # current contents of _recv_buffer will form a complete message.
         if not data:
+            self._finished = True
             data = END
 
         self._recv_buffer += data
@@ -185,64 +184,43 @@ class Driver:
         # The following situations can occur:
         #
         #  1) _recv_buffer is empty or contains only END bytes --> no packets available
-        #  2) _recv_buffer contains non-END bytes -->  packets are available
+        #  2) _recv_buffer contains non-END bytes --> one or more (partial) packets are available
         #
-        # Strip leading END bytes from _recv_buffer to avoid handling empty _packets.
+        # Strip leading END bytes from _recv_buffer to avoid handling empty packets.
         self._recv_buffer = self._recv_buffer.lstrip(END)
-        if self._recv_buffer:
-            # The _recv_buffer contains non-END bytes.
-            # It is now split on sequences of one or more END bytes.
-            # The trailing element from the split operation is a possibly incomplete
-            # packet; this element is therefore used as the new _recv_buffer.
-            # If _recv_buffer contains one or more trailing END bytes,
-            # (meaning that there are no incomplete packets), then the last element,
-            # and therefore the new _recv_buffer, is an empty bytes object.
-            self._packets.extend(re.split(END + b'+', self._recv_buffer))
-            self._recv_buffer = self._packets.pop()
 
-        # Process the buffered packets
-        return self.flush()
+        # The _recv_buffer is now split on sequences of one or more END bytes.
+        # The trailing element from the split operation is a possibly incomplete
+        # packet; this element is therefore used as the new _recv_buffer.
+        # If _recv_buffer contains one or more trailing END bytes,
+        # (meaning that there are no incomplete packets), then the last element,
+        # and therefore the new _recv_buffer, is an empty bytes object.
+        *new_packets, self._recv_buffer = re.split(END + b"+", self._recv_buffer)
 
-    def flush(self) -> List[bytes]:
-        """Gives a list of decoded messages.
+        # Add the packets to the buffer
+        for packet in new_packets:
+            self._packets.put(packet)
 
-        Decodes the packets in the internal buffer.
-        This enables the continuation of the processing
-        of received packets after a :exc:`ProtocolError`
-        has been handled.
+    def get(self, *, block: bool = True, timeout: float | None = None) -> bytes | None:
+        """Get the next decoded message.
+
+        Remove and decode a SLIP packet from the internal buffer, and return the resulting message.
+        If `block` is `True` and `timeout` is `None`(the default), then this method blocks until a message is available.
+        If `timeout` is a positive number, the blocking will last for at most `timeout` seconds,
+        and the method will return `None` if no message became available in that time.
+        If `block` is `False` the method returns immediately with either a message or `None`.
 
         Returns:
-            A (possibly empty) list of decoded messages from the buffered packets.
+            A decoded SLIP message, or an empty bytestring `b""` if no further message will come available.
 
         Raises:
-            ProtocolError: When any of the buffered packets contains an invalid byte sequence.
-        """
-        messages = []  # type: List[bytes]
-        while self._packets:
-            packet = self._packets.popleft()
-            try:
-                msg = decode(packet)
-            except ProtocolError:
-                # Add any already decoded messages to the exception
-                self._messages = messages
-                raise
-            messages.append(msg)
-        return messages
+            ProtocolError: When the packet that contained the message had an invalid byte sequence.
 
-    @property
-    def messages(self) -> List[bytes]:
-        """A list of decoded messages.
-
-        The read-only attribute :attr:`messages` contains
-        the messages that were
-        already decoded before a
-        :exc:`ProtocolError` was raised.
-        This enables the handler of the :exc:`ProtocolError`
-        exception to recover the messages up to the
-        point where the error occurred.
-        This attribute is cleared after it has been read.
+        .. versionadded:: 0.7
         """
         try:
-            return self._messages
-        finally:
-            self._messages = []
+            packet = self._packets.get(block, timeout)
+        except Empty:
+            return b"" if self._finished else None
+
+        return decode(packet)

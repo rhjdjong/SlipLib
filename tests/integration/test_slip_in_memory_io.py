@@ -2,53 +2,55 @@
 #  This file is part of the SlipLib project which is released under the MIT license.
 #  See https://github.com/rhjdjong/SlipLib for details.
 
-# pylint: disable=attribute-defined-outside-init
 
 """Test using SlipStream with an in-memory bytestream"""
 
 import io
+from typing import Generator
+
 import pytest
-from sliplib import SlipStream, END
+
+from sliplib import END, SlipStream
 
 
 class TestSlipStreamWithBytesIO:
     """Test SlipStream with BytesIO."""
 
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        """Setup the test"""
-        self.basestream = io.BytesIO()
-        self.slipstream = SlipStream(self.basestream)
-        yield
-        self.basestream.close()
+    msg_list = (b"hallo", b"bye")
 
-    def test_stream_reading(self):
+    @pytest.fixture
+    def empty_stream(self) -> Generator[io.BytesIO, None, None]:
+        stream = io.BytesIO()
+        yield stream
+        stream.close()
+
+    @pytest.fixture
+    def filled_stream(self, empty_stream: io.BytesIO) -> io.BytesIO:
+        empty_stream.seek(0)
+        empty_stream.write(END + self.msg_list[0] + END + END + self.msg_list[1] + END)
+        empty_stream.seek(0)
+        return empty_stream
+
+    def test_stream_reading(self, filled_stream: io.BytesIO) -> None:
         """Test reading from the bytestream"""
-
-        msg_list = [b'hallo', b'bye']
-        self.basestream.write(END + msg_list[0] + END + END + msg_list[1] + END)
-        self.basestream.seek(0)
-        assert self.slipstream.recv_msg() == msg_list[0]
-        assert self.slipstream.recv_msg() == msg_list[1]
+        slipstream = SlipStream(filled_stream)
+        assert slipstream.recv_msg() == self.msg_list[0]
+        assert slipstream.recv_msg() == self.msg_list[1]
         # No more messages
-        assert self.slipstream.recv_msg() == b''
+        assert slipstream.recv_msg() == b""
 
-    def test_stream_reading_single_bytes(self):
+    def test_stream_reading_single_bytes(self, filled_stream: io.BytesIO) -> None:
         """Test reading single bytes from the bytestream"""
 
-        msg_list = [b'hallo', b'bye']
-        self.basestream.write(END + msg_list[0] + END + END + msg_list[1] + END)
-        self.basestream.seek(0)
-        self.slipstream = SlipStream(self.basestream, 1)
-        assert self.slipstream.recv_msg() == msg_list[0]
-        assert self.slipstream.recv_msg() == msg_list[1]
+        slipstream = SlipStream(filled_stream, 1)
+        assert slipstream.recv_msg() == self.msg_list[0]
+        assert slipstream.recv_msg() == self.msg_list[1]
         # No more messages
-        assert self.slipstream.recv_msg() == b''
+        assert slipstream.recv_msg() == b""
 
-    def test_stream_writing(self):
+    def test_stream_writing(self, empty_stream: io.BytesIO) -> None:
         """Test writing to the bytestream"""
-
-        msg_list = [b'hallo', b'bye']
-        for msg in msg_list:
-            self.slipstream.send_msg(msg)
-        assert self.basestream.getvalue() == END + msg_list[0] + END + END + msg_list[1] + END
+        slipstream = SlipStream(empty_stream)
+        for msg in self.msg_list:
+            slipstream.send_msg(msg)
+        assert empty_stream.getvalue() == END + self.msg_list[0] + END + END + self.msg_list[1] + END

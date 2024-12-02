@@ -6,6 +6,8 @@
 SlipSocket
 ----------
 
+.. autodata:: TCPAddress
+
 .. autoclass:: SlipSocket(sock)
    :show-inheritance:
 
@@ -26,14 +28,18 @@ SlipSocket
    The following commonly used :class:`socket.socket` methods are exposed through
    a :class:`SlipSocket` object.
    These methods are simply delegated to the wrapped `socket` instance.
+   See the documentation for :mod:`socket.socket` for more information on these methods.
 
    .. automethod:: bind
    .. automethod:: close
    .. automethod:: connect
    .. automethod:: connect_ex
+   .. automethod:: fileno
    .. automethod:: getpeername
    .. automethod:: getsockname
+   .. automethod:: getsockopt
    .. automethod:: listen([backlog])
+   .. automethod:: setsockopt
    .. automethod:: shutdown
 
    Since the wrapped socket is available as the :attr:`socket` attribute,
@@ -49,32 +55,35 @@ SlipSocket
       In particular, do not use any of the :meth:`recv*` or :meth:`send*` methods
       on the :attr:`socket` attribute.
 
-   A :class:`SlipSocket` instance has the following attributes in addition to the attributes
+   A :class:`SlipSocket` instance has the following attributes
+   and read-only properties in addition to the attributes
    offered by its base class :class:`SlipWrapper`:
 
-   .. attribute:: socket
-
-      The wrapped `socket`.
-      This is actually just an alias for the :attr:`stream` attribute in the base class.
-
+   .. autoattribute:: socket
    .. autoattribute:: family
    .. autoattribute:: type
    .. autoattribute:: proto
 """
 
+from __future__ import annotations
+
 import socket
 import warnings
-from typing import Optional, Tuple
+from typing import Any, Tuple, Union, cast
 
-from .slipwrapper import SlipWrapper
+from sliplib.slipwrapper import SlipWrapper
+
+#: TCPAddress stands for either an IPv4 address, i.e. a (host, port) tuple,
+#: or an IPv6 address, i.e. a (host, port, flowinfo, scope_id) tuple.
+TCPAddress = Union[Tuple[str, int], Tuple[str, int, int, int]]
 
 
-class SlipSocket(SlipWrapper):
+class SlipSocket(SlipWrapper[socket.socket]):
     """Class that wraps a TCP :class:`socket` with a :class:`Driver`
 
     :class:`SlipSocket` combines a :class:`Driver` instance with a
     :class:`socket`.
-    The :class:`SlipStream` class has all the methods from its base class :class:`SlipWrapper`.
+    The :class:`SlipSocket` class has all the methods from its base class :class:`SlipWrapper`.
     In addition it directly exposes all methods and attributes of
     the contained :obj:`socket`, except for the following:
 
@@ -91,7 +100,7 @@ class SlipSocket(SlipWrapper):
       but the socket that is returned by the :class:`socket`'s :meth:`accept` method
       is automatically wrapped in a :class:`SlipSocket` object.
 
-    In stead of the :class:`socket`'s :meth:`send*` and :meth:`recv*` methods
+    Instead of the :class:`socket`'s :meth:`send*` and :meth:`recv*` methods
     a :class:`SlipSocket` provides the method :meth:`send_msg` and :meth:`recv_msg`
     to send and receive SLIP-encoded messages.
 
@@ -109,10 +118,10 @@ class SlipSocket(SlipWrapper):
       datagrams are delivered in the correct order.
 
     """
+
     _chunk_size = 4096
 
     def __init__(self, sock: socket.SocketType):
-        # pylint: disable=missing-raises-doc
         """
         To instantiate a :class:`SlipSocket`, the user must provide
         a pre-constructed TCP `socket`.
@@ -125,8 +134,13 @@ class SlipSocket(SlipWrapper):
         """
 
         if not isinstance(sock, socket.socket) or sock.type != socket.SOCK_STREAM:
-            raise ValueError('Only sockets with type SOCK_STREAM are supported')
+            error_msg = "Only sockets with type SOCK_STREAM are supported."
+            raise ValueError(error_msg)
         super().__init__(sock)
+
+        #: The wrapped `socket`.
+        #: This is actually just an alias for the :attr:`stream`
+        #: attribute in the base class.
         self.socket = self.stream
 
     def send_bytes(self, packet: bytes) -> None:
@@ -137,137 +151,159 @@ class SlipSocket(SlipWrapper):
         """See base class"""
         return self.socket.recv(self._chunk_size)
 
-    def accept(self) -> Tuple['SlipSocket', Tuple]:
+    def accept(self) -> tuple[SlipSocket, TCPAddress]:
         """Accepts an incoming connection.
 
         Returns:
-            Tuple[:class:`~SlipSocket`, Tuple]: A (`SlipSocket`, remote_address) pair.
-            The :class:`SlipSocket` object
-            can be used to exchange SLIP-encoded data with the socket at the `remote_address`.
+            (:class:`SlipSocket`, :class:`TCPAddress`):
+            A tuple with a :class:`SlipSocket` object and the remote IP address.
 
-        See Also:
-            :meth:`socket.socket.accept`
         """
         conn, address = self.socket.accept()
         return self.__class__(conn), address
 
-    def bind(self, address: Tuple) -> None:
+    def bind(self, address: TCPAddress) -> None:
         """Bind the `SlipSocket` to `address`.
 
         Args:
-            address: The IP address to bind to.
-
-        See Also:
-            :meth:`socket.socket.bind`
+            address (:class:`TCPAddress`):  The address to bind to.
         """
         self.socket.bind(address)
 
     def close(self) -> None:
-        """Close the `SlipSocket`.
-
-        See Also:
-            :meth:`socket.socket.close`
-        """
+        """Close the `SlipSocket`."""
         self.socket.close()
 
-    def connect(self, address: Tuple) -> None:
+    def connect(self, address: TCPAddress) -> None:
         """Connect `SlipSocket` to a remote socket at `address`.
 
         Args:
-            address: The IP address of the remote socket.
-
-        See Also:
-           :meth:`socket.socket.connect`
+            address (:class:`TCPAddress`): The IP address of the remote socket.
         """
         self.socket.connect(address)
 
-    def connect_ex(self, address: Tuple) -> None:
+    def connect_ex(self, address: TCPAddress) -> None:
         """Connect `SlipSocket` to a remote socket at `address`.
 
         Args:
-            address: The IP address of the remote socket.
-
-        See Also:
-           :meth:`socket.socket.connect_ex`
+            address (:class:`TCPAddress`): The IP address of the remote socket.
         """
         self.socket.connect_ex(address)
 
-    def getpeername(self) -> Tuple:
+    def fileno(self) -> int:
+        """Get the socket's file descriptor.
+
+        Returns:
+            The wrapped socket's file descriptor, or -1 on failure.
+        """
+        return self.socket.fileno()
+
+    def getpeername(self) -> TCPAddress:
         """Get the IP address of the remote socket to which `SlipSocket` is connected.
 
         Returns:
-            The remote IP address.
-
-        See Also:
-           :meth:`socket.socket.getpeername`
+            :class:`TCPAddress`: The remote IP address.
         """
-        return self.socket.getpeername()
+        return cast(TCPAddress, self.socket.getpeername())
 
-    def getsockname(self) -> Tuple:
+    def getsockname(self) -> TCPAddress:
         """Get `SlipSocket`'s own address.
 
         Returns:
-            The local IP address.
-
-        See Also:
-           :meth:`socket.socket.getsockname`
+            :class:`TCPAddress`: The local IP address.
         """
-        return self.socket.getsockname()
+        return cast(TCPAddress, self.socket.getsockname())
 
-    def listen(self, backlog: Optional[int] = None) -> None:
+    def getsockopt(self, *args: Any) -> int | bytes:
+        """Get the socket option from the embedded socket.
+
+        Returns:
+            The integer or bytes representing the value of the socket option.
+        """
+        return self.socket.getsockopt(*args)
+
+    def gettimeout(self) -> float | None:
+        """Get the socket option from the embedded socket.
+
+        Returns:
+            The integer or bytes representing the value of the socket option.
+        """
+        return self.socket.gettimeout()
+
+    def listen(self, backlog: int | None = None) -> None:
         """Enable a `SlipSocket` server to accept connections.
 
         Args:
             backlog (int): The maximum number of waiting connections.
-
-        See Also:
-            :meth:`socket.socket.listen`
         """
         if backlog is None:
             self.socket.listen()
         else:
             self.socket.listen(backlog)
 
+    def setsockopt(self, *args: Any) -> None:
+        """Get the socket option from the embedded socket.
+
+        Returns:
+            The integer or bytes representing the value of the socket option.
+        """
+        return self.socket.setsockopt(*args)
+
     def shutdown(self, how: int) -> None:
         """Shutdown the connection.
 
         Args:
             how: Flag to indicate which halves of the connection must be shut down.
-
-        See Also:
-            :meth:`socket.socket.shutdown`
         """
         self.socket.shutdown(how)
 
     @property
     def family(self) -> int:
         # pylint: disable=line-too-long
-        """The wrapped socket's address family. Usually :const:`socket.AF_INET` (IPv4) or :const:`socket.AF_INET6` (IPv6)."""
+        """The wrapped socket's address family.
+
+        Usually :const:`socket.AF_INET` (IPv4) or :const:`socket.AF_INET6` (IPv6).
+        """
         return self.socket.family
 
     @property
     def type(self) -> int:
-        """The wrapped socket's type. Always :const:`socket.SOCK_STREAM`."""
+        """The wrapped socket's type.
+
+        Always :const:`socket.SOCK_STREAM`.
+        """
         return self.socket.type
 
     @property
     def proto(self) -> int:
-        """The wrapped socket's protocol number. Usually 0."""
+        """The wrapped socket's protocol number.
+
+        Usually 0.
+        """
         return self.socket.proto
 
-    def __getattr__(self, attribute):
-        if attribute.startswith('recv') or attribute.startswith('send') or attribute in (
-                'makefile', 'share', 'dup',
+    def __getattr__(self, attribute: str) -> Any:
+        if attribute.startswith(("recv", "send")) or attribute in (
+            "makefile",
+            "share",
+            "dup",
         ):
-            raise AttributeError("'{}' object has no attribute '{}'".
-                                 format(self.__class__.__name__, attribute))
-        warnings.warn("Direct access to the enclosed socket attributes and methods will be removed in version 1.0",
-                      DeprecationWarning, stacklevel=2)
+            error_msg = f"'{self.__class__.__name__}' object has no attribute '{attribute}'"
+            raise AttributeError(error_msg)
+        warnings.warn(
+            "Direct access to the enclosed socket attributes and methods will be removed in version 1.0",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return getattr(self.socket, attribute)
 
     @classmethod
-    def create_connection(cls, address: Tuple, timeout: Optional[float] = None,
-                          source_address: Optional[Tuple] = None) -> 'SlipSocket':
+    def create_connection(
+        cls,
+        address: TCPAddress,
+        timeout: float | None = None,
+        source_address: TCPAddress | None = None,
+    ) -> SlipSocket:
         """Create a SlipSocket connection.
 
         This convenience method creates a connection to a socket at the specified address
@@ -276,9 +312,9 @@ class SlipSocket(SlipWrapper):
         a :class:`SlipSocket` object.
 
         Args:
-            address (Address): The remote address.
+            address (:class:`TCPAddress`): The remote address.
             timeout (float): Optional timeout value.
-            source_address (Address): Optional local address for the near socket.
+            source_address (:class:`TCPAddress`): Optional local address for the near socket.
 
         Returns:
             :class:`~SlipSocket`: A `SlipSocket` that is connected to the socket at the remote address.
@@ -286,5 +322,6 @@ class SlipSocket(SlipWrapper):
         See Also:
             :func:`socket.create_connection`
         """
-        sock = socket.create_connection(address[0:2], timeout, source_address)  # type: ignore
+        # noinspection PyTypeChecker
+        sock = socket.create_connection(address[0:2], timeout, source_address)
         return cls(sock)
