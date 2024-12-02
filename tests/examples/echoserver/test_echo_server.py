@@ -6,6 +6,7 @@
 """
 This module tests SlipSocket using a SLIP echo server, similar to the one in the examples directory.
 """
+
 from __future__ import annotations
 
 import pathlib

@@ -6,6 +6,7 @@
 """
 This module contains the tests for the low-level SLIP functions and classes.
 """
+
 from typing import Generator
 
 import pytest

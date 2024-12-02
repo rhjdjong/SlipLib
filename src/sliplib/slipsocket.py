@@ -64,6 +64,7 @@ SlipSocket
    .. autoattribute:: type
    .. autoattribute:: proto
 """
+
 from __future__ import annotations
 
 import socket
@@ -266,7 +267,7 @@ class SlipSocket(SlipWrapper[socket.socket]):
         return self.socket.family
 
     @property
-    def type(self) -> int:  # noqa: A003
+    def type(self) -> int:
         """The wrapped socket's type.
 
         Always :const:`socket.SOCK_STREAM`.

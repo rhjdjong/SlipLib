@@ -18,6 +18,7 @@ SlipStream
    .. autoattribute:: readable
    .. autoattribute:: writable
 """
+
 from __future__ import annotations
 
 import io

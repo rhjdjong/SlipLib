@@ -3,6 +3,7 @@
 # See https://github.com/rhjdjong/SlipLib for details.
 
 """Tests for SlipStream."""
+
 from __future__ import annotations
 
 import io
