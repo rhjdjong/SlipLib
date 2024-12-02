@@ -1,0 +1,31 @@
+name: Publish
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+
+jobs:
+  pypi_publish:
+    name: Upload release to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: release
+      url: https:/pypi.org/p/sliplib
+    permissions:
+      id-token: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Download artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download ${tag} --dir dist --pattern sliplib-${tag}*
+          
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
