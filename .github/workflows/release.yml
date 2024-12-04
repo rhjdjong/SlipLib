@@ -46,7 +46,7 @@ jobs:
         run: |
           new_version=$(hatch version)
           prev_version=${{ needs.pypi_version.outputs.latest_version }}
-          if [ "$new_version" == "prev_version" ]; then
+          if [ "$new_version" == "$prev_version" ]; then
             echo "No version update. Terminating workflow".
             exit 1
           fi
@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: release
-      url: https://pypi.org/p/${{ env.PACKAGE_NAME }}
+      url: https://pypi.org/project/${{ github.event.repository.name }}
     permissions:
       id-token: write
     steps:
