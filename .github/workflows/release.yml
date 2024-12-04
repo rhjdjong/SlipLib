@@ -22,7 +22,7 @@ jobs:
             latest_version="0.0.0"
           fi
           echo "Latest version on PyPI: $latest_version"
-          echo "latest_version=$latest_version" >> $GITHUB_ENV
+          echo "latest_version=$latest_version" >> $GITHUB_OUTPUT
 
   build_package:
     needs: [pypi_version]
