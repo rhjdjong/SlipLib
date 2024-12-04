@@ -2,8 +2,11 @@
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
 
+from importlib.metadata import version
+
 from semantic_version_check import version_check
 
-from sliplib import version
 
-assert version_check(version.__version__)
+def test_version():
+    __version__ = version("sliplib")
+    assert version_check(__version__)
