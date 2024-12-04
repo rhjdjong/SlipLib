@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Fetch information from PyPI
         run: |
-          response=$(curl -s https://pypi.org/pypi/${{ github.event.repository.name }}/json || echo "{}")
+          response=$(curl -s https://pypi.org/pypi/p/${{ github.event.repository.name }}/json || echo "{}")
           latest_version=$(echo $response | jq --raw-output "select(.releases != null) | .releases | keys_unsorted | last")
           if [ -z "$latest_previous_version" ]; then
             echo "Package not found on PyPI."
@@ -42,7 +42,7 @@ jobs:
       - name: Compare current version with PyPI version
         id: version
         run: |
-          new_version = hatch version
+          new_version=$(hatch version)
           prev_version = ${{ needs.pypi_version.outputs.latest_version }}
           if [ "$new_version" == "prev_version" ]; then
             echo "No version update. Terminating workflow".
