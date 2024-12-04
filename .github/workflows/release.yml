@@ -14,7 +14,7 @@ jobs:
         run: |
           response=$(curl -s https://pypi.org/pypi/${{ github.event.repository.name }}/json || echo "{}")
           latest_version=$(echo $response | jq --raw-output "select(.releases != null) | .releases | keys_unsorted | last")
-          if [ -z "$latest_previous_version" ]; then
+          if [ -z "$latest_version" ]; then
             echo "Package not found on PyPI."
             latest_version="0.0.0"
           fi
