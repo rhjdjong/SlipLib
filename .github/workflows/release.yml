@@ -48,7 +48,7 @@ jobs:
             echo "No version update. Terminating workflow".
             exit 1
           fi
-          higher_version = $(printf '%s\n' "$new_version" "$prev_version" | sort -rV | head -n 1)
+          higher_version=$(printf '%s\n' "$new_version" "$prev_version" | sort -rV | head -n 1)
           if [ "$higher_version" != "$new_version" ]; then
             echo "Error! Version ${new_version} is lower than latest version ${prev_version} on PyPI"
             exit 2
