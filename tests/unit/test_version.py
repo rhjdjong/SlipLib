@@ -7,6 +7,6 @@ from importlib.metadata import version
 from semantic_version_check import version_check
 
 
-def test_version():
+def test_version() -> None:
     __version__ = version("sliplib")
     assert version_check(__version__)
