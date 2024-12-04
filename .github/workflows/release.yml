@@ -163,7 +163,7 @@ jobs:
   github_tag:
     name: Create GitHub tag
     needs: [build_package]
-    if: needs.build_package.outputs.new_version != ""
+    if: ${{ needs.build_package.outputs.new_version != "" }}
     runs-on: ubuntu-latest
     steps:
       - name: Create tag
