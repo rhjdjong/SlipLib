@@ -32,7 +32,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install Hatch
-      run: pip install --upgrade hatch
+      run: python -m pip install --upgrade pip hatch
 
     - name: Run style check
       run: hatch run style:check
