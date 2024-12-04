@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sliplib"
-version = "0.6.3"
+dynamic = ["version"]
 description = "Slip package"
 readme = "README.rst"
 license = "MIT"
@@ -35,6 +35,10 @@ dependencies = []
 
 [project.urls]
 "Source code" = "https://github.com/rhjdjong/SlipLib"
+
+[tool.hatch.version]
+path = "VERSION"
+#pattern = "VERSION = (?P<version>.*)$"
 
 [tool.hatch.build.targets]
 packages = ["src/sliplib"]
