@@ -48,7 +48,7 @@ jobs:
           prev_version=${{ needs.pypi_version.outputs.latest_version }}
           if [ "$new_version" == "$prev_version" ]; then
             echo "No version update. Terminating workflow".
-            echo "Skipping remaining steps"
+            exit 0
           fi
           higher_version=$(printf '%s\n' "$new_version" "$prev_version" | sort -rV | head -n 1)
           if [ "$higher_version" != "$new_version" ]; then
