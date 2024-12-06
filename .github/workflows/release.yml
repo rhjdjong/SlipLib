@@ -72,6 +72,7 @@ jobs:
   github_tag:
     name: Create GitHub tag
     needs: [build_package]
+    if: ${{ needs.build_package.outputs.new_version }}
     outputs:
       tag_name: ${{ steps.construct_tag_name.outputs.tag_name }}
     runs-on: ubuntu-latest
@@ -96,6 +97,7 @@ jobs:
   github_release:
     name: Create GitHub Release
     needs: [github_tag]
+    if: ${{ needs.github_tag.outputs.tag_name }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -122,6 +124,7 @@ jobs:
   pypi_publish:
     name: Upload release to PyPI
     needs: [github_release, github_tag]
+    if: ${{ needs.github_tag.outputs.tag_name }}
     runs-on: ubuntu-latest
     environment:
       name: release
