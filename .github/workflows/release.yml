@@ -97,7 +97,7 @@ jobs:
             })
 
   github_release:
-    name: Create GitHub Tag aRelease
+    name: Create GitHub Release
     needs: [github_tag]
     runs-on: ubuntu-latest
     permissions:
