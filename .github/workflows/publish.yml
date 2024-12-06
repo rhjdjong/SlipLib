@@ -25,7 +25,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download ${tag} --dir dist --pattern sliplib-${tag}*
-          
+          tag_name=$(gh release view --json tagName -q .tagName)
+          echo "Downloading release for tag ${tag_name}"
+          gh release download ${tag_name} --dir dist
+
       - name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
