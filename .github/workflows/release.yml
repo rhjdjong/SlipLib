@@ -60,10 +60,12 @@ jobs:
           fi
 
       - name: Build source and wheel distribution
+        if: ${{ steps.version.outputs.new_version }}
         run: |
           hatch build
 
       - name: Upload artifacts
+        if: ${{ steps.version.outputs.new_version }}
         uses: actions/upload-artifact@v3
         with:
           name: dist
