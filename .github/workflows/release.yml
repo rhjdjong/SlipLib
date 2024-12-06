@@ -48,63 +48,51 @@ jobs:
           prev_version=${{ needs.pypi_version.outputs.latest_version }}
           if [ "$new_version" == "$prev_version" ]; then
             echo "No version update. Terminating workflow".
-            exit 1
+            echo "Skipping remaining steps"
           fi
           higher_version=$(printf '%s\n' "$new_version" "$prev_version" | sort -rV | head -n 1)
           if [ "$higher_version" != "$new_version" ]; then
             echo "Error! Version ${new_version} is lower than latest version ${prev_version} on PyPI"
-            exit 2
+            exit 1
           else
             echo "The new version ${new_version} is greater than the latest version ${prev_version} on PyPI."
             echo "new_version=${new_version}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build source and wheel distribution
+        if: steps.version.outputs.new_version
         run: |
           hatch build
 
       - name: Upload artifacts
+        if: steps.version.outputs.new_version
         uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist/
 
-#  pypi_publish:
-#    name: Upload release to PyPI
-#    needs: [build_package]
-#    if: needs.build_package.outputs.new_version
-#    runs-on: ubuntu-latest
-#    environment:
-#      name: release
-#    permissions:
-#      id-token: write
-#    steps:
-#      - name: Download artifacts
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: dist
-#          path: dist/
-#
-#      - name: Publish distribution to PyPI
-#        uses: pypa/gh-action-pypi-publish@release/v1
-#
   github_tag:
     name: Create GitHub tag
     needs: [build_package]
     if: needs.build_package.outputs.new_version
+    outputs:
+      tag_name: ${{ steps.construct_tag_name.outputs.tag_name }}
     runs-on: ubuntu-latest
     steps:
+      - name: Construct tag name
+        id: construct_tag_name
+        run: |
+          tag_name=v${{ needs.build_package.outputs.new_version }}
+          echo "Making new tag ${tag_name}"
+          echo "tag_name=${tag_name}" >> $GITHUB_OUTPUT
       - name: Create tag
         uses: actions/github-script@v7
-        env:
-          NEW_TAG: ${{ needs.build_package.outputs.new_version }}
         with:
           script: |
-            const { NEW_TAG } = process.env
             github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: 'refs/tags/${{ needs.build_package.outputs.new_version }}',
+              ref: 'refs/tags/${{ steps.construct_tag_name.outputs.tag_name }}',
               sha: context.sha
             })
 
@@ -131,5 +119,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag_name=${{ needs.build_package.outputs.new_version }}
-          gh release create ${tag_name} dist/* --title ${tag_name} --generate-notes
+          tag_name=${{ needs.github_tag.outputs.tag_name }}
+          gh release create ${tag_name} dist/* --title "Release ${tag_name}" --notes-file CHANGELOG.md
