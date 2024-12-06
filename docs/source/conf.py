@@ -40,18 +40,20 @@ extensions = [
     "sphinx_toolbox.more_autodoc.typevars",
     "sphinx_toolbox.more_autodoc.variables",
     "sphinx_autodoc_typehints",
+    "myst_parser",
 ]
 
 templates_path = ["_templates"]
 exclude_patterns = []
 
 napoleon_google_docstring = True
-# napoleon_use_rtype = False
 autoclass_content = "both"
 autodoc_typehints = "description"
 autodoc_type_aliases = {}
 add_module_names = False
-intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+}
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

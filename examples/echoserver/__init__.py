@@ -76,23 +76,26 @@ Running on IPv6
 By running the server with the argument ``ipv6``,
 an IPv6-based connection will be established.
 
-In the server terminal window:
+.. list-table::
+   :header-rows: 1
+   :widths: 50 50
 
-.. code:: bash
+   * - Server
+     - Client
+   * - .. code:: bash
 
-   $ python server.py ipv6
-   Slip server listening on localhost, port 59454
-   Incoming connection from ('::1', 59458, 0, 0)
-   ...
+          $ python server.py ipv6
+          Slip server listening on localhost, port 59454
+          \u200b
+          Incoming connection from ('::1', 59458, 0, 0)
+          \u200b
+          ...
+     - .. code:: bash
 
-In the client terminal window:
-
-.. code:: bash
-
-   $ python client.py 59454
-   Connecting to server on port 59454
-   Connected to ('::1', 59454, 0, 0)
-   Message>
-   ...
-
+          \u200b
+          \u200b
+          $ python client.py 59454
+          Connecting to server on port 59454
+          Message>
+          ...
 """

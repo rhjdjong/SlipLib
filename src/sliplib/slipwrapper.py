@@ -28,6 +28,7 @@ SlipWrapper
 
 from __future__ import annotations
 
+import abc
 from typing import TYPE_CHECKING, Generic, TypeVar
 
 if TYPE_CHECKING:
@@ -39,7 +40,7 @@ from sliplib.slip import Driver
 ByteStream = TypeVar("ByteStream")
 
 
-class SlipWrapper(Generic[ByteStream]):
+class SlipWrapper(abc.ABC, Generic[ByteStream]):
     """Base class that provides a message based interface to a byte stream
 
     :class:`SlipWrapper` combines a :class:`Driver` instance with a (generic) byte stream.
@@ -72,6 +73,7 @@ class SlipWrapper(Generic[ByteStream]):
         #: The :class:`SlipWrapper`'s :class:`Driver` instance.
         self.driver = Driver()
 
+    @abc.abstractmethod
     def send_bytes(self, packet: bytes) -> None:
         """Send a packet over the stream.
 
@@ -80,8 +82,8 @@ class SlipWrapper(Generic[ByteStream]):
         Args:
             packet: the packet to send over the stream
         """
-        raise NotImplementedError
 
+    @abc.abstractmethod
     def recv_bytes(self) -> bytes:
         """Receive data from the stream.
 
@@ -98,7 +100,6 @@ class SlipWrapper(Generic[ByteStream]):
         Returns:
             The bytes received from the stream
         """
-        raise NotImplementedError
 
     def send_msg(self, message: bytes) -> None:
         """Send a SLIP-encoded message over the stream.
