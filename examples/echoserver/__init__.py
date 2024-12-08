@@ -86,14 +86,14 @@ an IPv6-based connection will be established.
 
           $ python server.py ipv6
           Slip server listening on localhost, port 59454
-          \u200B
+          \u200b
           Incoming connection from ('::1', 59458, 0, 0)
-          \u200B
+          \u200b
           ...
      - .. code:: bash
 
-          \u200B
-          \u200B
+          \u200b
+          \u200b
           $ python client.py 59454
           Connecting to server on port 59454
           Message>
