@@ -132,6 +132,7 @@ include = [
 [tool.hatch.envs.doc]
 python = "3.12"
 dependencies = [
+    "myst-parser",
     "sphinx",
     "sphinx_rtd_theme",
     "sphinx-toolbox",
