@@ -21,3 +21,4 @@ Lib
 pyvenv.cfg
 Scripts
 venv
+/coverage.json

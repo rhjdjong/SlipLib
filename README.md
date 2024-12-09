@@ -1,3 +1,5 @@
+![tests](https://github.com/rhjdjong/SlipLib/actions/workflows/test.yml/badge.svg)
+
 # ``sliplib`` --- A module for the SLIP protocol
 
 The `sliplib` module implements the encoding and decoding
