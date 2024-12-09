@@ -78,11 +78,9 @@ jobs:
 
       - name: Combine
         run: |
-          pwd
-          ls
           coverage combine
-          coverage report -m --skip-covered
-          coverage json
+          coverage report -i
+          coverage json -i
           export TOTAL=$(cat coverage.json | jq .totals.percent_covered_display)
           echo "total=${TOTAL}" >> $GITHUB_ENV
           echo "### Total coverage: ${TOTAL} %" >> $GITHUB_STEP_SUMMARY
