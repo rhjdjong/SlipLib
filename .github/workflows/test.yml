@@ -78,6 +78,8 @@ jobs:
 
       - name: Combine
         run: |
+          pwd
+          ls
           coverage combine
           coverage report -m --skip-covered
           coverage json
