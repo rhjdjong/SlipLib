@@ -78,6 +78,7 @@ jobs:
 
       - name: Combine
         run: |
+          python -m compileall examples src tests
           coverage combine
           coverage report -i
           coverage json -i
@@ -88,7 +89,7 @@ jobs:
       - name: Make badge
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
-          auth: ${{ secrets.GIST_TOKEN }}
+          auth: ${{ secrets.GIST_SECRET }}
           gistID: 12a0c0616d67fc2b8b9cda9eda30be5d
           filename: sliplib_coverage.svg
           label: Coverage
