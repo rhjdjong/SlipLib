@@ -1,4 +1,5 @@
 ![tests](https://github.com/rhjdjong/SlipLib/actions/workflows/test.yml/badge.svg)
+![coverage](https://gist.github.com/rhjdjong/12a0c0616d67fc2b8b9cda9eda30be5d/raw/sliplib_coverage.svg)
 
 # ``sliplib`` --- A module for the SLIP protocol
 

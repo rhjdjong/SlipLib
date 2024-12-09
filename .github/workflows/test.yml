@@ -82,7 +82,7 @@ jobs:
           coverage combine
           coverage report -i
           coverage json -i
-          export TOTAL=$(cat coverage.json | jq .totals.percent_covered_display)
+          export TOTAL=$(cat coverage.json | jq -r .totals.percent_covered_display)
           echo "total=${TOTAL}" >> $GITHUB_ENV
           echo "### Total coverage: ${TOTAL} %" >> $GITHUB_STEP_SUMMARY
 
