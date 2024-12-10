@@ -1,13 +1,18 @@
+[![Stable Version](https://img.shields.io/pypi/v/sliplib?color=blue)](https://pypi.org/project/sliplib/)
+[![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+[![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
 ![tests](https://github.com/rhjdjong/SlipLib/actions/workflows/test.yml/badge.svg)
-![coverage](https://gist.github.com/rhjdjong/12a0c0616d67fc2b8b9cda9eda30be5d/raw/sliplib_coverage.svg)
+![coverage](https://gist.githubusercontent.com/rhjdjong/12a0c0616d67fc2b8b9cda9eda30be5d/raw/sliplib_coverage.svg)
 
-# ``sliplib`` --- A module for the SLIP protocol
+# `sliplib` &mdash; A module for the SLIP protocol
 
 The `sliplib` module implements the encoding and decoding
 functionality for SLIP packets, as described in
 [RFC 1055][rfc1055].
 It defines encoding, decoding, and validation functions,
-as well as a  driver class that can be used to implement
+as well as a driver class that can be used to implement
 a SLIP protocol stack, and higher-level classes that
 apply the SLIP protocol to TCP connections or IO streams.
 Read the [documentation](http://sliplib.readthedocs.org/en/master/)
