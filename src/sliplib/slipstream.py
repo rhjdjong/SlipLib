@@ -3,20 +3,24 @@
 #  See https://github.com/rhjdjong/SlipLib for details.
 
 """
-SlipStream
-----------
+Module :mod:`~sliplib.slipstream`
+==================================
+
+The :mod:`~sliplib.slipstream` module contains the class :class:`SlipStream`.
+The :class:`SlipStream` class can also be imported directly from the :mod:`sliplib` package.
+
 .. autoprotocol:: IOStream
    :show-inheritance:
 
 .. autoclass:: SlipStream(stream, [chunk_size])
    :show-inheritance:
 
-   A :class:`SlipStream` instance has the following attributes in addition to the attributes
-   offered by its base class :class:`SlipWrapper`:
+   A :class:`SlipStream` instance has the following attributes and read-only properties
+   in addition to the attributes offered by its base class :class:`~sliplib.slipwrapper.SlipWrapper`:
 
    .. autoattribute:: chunk_size
-   .. autoattribute:: readable
-   .. autoattribute:: writable
+   .. autoproperty:: readable
+   .. autoproperty:: writable
 """
 
 from __future__ import annotations
@@ -38,21 +42,21 @@ class IOStream(Protocol):
     """
 
     def read(self, chunksize: int) -> bytes:
-        """Read `chunksize` bytes from the stream
+        """Read `chunksize` bytes from the stream.
 
         Args:
             chunksize: The number of bytes to read from the :protocol:`IOStream`.
 
         Returns:
-            The bytes read from the :protocol:`IOStream`. May be less than the number
-            specified by `chunksize`.
+            The bytes read from the :protocol:`IOStream`.
+            The number of bytes read may be less than the number specified by `chunksize`.
         """
 
     def write(self, data: bytes) -> int:
         """Write data to the stream.
 
         Args:
-            data: The bytes to write on to `IOStream`.
+            data: The bytes to write on to :protocol:`IOStream`.
 
         Returns:
             The number of bytes actually written. This may be less than the
@@ -61,9 +65,9 @@ class IOStream(Protocol):
 
 
 class SlipStream(SlipWrapper[IOStream]):
-    """Class that wraps an IO stream with a :class:`Driver`
+    """Class that wraps an IO stream with a :class:`~sliplib.slip.Driver`.
 
-    :class:`SlipStream` combines a :class:`Driver` instance with a concrete byte stream.
+    :class:`SlipStream` combines a :class:`~sliplib.slip.Driver` instance with a concrete byte stream.
     The byte stream must support the methods :meth:`read` and :meth:`write`.
     To avoid conflicts and ambiguities caused by different `newline` conventions,
     streams that have an :attr:`encoding` attribute
@@ -71,9 +75,9 @@ class SlipStream(SlipWrapper[IOStream]):
     are not accepted as a byte stream.
 
     The :class:`SlipStream` class has all the methods and attributes
-    from its base class :class:`SlipWrapper`.
+    from its base class :class:`~sliplib.slipwrapper.SlipWrapper`.
     In addition, it directly exposes all methods and attributes of
-    the contained :obj:`stream`, except for the following:
+    the contained :obj:`~sliplib.slipwrapper.SlipWrapper.stream`, except for the following:
 
      * :meth:`read*` and :meth:`write*`. These methods are not
        supported, because byte-oriented read and write operations
@@ -84,29 +88,30 @@ class SlipStream(SlipWrapper[IOStream]):
        the stream's internal data.
 
     Instead of the :meth:`read*` and :meth:`write*` methods
-    a :class:`SlipStream` object provides the method :meth:`recv_msg` and :meth:`send_msg`
+    a :class:`SlipStream` object provides the method :meth:`~sliplib.slipwrapper.SlipWrapper.recv_msg`
+    and :meth:`~sliplib.slipwrapper.SlipWrapper.send_msg`
     to read and write SLIP-encoded messages.
 
     .. deprecated:: 0.6
-       Direct access to the methods and attributes of the contained :obj:`stream`
-       will be removed in version 1.0
+       Direct access to the methods and attributes of the contained :obj:`~sliplib.slipwrapper.SlipWrapper.stream`
+       will be removed in version 1.0.
 
     """
 
     def __init__(self, stream: IOStream, chunk_size: int = io.DEFAULT_BUFFER_SIZE):
         """
         To instantiate a :class:`SlipStream` object, the user must provide
-        a pre-constructed open byte stream that is ready for reading and/or writing
+        a pre-constructed open byte stream that is ready for reading and/or writing.
 
         Args:
             stream: The byte stream that will be wrapped.
 
             chunk_size: The number of bytes to read per read operation.
-                The default value for `chunck_size` is `io.DEFAULT_BUFFER_SIZE`.
+                The default value for `chunck_size` is :external:obj:`io.DEFAULT_BUFFER_SIZE`.
 
-                Setting the `chunk_size` is useful when the stream has a low bandwidth
+                Setting `chunk_size` is useful when the stream has a low bandwidth
                 and/or bursty data (e.g. a serial port interface).
-                In such cases it is useful to have a `chunk_size` of 1, to avoid that the application
+                In such cases it is useful to have a `chunk_size` value of 1, to avoid that the application
                 hangs or becomes unresponsive.
 
         .. versionadded:: 0.6
@@ -137,19 +142,20 @@ class SlipStream(SlipWrapper[IOStream]):
         super().__init__(stream)
 
     def send_bytes(self, packet: bytes) -> None:
-        """See base class"""
+        """See base class."""
         while packet:
             number_of_bytes_written = self.stream.write(packet)
             packet = packet[number_of_bytes_written:]
 
     def recv_bytes(self) -> bytes:
-        """See base class"""
+        """See base class."""
         return b"" if self._stream_is_closed else self.stream.read(self.chunk_size)
 
     @property
     def readable(self) -> bool:
         """Indicates if the wrapped stream is readable.
-        The value is `True` if the readability of the wrapped stream
+
+        The value is :external:obj:`True` if the readability of the wrapped stream
         cannot be determined.
         """
         return getattr(self.stream, "readable", True)
@@ -157,7 +163,8 @@ class SlipStream(SlipWrapper[IOStream]):
     @property
     def writable(self) -> bool:
         """Indicates if the wrapped stream is writable.
-        The value is `True` if the writabilty of the wrapped stream
+
+        The value is :external:obj:`True` if the writabilty of the wrapped stream
         cannot be determined.
         """
         return getattr(self.stream, "writable", True)
@@ -165,7 +172,8 @@ class SlipStream(SlipWrapper[IOStream]):
     @property
     def _stream_is_closed(self) -> bool:
         """Indicates if the wrapped stream is closed.
-        The value is `False` if it cannot be determined if the wrapped stream is closed.
+
+        The value is :external:obj:`False` if it cannot be determined if the wrapped stream is closed.
         """
         return getattr(self.stream, "closed", False)
 

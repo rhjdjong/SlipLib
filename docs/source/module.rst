@@ -2,7 +2,11 @@
    This file is part of the SlipLib project which is released under the MIT license.
    See https://github.com/rhjdjong/SlipLib for details.
 
-Module Contents
-===============
+Modules
+=======
 
-.. automodule:: sliplib
+.. automodule:: sliplib.slip
+.. automodule:: sliplib.slipwrapper
+.. automodule:: sliplib.slipstream
+.. automodule:: sliplib.slipsocket
+.. automodule:: sliplib.slipserver

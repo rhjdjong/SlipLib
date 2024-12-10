@@ -1,10 +1,13 @@
 Changelog
 =========
 
-## Unpublished
+## v0.7.0
 
 ### Upgrade steps
 
+- Implementations that communicate with parties that require that SLIP packets
+  are preceded by an `END` byte must set
+  `config.USE_LEADING_END_BYTE` to `True`.
 - Implementations that use the `Driver` class directly must update their code
   with respect to handling received data and retrieving messages.
   Use `Driver.receive()` to receive data and add it to the internal buffer.
@@ -12,22 +15,34 @@ Changelog
 
 ### Breaking Changes
 
-- Removed support for Python version 3.6 and lower.
+- Changed the default behavior of sending SLIP packets to
+  no longer send a leading `END` byte.
+- Removed support for Python version 3.7 and lower.
 - `Driver.receive()` no longer returns a list of messages.
   Instead, use `Driver.get()` to retrieve the next message.
 
 ### New Features
 
+- Applications can decide if SLIP packets should be preceded by
+  a leading `END` byte by setting the global parameter
+  `config.USE_LEADING_END_BYTE`.
+- Applications that need different behavior for sending a leading
+  `END` byte for different `Driver` instances can use the
+  `config.use_leading_end_byte()` context manager to reliably set the behavior.
+
 ### Bug Fixes
 
-### Improvements
+- Solved issue [45](https://github.com/rhjdjong/SlipLib/issues/45)
 
 ### Other Changes
 
-- Converted project to use `hatch`.
+- The SlipLib project now uses `hatch`.
 - Added release and PyPI upload automation.
 - `Driver` internal: moved `ProtocolError` handling from the `receive` method to the `get` method.
 - Added Python 3.13 to the testing matrix.
+- Monkeypatched a .css file to work around a formatting issue for `py:property` rendering.
+  See [this RTD issue](https://github.com/readthedocs/sphinx_rtd_theme/issues/1301)
+- Moved configuration settings into a new `config` object in the `slip` module.
 
 ## v0.6.0
 

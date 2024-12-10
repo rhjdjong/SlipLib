@@ -21,6 +21,8 @@ import pytest
 
 import sliplib
 
+END = sliplib.END
+
 
 class TestEchoServer:
     def output_reader(self, proc: Popen[str], output_queue: Queue[str]) -> None:
@@ -49,8 +51,8 @@ class TestEchoServer:
     def setup(self) -> Generator[None, None, None]:
         echoserver_directory = pathlib.Path(sliplib.__file__).parents[2] / "examples" / "echoserver"
         self.python = sys.executable
-        self.server_script = str(echoserver_directory / "server.py")
-        self.client_script = str(echoserver_directory / "client.py")
+        self.server_script = echoserver_directory / "server.py"
+        self.client_script = echoserver_directory / "client.py"
         self.server: Popen[str] | None = None
         self.client: Popen[str] | None = None
         self.server_queue: Queue[str] = Queue()
@@ -62,10 +64,23 @@ class TestEchoServer:
             self.client.terminate()
 
     @pytest.mark.parametrize("arg", ["", "ipv6"])
-    def test_server_and_client(self, arg: str) -> None:
-        server_command = [self.python, "-u", self.server_script]
-        if arg:
-            server_command.append(arg)
+    def test_server_and_client(self, arg: str, *, send_leading_end_byte: bool, receive_leading_end_byte: bool) -> None:
+        end_str = repr(END)[2:-1]
+        server_prefix: str = end_str if send_leading_end_byte else ""
+        client_prefix: str = end_str if receive_leading_end_byte else ""
+        server_command = [
+            self.python,
+            "-u",
+            "-c",
+            (
+                "from sys import argv\n"
+                "from sliplib import use_leading_end_byte\n"
+                f"if '{arg}':\n"
+                f"    argv.append('{arg}')\n"
+                f"with use_leading_end_byte({send_leading_end_byte}):\n"
+                f"    exec(open('{self.server_script}').read())"
+            ),
+        ]
         self.server = Popen(server_command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True, bufsize=1)
         server_output_reader = threading.Thread(target=self.output_reader, args=(self.server, self.server_queue))
         server_output_reader.start()
@@ -74,7 +89,18 @@ class TestEchoServer:
         assert m is not None
         server_port = m.group(1)
 
-        client_command = [self.python, "-u", self.client_script, server_port]
+        client_command = [
+            self.python,
+            "-u",
+            "-c",
+            (
+                "from sys import argv\n"
+                "from sliplib import use_leading_end_byte\n"
+                f"argv.append({server_port})\n"
+                f"with use_leading_end_byte({receive_leading_end_byte}):\n"
+                f"    exec(open('{self.client_script}').read())"
+            ),
+        ]
         self.client = Popen(client_command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True, bufsize=1)
         client_output_reader = threading.Thread(target=self.output_reader, args=(self.client, self.client_queue))
         client_output_reader.start()
@@ -91,21 +117,21 @@ class TestEchoServer:
 
         self.write_client_input("hallo")
         server_output = self.get_server_output()
-        assert server_output == r"Raw data received: b'\xc0hallo\xc0'"
+        assert server_output == rf"Raw data received: b'{client_prefix}hallo{end_str}'"
         server_output = self.get_server_output()
         assert server_output == "Decoded data: b'hallo'"
         server_output = self.get_server_output()
-        assert server_output == r"Sending raw data: b'\xc0ollah\xc0'"
+        assert server_output == rf"Sending raw data: b'{server_prefix}ollah{end_str}'"
         client_output = self.get_client_output()
         assert client_output == "Message>Response: b'ollah'"
 
         self.write_client_input("bye")
         server_output = self.get_server_output()
-        assert server_output == r"Raw data received: b'\xc0bye\xc0'"
+        assert server_output == rf"Raw data received: b'{client_prefix}bye{end_str}'"
         server_output = self.get_server_output()
         assert server_output == "Decoded data: b'bye'"
         server_output = self.get_server_output()
-        assert server_output == r"Sending raw data: b'\xc0eyb\xc0'"
+        assert server_output == rf"Sending raw data: b'{server_prefix}eyb{end_str}'"
         client_output = self.get_client_output()
         assert client_output == "Message>Response: b'eyb'"
 

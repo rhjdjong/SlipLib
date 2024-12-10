@@ -3,8 +3,13 @@
 #  See https://github.com/rhjdjong/SlipLib for details.
 
 """
-SlipWrapper
------------
+Module :mod:`~sliplib.slipwrapper`
+==================================
+
+The :mod:`~sliplib.slipwrapper` module contains the abstract base class :class:`SlipWrapper`
+that is the basis for concrete implementations that combine the SLIP protocol with a byte stream.
+
+The :class:`SlipWrapper` class can also be imported directly from the :mod:`sliplib` package.
 
 .. autotypevar:: ByteStream
    :no-type:
@@ -36,14 +41,13 @@ if TYPE_CHECKING:
 
 from sliplib.slip import Driver
 
-#: ByteStream is a :class:`TypeVar` that stands for a generic byte stream.
-ByteStream = TypeVar("ByteStream")
+ByteStream = TypeVar("ByteStream")  #: :class:`ByteStream` represents a generic byte stream.
 
 
 class SlipWrapper(abc.ABC, Generic[ByteStream]):
-    """Base class that provides a message based interface to a byte stream
+    """Abstract base class that provides a message based interface to a byte stream.
 
-    :class:`SlipWrapper` combines a :class:`Driver` instance with a (generic) byte stream.
+    :class:`SlipWrapper` combines a :class:`~sliplib.slip.Driver` instance with a (generic) byte stream.
     The :class:`SlipWrapper` class is an abstract base class.
     It offers the methods :meth:`send_msg` and :meth:`recv_msg` to send and
     receive single messages over the byte stream, but it does not of itself
@@ -63,14 +67,14 @@ class SlipWrapper(abc.ABC, Generic[ByteStream]):
     def __init__(self, stream: ByteStream):
         """
         To instantiate a :class:`SlipWrapper`, the user must provide
-        an existing byte stream
+        an existing byte stream.
 
         Args:
-            stream: The byte stream that will be wrapped.
+            stream (:class:`ByteStream`): The byte stream that will be wrapped.
         """
         #: The wrapped :class:`ByteStream`.
         self.stream = stream
-        #: The :class:`SlipWrapper`'s :class:`Driver` instance.
+        #: The :class:`SlipWrapper`'s :class:`~sliplib.slip.Driver` instance.
         self.driver = Driver()
 
     @abc.abstractmethod
@@ -91,10 +95,10 @@ class SlipWrapper(abc.ABC, Generic[ByteStream]):
 
         .. note::
             The convention used within the :class:`SlipWrapper` class
-            is that :meth:`recv_bytes` returns an empty bytes object
+            is that :meth:`recv_bytes` returns an empty bytes object :obj:`b""`
             to indicate that the end of
-            the byte stream has been reached and no further data will
-            be received. Derived implementations must ensure that
+            the byte stream has been reached and no further data will follow.
+            Derived implementations must ensure that
             this convention is followed.
 
         Returns:
@@ -105,7 +109,7 @@ class SlipWrapper(abc.ABC, Generic[ByteStream]):
         """Send a SLIP-encoded message over the stream.
 
         Args:
-            message (bytes): The message to encode and send
+            message: The message to encode and send
         """
         packet = self.driver.send(message)
         self.send_bytes(packet)
@@ -114,7 +118,7 @@ class SlipWrapper(abc.ABC, Generic[ByteStream]):
         """Receive a single message from the stream.
 
         Returns:
-            bytes:  A SLIP-decoded message
+            A SLIP-decoded message
 
         Raises:
             ProtocolError: when a SLIP protocol error has been encountered.

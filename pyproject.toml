@@ -38,7 +38,6 @@ dependencies = []
 
 [tool.hatch.version]
 path = "VERSION"
-#pattern = "VERSION = (?P<version>.*)$"
 
 [tool.hatch.build.targets]
 packages = ["src/sliplib"]
@@ -73,11 +72,13 @@ cov = [
     "cov-report",
 ]
 
+[[tool.hatch.envs.types.matrix]]
+python_version = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+
 [tool.hatch.envs.types]
-python = "3.12"
+python = "3.13"
 extra-dependencies = [
     "mypy>=1.0.0",
-    "typing_extensions",
 ]
 
 [tool.hatch.envs.types.scripts]
@@ -141,6 +142,7 @@ dependencies = [
 
 [tool.hatch.envs.doc.scripts]
 build = "cd {root}/docs && make {args:html}"
+clean = "cd {root}/docs && make clean"
 
 [tool.black]
 line-length = 120
@@ -148,9 +150,6 @@ line-length = 120
 [tool.isort]
 profile = "black"
 line_length = 120
-
-[tool.mypy]
-python_version = "3.8"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

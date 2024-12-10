@@ -14,14 +14,9 @@
    :maxdepth: 2
    :caption: Contents
 
+   intro
    module
    example
    changes
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   genindex
+   modindex

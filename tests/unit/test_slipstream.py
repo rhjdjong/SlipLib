@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Generator
 
 import pytest
 
-from sliplib import END, ESC, ProtocolError, SlipStream
+from sliplib import END, ESC, ProtocolError, SlipStream, use_leading_end_byte
 
 if TYPE_CHECKING:
     from pytest_mock import MockerFixture
@@ -34,13 +34,15 @@ class TestSlipStreamBasics:
     """Tests for basic SlipStream functionality."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, mocker: MockerFixture) -> None:
+    def setup(self, mocker: MockerFixture, *, send_leading_end_byte: bool) -> None:
         """Prepare the test."""
 
         self.stream_mock = mocker.Mock(spec_set=("read", "write", "readable", "writable"))
         self.stream_mock.read = mocker.Mock()
         self.stream_mock.write = mocker.Mock()
-        self.slipstream = SlipStream(self.stream_mock)
+        self.prefix = END if send_leading_end_byte else b""
+        with use_leading_end_byte(send_leading_end_byte):
+            self.slipstream = SlipStream(self.stream_mock)
 
     def test_slipstream_creation(self) -> None:
         """Verify the creation of the self.slipstream instance."""
@@ -57,7 +59,7 @@ class TestSlipStreamBasics:
         """Verify that receiving messages works by calling the stream's read method."""
         msg_list = [b"hallo", b"bye"]
         self.stream_mock.read.side_effect = (
-            END + msg_list[0] + END + END + msg_list[1] + END,
+            self.prefix + msg_list[0] + END + self.prefix + msg_list[1] + END,
             b"",
         )
         assert self.slipstream.recv_msg() == msg_list[0]
@@ -77,18 +79,21 @@ class TestSlipStreamBasics:
         assert self.slipstream.recv_msg() == b""
         assert self.stream_mock.read.mock_calls == [mocker.call(1)] * 13
 
-    def test_slipstream_writing(self, mocker: MockerFixture) -> None:
+    def test_slipstream_writing(
+        self,
+        mocker: MockerFixture,
+    ) -> None:
         """Verify that sending messages works by calling the stream's write method"""
         msg_list = [b"hallo", b"bye"]
         self.stream_mock.write.side_effect = (
-            len(END + msg_list[0] + END),
-            len(END + msg_list[1] + END),
+            len(self.prefix + msg_list[0] + END),
+            len(self.prefix + msg_list[1] + END),
         )
         for msg in msg_list:
             self.slipstream.send_msg(msg)
         assert self.stream_mock.write.mock_calls == [
-            mocker.call(END + msg_list[0] + END),
-            mocker.call(END + msg_list[1] + END),
+            mocker.call(self.prefix + msg_list[0] + END),
+            mocker.call(self.prefix + msg_list[1] + END),
         ]
 
     def test_slipstream_writing_single_bytes(self, mocker: MockerFixture) -> None:
@@ -97,7 +102,7 @@ class TestSlipStreamBasics:
         self.stream_mock.write.return_value = 1
         for msg in msg_list:
             self.slipstream.send_msg(msg)
-        encoded_messages = (END + msg_list[0] + END, END + msg_list[1] + END)
+        encoded_messages = (self.prefix + msg_list[0] + END, self.prefix + msg_list[1] + END)
         call_list = [mocker.call(enc_msg[i:]) for enc_msg in encoded_messages for i in range(len(enc_msg))]
         assert self.stream_mock.write.mock_calls == call_list
 

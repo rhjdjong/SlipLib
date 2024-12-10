@@ -7,9 +7,9 @@ Server
 ++++++
 
 The :file:`server.py` example file is a demonstrator echo server.
-It uses a subclass of :class:`SlipRequestHandler`
+It uses a subclass of :class:`~sliplib.slipserver.SlipRequestHandler`
 that transforms the :attr:`request` attribute into
-a dedicated socket subclass that prints
+a dedicated :class:`~sliplib.slipsocket.SlipSocket` subclass that prints
 the raw data that is received and sent.
 The request handler prints the decoded message,
 and then reverses the order of the bytes in the encoded message
@@ -30,7 +30,7 @@ from sliplib import SlipRequestHandler, SlipSocket
 
 
 class _ChattySocket(SlipSocket):
-    """A SlipSocket subclass that prints the raw data that is received and sent."""
+    """A :class:`~sliplib.slipsocket.SlipSocket` subclass that prints the raw data that is received and sent."""
 
     def recv_bytes(self) -> bytes:
         data = super().recv_bytes()
@@ -43,7 +43,7 @@ class _ChattySocket(SlipSocket):
 
 
 class SlipHandler(SlipRequestHandler):
-    """A SlipRequestHandler that echoes the received message with the bytes in reversed order."""
+    """A :class:`~sliplib.slipserver.SlipRequestHandler` that reverses and echoes the received message."""
 
     def __init__(self, request: socket.socket | SlipSocket, *args: Any) -> None:
         if isinstance(request, SlipSocket):

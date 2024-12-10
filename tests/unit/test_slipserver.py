@@ -15,8 +15,7 @@ if TYPE_CHECKING:
 
     from sliplib.slipsocket import TCPAddress
 
-
-from sliplib import SlipRequestHandler, SlipServer, SlipSocket
+from sliplib import SlipRequestHandler, SlipServer, SlipSocket, use_leading_end_byte
 
 
 @pytest.fixture
@@ -34,8 +33,9 @@ def sock(mocker: MockerFixture) -> Generator[socket.socket, None, None]:
 
 
 @pytest.fixture
-def slipsock(sock: socket.socket) -> SlipSocket:
-    return SlipSocket(sock)
+def slipsock(sock: socket.socket, *, send_leading_end_byte: bool) -> SlipSocket:
+    with use_leading_end_byte(send_leading_end_byte):
+        return SlipSocket(sock)
 
 
 @pytest.fixture
@@ -63,8 +63,10 @@ def udpserver(mocker: MockerFixture) -> UDPServer:
 
 
 @pytest.fixture
-def slipserver(mocker: MockerFixture) -> SlipServer:
-    return mocker.create_autospec(spec=SlipServer, instance=True, socket_type=socket.SOCK_STREAM)
+def slipserver(mocker: MockerFixture, slipsock: SlipSocket) -> SlipServer:
+    mock = mocker.create_autospec(spec=SlipServer, instance=True, socket_type=socket.SOCK_STREAM)
+    mock.socket = slipsock
+    return mock
 
 
 @pytest.fixture
@@ -80,19 +82,32 @@ def slip_request_handler_class(
 
 
 class TestSlipRequestHandler:
-    def test_instantiate_with_regular_socket_and_tcpserver(self, sock: socket.socket, tcpserver: TCPServer) -> None:
-        h = SlipRequestHandler(sock, ("93.184.216.34", 54321), tcpserver)
+    def test_instantiate_with_regular_socket_and_tcpserver(
+        self, sock: socket.socket, tcpserver: TCPServer, *, send_leading_end_byte: bool
+    ) -> None:
+        with use_leading_end_byte(send_leading_end_byte):
+            h = SlipRequestHandler(sock, ("93.184.216.34", 54321), tcpserver)
         assert isinstance(h.request, SlipSocket)
         assert h.request.socket is sock
+        assert h.request.driver.sends_leading_end_byte == send_leading_end_byte
 
-    def test_instantiate_with_slip_socket_and_tcpserver(self, slipsock: SlipSocket, tcpserver: TCPServer) -> None:
-        h = SlipRequestHandler(slipsock, ("93.184.216.34", 54321), tcpserver)
-        assert h.request is slipsock
+    def test_instantiate_with_slip_socket_and_tcpserver(
+        self, slipsock: SlipSocket, tcpserver: TCPServer, *, send_leading_end_byte: bool
+    ) -> None:
+        for leading_end_byte in (True, False):
+            with use_leading_end_byte(leading_end_byte):
+                h = SlipRequestHandler(slipsock, ("93.184.216.34", 54321), tcpserver)
+            assert h.request is slipsock
+            assert h.request.driver.sends_leading_end_byte == send_leading_end_byte
 
-    def test_instantiate_with_regular_socket_and_slipserver(self, sock: socket.socket, slipserver: SlipServer) -> None:
-        h = SlipRequestHandler(sock, ("93.184.216.34", 54321), slipserver)
+    def test_instantiate_with_regular_socket_and_slipserver(
+        self, sock: socket.socket, slipserver: SlipServer, *, send_leading_end_byte: bool
+    ) -> None:
+        with use_leading_end_byte(send_leading_end_byte):
+            h = SlipRequestHandler(sock, ("93.184.216.34", 54321), slipserver)
         assert isinstance(h.request, SlipSocket)
         assert h.request.socket is sock
+        assert h.request.driver.sends_leading_end_byte == send_leading_end_byte
 
     def test_instantiate_with_slip_socket_and_slipserver(self, slipsock: SlipSocket, slipserver: SlipServer) -> None:
         h = SlipRequestHandler(slipsock, ("93.184.216.34", 54321), slipserver)

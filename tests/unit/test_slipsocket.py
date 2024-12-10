@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from sliplib.slipsocket import TCPAddress
 
 import sliplib
-from sliplib import END, ESC, ProtocolError, SlipSocket
+from sliplib import END, ESC, ProtocolError, SlipSocket, use_leading_end_byte
 
 SOCKET_METHODS = [
     attr for attr in dir(socket.socket) if callable(getattr(socket.socket, attr)) and not attr.startswith("_")
@@ -68,7 +68,13 @@ class TestSlipSocket:
 
     @pytest.fixture(autouse=True)
     def setup(
-        self, address: TCPAddress, family: int, remote_address: TCPAddress, mocker: MockerFixture
+        self,
+        address: TCPAddress,
+        family: int,
+        remote_address: TCPAddress,
+        mocker: MockerFixture,
+        *,
+        send_leading_end_byte: bool,
     ) -> Generator[None, None, None]:
         """Prepare the test."""
         self.near_address = address
@@ -81,7 +87,8 @@ class TestSlipSocket:
             type=socket.SOCK_STREAM,
             proto=0,
         )
-        self.slipsocket = SlipSocket(self.sock_mock)
+        with use_leading_end_byte(send_leading_end_byte):
+            self.slipsocket = SlipSocket(self.sock_mock)
         yield
         self.sock_mock.close()
         del self.slipsocket
@@ -99,11 +106,14 @@ class TestSlipSocket:
         with pytest.raises(ValueError, match="type SOCK_STREAM"):
             SlipSocket(self.sock_mock)
 
-    def test_sending_data(self, mocker: MockerFixture) -> None:
+    def test_sending_data(self, mocker: MockerFixture, *, send_leading_end_byte: bool) -> None:
         """Test that the sendall method on the socket is called when sending a message."""
+        prefix = END if send_leading_end_byte else b""
         self.slipsocket.send_msg(b"hallo")
         self.slipsocket.send_msg(b"bye")
-        self.sock_mock.sendall.assert_has_calls([mocker.call(END + b"hallo" + END), mocker.call(END + b"bye" + END)])
+        self.sock_mock.sendall.assert_has_calls(
+            [mocker.call(prefix + b"hallo" + END), mocker.call(prefix + b"bye" + END)]
+        )
 
     def test_receiving_data(self, mocker: MockerFixture) -> None:
         """Test that the recv method on the socket is called when receiving a message.

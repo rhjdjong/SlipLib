@@ -3,8 +3,14 @@
 #  See https://github.com/rhjdjong/SlipLib for details.
 
 """
-SlipRequestHandler
-------------------
+Module :mod:`~sliplib.slipserver`
+=================================
+
+The :mod:`~sliplib.slipserver` module contains the classes :class:`SlipRequestHandler` and :class:`SlipServer`,
+that offer building blocks to create a SLIP server.
+
+The :class:`SlipRequestHandler` and :class:`SlipServer` classes
+can also be imported directly from the :mod:`sliplib` package.
 
 .. autoclass:: SlipRequestHandler
    :show-inheritance:
@@ -14,7 +20,6 @@ SlipRequestHandler
 
 .. autoclass:: SlipServer
    :show-inheritance:
-
 """
 
 from __future__ import annotations
@@ -27,14 +32,14 @@ from sliplib.slipsocket import SlipSocket, TCPAddress
 
 
 class SlipRequestHandler(BaseRequestHandler):
-    """Base class for request handlers for SLIP-based communication
+    """Base class for request handlers for SLIP-based communication.
 
     This class is derived from :class:`socketserver.BaseRequestHandler`
     for the purpose of creating TCP server instances
     that can handle incoming SLIP-based connections.
 
     To do anything useful, a derived class must define
-    a new :meth:`handle` method that uses
+    its own :meth:`handle` method that uses
     :attr:`self.request` to send and receive SLIP-encoded messages.
 
     Other methods can of course also be overridden if necessary.
@@ -43,18 +48,27 @@ class SlipRequestHandler(BaseRequestHandler):
     def __init__(self, request: socket.socket | SlipSocket, client_address: TCPAddress, server: TCPServer):
         """To initialize the request handler, a request, client address, and server instance must be provided.
 
-        The type of the :attr:`request` parameter depends on the type of server
+        The type of the `request` parameter depends on the type of server
         that instantiates the request handler.
-        If the server is a SlipServer, then :attr:`request` is a SlipSocket.
-        Otherwise, it is a regular socket, and must be wrapped in a SlipSocket
-        before it can be used.
+        If the server is a :class:`SlipServer`, then `request` is a :class:`~sliplib.slipsocket.SlipSocket` instance.
+        Otherwise, it is a regular :class:`~socket.socket`,
+        and the request handler wraps it in a :class:`~sliplib.slipsocket.SlipSocket` instance.
+
+        .. Note::
+
+           If `request` is not a :class:`~sliplib.slipsocket.SlipSocket` instance (as will happen when
+           `server` is not a :class:`SlipServer` instance),
+           the behavior of the wrapped :class:`~sliplib.slipsocket.SlipSocket` instance
+           with respect to sending a leading :const:`~sliplib.slip.config.END` byte is determined
+           by the value of :attr:`~sliplib.slip.config.USE_LEADING_END_BYTE`
+           at the time the request handler is initialized.
 
         Args:
             request:
                 The socket that is connected to the remote party.
 
-            client_address:
-                The remote TCP addresss.
+            client_address (:class:`~sliplib.slipsocket.TCPAddress`)::
+                The remote TCP address.
 
             server:
                 The server instance that instantiated this handler object.
@@ -71,7 +85,7 @@ class SlipRequestHandler(BaseRequestHandler):
         super().__init__(cast(socket.socket, request), client_address, server)
 
     def handle(self) -> None:
-        """Services the request. Must be defined by a derived class.
+        """Service the request. Must be defined by a derived class.
 
         Note that in general it does not make sense
         to use a :class:`SlipRequestHandler` object
@@ -92,7 +106,7 @@ class SlipRequestHandler(BaseRequestHandler):
         """
 
     def finish(self) -> None:
-        """Performs any cleanup actions.
+        """Perform any cleanup actions.
 
         The default implementation does nothing.
         """
@@ -101,12 +115,16 @@ class SlipRequestHandler(BaseRequestHandler):
 class SlipServer(TCPServer):
     """Base class for SlipSocket based server classes.
 
-    This is a convenience class, that offers a minor enhancement
-    over the regular :class:`TCPServer` from the standard library.
-    The class :class:`TCPServer` is hardcoded to use only IPv4 addresses. It must be subclassed
-    in order to use IPv6 addresses.
-    The :class:`SlipServer` class uses the address that is provided during instantiation
-    to determine if it must muse an IPv4 or IPv6 socket.
+    This is a convenience class, that offers a few enhancements
+    over the regular :external:class:`~socketserver.TCPServer` from the standard library.
+
+     * It uses the supplied `server_address` to determine if it must use an IPv4 or IPv6 socket.
+       The class :external:class:`~socketserver.TCPServer` on the other hand is hardcoded to use only IPv4 addresses,
+       and must be subclassed in order to use IPv6 addresses.
+     * The socket that is passed to the `handler_class` instance is a :class:`~sliplib.slipsocket.SlipSocket` instance
+       with the same leading-end-byte behavior as the server socket.
+       That avoids ambiguity when :data:`config.USE_LEADING_END_BYTE <sliplib.slip.config.USE_LEADING_END_BYTE>`
+       may have been modified.
     """
 
     def __init__(
@@ -116,10 +134,9 @@ class SlipServer(TCPServer):
         bind_and_activate: bool = True,  # noqa: FBT001 FBT002
     ):
         """
-
         Args:
-            server_address: The address on which the server listens
-            handler_class: The class that will be instantiated to handle an incoming request
+            server_address (:class:`~sliplib.slipsocket.TCPAddress`): The address on which the server listens.
+            handler_class: The class that will be instantiated to handle an incoming request.
             bind_and_activate: Flag to indicate if the server must be bound and activated at creation time.
         """
         if self._is_ipv6_address(server_address):

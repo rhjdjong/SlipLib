@@ -10,7 +10,6 @@ import sys
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-
 project = "SlipLib"
 copyright = "2024, Ruud de Jong"  # noqa: A001
 author = "Ruud de Jong"
@@ -39,7 +38,6 @@ extensions = [
     "sphinx_toolbox.more_autodoc.typehints",
     "sphinx_toolbox.more_autodoc.typevars",
     "sphinx_toolbox.more_autodoc.variables",
-    "sphinx_autodoc_typehints",
     "myst_parser",
 ]
 
@@ -60,3 +58,4 @@ intersphinx_mapping = {
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
+html_css_files = ["custom.css"]
