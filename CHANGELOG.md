@@ -1,20 +1,26 @@
-# Changelog
+Changelog
+=========
 
 ## Unpublished
 
 ### Upgrade steps
 
+- Implementations that use the `Driver` class directly must update their code
+  with respect to handling received data and retrieving messages.
+  Use `Driver.receive()` to receive data and add it to the internal buffer.
+  Use `Driver.get()` to obtain the next message.
+
 ### Breaking Changes
 
 - Removed support for Python version 3.6 and lower.
+- `Driver.receive()` no longer returns a list of messages.
+  Instead, use `Driver.get()` to retrieve the next message.
 
 ### New Features
 
 ### Bug Fixes
 
 ### Improvements
-
-- Added `block` and `timeout` arguments to the `Driver.get()` method.
 
 ### Other Changes
 
@@ -36,6 +42,7 @@
 ### Other Changes
 
 - Updated documentation and examples
+
 
 ## v0.5.0
 

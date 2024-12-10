@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "sliplib"
 dynamic = ["version"]
 description = "Slip package"
-readme = "README.rst"
+readme = "README.md"
 license = "MIT"
 authors = [
     { name = "Ruud de Jong", email = "ruud.de.jong@xs4all.nl" },
@@ -66,6 +66,7 @@ test-cov = "coverage run -m pytest {args:tests}"
 cov-report = [
     "- coverage combine",
     "coverage report",
+    "coverage json",
 ]
 cov = [
     "test-cov",
@@ -132,6 +133,7 @@ include = [
 [tool.hatch.envs.doc]
 python = "3.12"
 dependencies = [
+    "myst-parser",
     "sphinx",
     "sphinx_rtd_theme",
     "sphinx-toolbox",

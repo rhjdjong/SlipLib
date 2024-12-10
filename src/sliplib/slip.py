@@ -48,8 +48,8 @@ from queue import Empty, Queue
 
 END = b"\xc0"  #: The SLIP `END` byte.
 ESC = b"\xdb"  #: The SLIP `ESC` byte.
-ESC_END = b"\xdc"  #: The SLIP byte that, when preceded by an `ESC` byte, represents an escaped `END` byte.
-ESC_ESC = b"\xdd"  #: The SLIP byte that, when preceded by an `ESC` byte, represents an escaped `ESC` byte.
+ESC_END = b"\xdc"  #: When preceded by an `ESC` byte, this represents an escaped `END` byte.
+ESC_ESC = b"\xdd"  #: When preceded by an `ESC` byte, this represents an escaped `ESC` byte.
 
 
 class ProtocolError(ValueError):
@@ -143,13 +143,13 @@ class Driver:
         return encode(message)
 
     def receive(self, data: bytes | int) -> None:
-        """Decodes data to extract the SLIP-encoded messages.
+        """Extract SLIP packets.
 
         Processes :obj:`data`, which must be a bytes-like object,
-        and extracts and buffers the SLIP messages contained therein.
+        and extracts and buffers the SLIP packets contained therein.
 
         A non-terminated SLIP packet in :obj:`data`
-        is also buffered, and processed with the next call to :meth:`receive`.
+        is also buffered, and extended with the next call to :meth:`receive`.
 
         Args:
             data: A bytes-like object to be processed.
@@ -205,13 +205,23 @@ class Driver:
         """Get the next decoded message.
 
         Remove and decode a SLIP packet from the internal buffer, and return the resulting message.
-        If `block` is `True` and `timeout` is `None`(the default), then this method blocks until a message is available.
+        If `block` is `True` and `timeout` is `None` (the default),
+        then this method blocks until a message is available.
         If `timeout` is a positive number, the blocking will last for at most `timeout` seconds,
         and the method will return `None` if no message became available in that time.
         If `block` is `False` the method returns immediately with either a message or `None`.
 
+        Note:
+            `block` and `timeout` are keyword-only parameters.
+
+        Args:
+            block: If `True`, block for at most timeout seconds. Otherwise return immediately.
+            timeout: Number of seconds to wait for a message to become available.
+
         Returns:
-            A decoded SLIP message, or an empty bytestring `b""` if no further message will come available.
+            - `None` if no message is available,
+            - a decoded SLIP message, or
+            - an empty bytestring `b""` if no further messages will come available.
 
         Raises:
             ProtocolError: When the packet that contained the message had an invalid byte sequence.
