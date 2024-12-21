@@ -6,14 +6,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generator
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import pathlib
 
-import pytest
-
-from sliplib import SlipStream, encode
+from sliplib import END, SlipStream, encode, use_leading_end_byte
 
 data = [
     b"line 1",
@@ -22,55 +20,49 @@ data = [
 ]
 
 
-@pytest.fixture
-def scrap_file(tmp_path: pathlib.Path) -> Generator[pathlib.Path, None, None]:
-    testdir = tmp_path / "slip"
-    testdir.mkdir()
-    filepath = testdir / "data.txt"
-    yield filepath
-    filepath.unlink()
-
-
-@pytest.fixture
-def readfile(scrap_file: pathlib.Path) -> pathlib.Path:
-    scrap_file.write_bytes(b"".join(encode(msg) for msg in data))
-    return scrap_file
-
-
-@pytest.fixture
-def writefile(scrap_file: pathlib.Path) -> pathlib.Path:
-    return scrap_file
-
-
-def test_reading_slip_file(readfile: pathlib.Path) -> None:
+def test_reading_slip_file(tmp_path: pathlib.Path, *, receive_leading_end_byte: bool) -> None:
     """Test reading encoded SLIP messages"""
-    with readfile.open(mode="rb") as f:
-        slipstream = SlipStream(f)
+    prefix = END if receive_leading_end_byte else b""
+    data_file = tmp_path / "data.txt"
+    data_file.write_bytes(b"".join(prefix + encode(msg) + END for msg in data))
+    with data_file.open(mode="rb") as f:
+        with use_leading_end_byte(receive_leading_end_byte):
+            slipstream = SlipStream(f)
         for expected, actual in zip(data, slipstream):
             assert expected == actual
 
 
-def test_writing_slip_file(writefile: pathlib.Path) -> None:
+def test_writing_slip_file(tmp_path: pathlib.Path, *, send_leading_end_byte: bool) -> None:
     """Test writing encoded SLIP messages"""
-    with writefile.open(mode="wb") as f:
-        slipstream = SlipStream(f)
+    prefix = END if send_leading_end_byte else b""
+    data_file = tmp_path / "data.txt"
+    with data_file.open(mode="wb") as f:
+        with use_leading_end_byte(send_leading_end_byte):
+            slipstream = SlipStream(f)
         for msg in data:
             slipstream.send_msg(msg)
-    assert writefile.read_bytes() == b"".join(encode(msg) for msg in data)
+    assert data_file.read_bytes() == b"".join(prefix + encode(msg) + END for msg in data)
 
 
-def test_reading_slip_file_unbuffered(readfile: pathlib.Path) -> None:
+def test_reading_slip_file_unbuffered(tmp_path: pathlib.Path, *, receive_leading_end_byte: bool) -> None:
     """Test reading SLIP-encoded message"""
-    with readfile.open(mode="rb", buffering=0) as f:
-        slipstream = SlipStream(f)
+    prefix = END if receive_leading_end_byte else b""
+    data_file = tmp_path / "data.txt"
+    data_file.write_bytes(b"".join(prefix + encode(msg) + END for msg in data))
+    with data_file.open(mode="rb", buffering=0) as f:
+        with use_leading_end_byte(receive_leading_end_byte):
+            slipstream = SlipStream(f)
         for expected, actual in zip(data, slipstream):
             assert expected == actual
 
 
-def test_writing_slip_file_unbuffered(writefile: pathlib.Path) -> None:
+def test_writing_slip_file_unbuffered(tmp_path: pathlib.Path, *, send_leading_end_byte: bool) -> None:
     """Test writing SLIP-encoded messages"""
-    with writefile.open(mode="wb", buffering=0) as f:
-        slipstream = SlipStream(f)
+    prefix = END if send_leading_end_byte else b""
+    data_file = tmp_path / "data.txt"
+    with data_file.open(mode="wb", buffering=0) as f:
+        with use_leading_end_byte(send_leading_end_byte):
+            slipstream = SlipStream(f)
         for msg in data:
             slipstream.send_msg(msg)
-    assert writefile.read_bytes() == b"".join(encode(msg) for msg in data)
+    assert data_file.read_bytes() == b"".join(prefix + encode(msg) + END for msg in data)

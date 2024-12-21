@@ -10,3 +10,4 @@ The directory :file:`examples` in
 contains some basic examples on how the :mod:`sliplib` module can be used.
 
 .. automodule:: echoserver
+   :no-index:

@@ -91,21 +91,21 @@ class TestEchoServer:
 
         self.write_client_input("hallo")
         server_output = self.get_server_output()
-        assert server_output == r"Raw data received: b'\xc0hallo\xc0'"
+        assert server_output == r"Raw data received: b'hallo\xc0'"
         server_output = self.get_server_output()
         assert server_output == "Decoded data: b'hallo'"
         server_output = self.get_server_output()
-        assert server_output == r"Sending raw data: b'\xc0ollah\xc0'"
+        assert server_output == r"Sending raw data: b'ollah\xc0'"
         client_output = self.get_client_output()
         assert client_output == "Message>Response: b'ollah'"
 
         self.write_client_input("bye")
         server_output = self.get_server_output()
-        assert server_output == r"Raw data received: b'\xc0bye\xc0'"
+        assert server_output == r"Raw data received: b'bye\xc0'"
         server_output = self.get_server_output()
         assert server_output == "Decoded data: b'bye'"
         server_output = self.get_server_output()
-        assert server_output == r"Sending raw data: b'\xc0eyb\xc0'"
+        assert server_output == r"Sending raw data: b'eyb\xc0'"
         client_output = self.get_client_output()
         assert client_output == "Message>Response: b'eyb'"
 

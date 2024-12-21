@@ -6,13 +6,17 @@
 Echoserver
 ----------
 
+.. no-index
+
 This directory contains an example server and client application
 that demonstrate a basic use-case for Slip-encoded messages.
 The example works both for IPv4 and IPv6 sockets.
 
 .. automodule:: echoserver.server
+   :no-index:
 
 .. automodule:: echoserver.client
+   :no-index:
 
 Usage
 +++++
@@ -59,12 +63,12 @@ The server will have printed the following information:
    $ python server.py
    Slip server listening on localhost, port 59454
    Incoming connection from ('127.0.0.1', 59458)
-   Raw data received: b'\\xc0hallo\\xc0'
+   Raw data received: b'hallo\\xc0'
    Decoded data: b'hallo'
-   Sending raw data: b'\\xc0ollah\\xc0'
-   Raw data received: b'\\xc0bye\\xc0'
+   Sending raw data: b'ollah\\xc0'
+   Raw data received: b'bye\\xc0'
    Decoded data: b'bye'
-   Sending raw data: b'\\xc0eyb\\xc0'
+   Sending raw data: b'eyb\\xc0'
    Raw data received: b''
    Decoded data: b''
    Closing down

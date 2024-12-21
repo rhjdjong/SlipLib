@@ -57,13 +57,9 @@ The `Driver` class itself works without any I/O, and can therefore be used with
 any networking code, or any bytestream like pipes, serial I/O, etc.
 It can work in synchronous as well as in asynchronous environments.
 
-The `Driver` class offers the methods
-`send` and `receive` to handle
-the conversion between messages and SLIP-encoded packets.
-
 ### High-level usage
 
-The module also provides a `SlipWrapper` abstract baseclass
+The `sliplib` package  also provides a `SlipWrapper` abstract baseclass
 that provides the methods `send_msg` and `recv_msg` to send
 and receive single SLIP-encoded messages. This base class
 wraps an instance of the `Driver` class with a user-provided stream.
@@ -80,12 +76,10 @@ SLIP-encoded messages.
 
 ## Error Handling
 
-Contrary to the reference implementation described in :rfc:`1055`,
+Contrary to the reference implementation described in [RFC 1055][rfc1055],
 which chooses to essentially ignore protocol errors,
 the functions and classes in the `sliplib` module
-use a `ProtocolError` exception
-to indicate protocol errors, i.e. SLIP packets with invalid byte sequences.
-The `Driver` class raises a `ProtocolError` exception
-when an attempt is made to `get()` a message from such a packet.
+raise a `ProtocolError` exception
+when handling a SLIP packet with invalid contents.
 
 [rfc1055]: http://tools.ietf.org/html/rfc1055.html

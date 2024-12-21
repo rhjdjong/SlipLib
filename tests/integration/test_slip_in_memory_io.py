@@ -10,7 +10,7 @@ from typing import Generator
 
 import pytest
 
-from sliplib import END, SlipStream
+from sliplib import END, SlipStream, use_leading_end_byte
 
 
 class TestSlipStreamWithBytesIO:
@@ -25,32 +25,36 @@ class TestSlipStreamWithBytesIO:
         stream.close()
 
     @pytest.fixture
-    def filled_stream(self, empty_stream: io.BytesIO) -> io.BytesIO:
+    def filled_stream(self, empty_stream: io.BytesIO, *, receive_leading_end_byte: bool) -> io.BytesIO:
+        prefix = END if receive_leading_end_byte else b""
         empty_stream.seek(0)
-        empty_stream.write(END + self.msg_list[0] + END + END + self.msg_list[1] + END)
+        empty_stream.write(prefix + self.msg_list[0] + END + prefix + self.msg_list[1] + END)
         empty_stream.seek(0)
         return empty_stream
 
-    def test_stream_reading(self, filled_stream: io.BytesIO) -> None:
+    def test_stream_reading(self, filled_stream: io.BytesIO, *, send_leading_end_byte: bool) -> None:
         """Test reading from the bytestream"""
-        slipstream = SlipStream(filled_stream)
+        with use_leading_end_byte(send_leading_end_byte):
+            slipstream = SlipStream(filled_stream)
         assert slipstream.recv_msg() == self.msg_list[0]
         assert slipstream.recv_msg() == self.msg_list[1]
         # No more messages
         assert slipstream.recv_msg() == b""
 
-    def test_stream_reading_single_bytes(self, filled_stream: io.BytesIO) -> None:
+    def test_stream_reading_single_bytes(self, filled_stream: io.BytesIO, *, send_leading_end_byte: bool) -> None:
         """Test reading single bytes from the bytestream"""
-
-        slipstream = SlipStream(filled_stream, 1)
+        with use_leading_end_byte(send_leading_end_byte):
+            slipstream = SlipStream(filled_stream, 1)
         assert slipstream.recv_msg() == self.msg_list[0]
         assert slipstream.recv_msg() == self.msg_list[1]
         # No more messages
         assert slipstream.recv_msg() == b""
 
-    def test_stream_writing(self, empty_stream: io.BytesIO) -> None:
+    def test_stream_writing(self, empty_stream: io.BytesIO, *, send_leading_end_byte: bool) -> None:
         """Test writing to the bytestream"""
-        slipstream = SlipStream(empty_stream)
+        prefix = END if send_leading_end_byte else b""
+        with use_leading_end_byte(send_leading_end_byte):
+            slipstream = SlipStream(empty_stream)
         for msg in self.msg_list:
             slipstream.send_msg(msg)
-        assert empty_stream.getvalue() == END + self.msg_list[0] + END + END + self.msg_list[1] + END
+        assert empty_stream.getvalue() == prefix + self.msg_list[0] + END + prefix + self.msg_list[1] + END
