@@ -82,7 +82,9 @@ class TestEchoServer:
                 f"    exec(Path('{self.server_script}').read_text())"
             ),
         ]
-        self.server = Popen(server_command, executable=self.python, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True, bufsize=1)
+        self.server = Popen(
+            server_command, executable=self.python, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True, bufsize=1
+        )
         server_output_reader = threading.Thread(target=self.output_reader, args=(self.server, self.server_queue))
         server_output_reader.start()
         server_output = self.get_server_output()
@@ -103,7 +105,9 @@ class TestEchoServer:
                 f"    exec(Path('{self.client_script}').read_text())"
             ),
         ]
-        self.client = Popen(client_command, executable=self.python, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True, bufsize=1)
+        self.client = Popen(
+            client_command, executable=self.python, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True, bufsize=1
+        )
         client_output_reader = threading.Thread(target=self.output_reader, args=(self.client, self.client_queue))
         client_output_reader.start()
         client_output = self.get_client_output()
