@@ -5,7 +5,7 @@
 [![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
 ![tests](https://github.com/rhjdjong/SlipLib/actions/workflows/test.yml/badge.svg)
 ![coverage](https://gist.githubusercontent.com/rhjdjong/12a0c0616d67fc2b8b9cda9eda30be5d/raw/sliplib_coverage.svg)
-[![Documentation Status](https://readthedocs.org/projects/sliplib/badge/?version=master)](https://sliplib.readthedocs.io/en/master/?badge=master)
+[![Documentation Status](https://readthedocs.org/projects/sliplib/badge/?version=main)](https://sliplib.readthedocs.io/en/main/?badge=main)
 
 # `sliplib` &mdash; A module for the SLIP protocol
 
@@ -16,7 +16,7 @@ It defines encoding, decoding, and validation functions,
 as well as a driver class that can be used to implement
 a SLIP protocol stack, and higher-level classes that
 apply the SLIP protocol to TCP connections or IO streams.
-Read the [documentation](http://sliplib.readthedocs.org/en/master/)
+Read the [documentation](http://sliplib.readthedocs.org/en/main/)
 for detailed information.
 
 ## Background
