@@ -51,8 +51,8 @@ class TestEchoServer:
     def setup(self) -> Generator[None, None, None]:
         echoserver_directory = pathlib.Path(sliplib.__file__).parents[2] / "examples" / "echoserver"
         self.python = sys.executable
-        self.server_script = echoserver_directory / "server.py"
-        self.client_script = echoserver_directory / "client.py"
+        self.server_script = str(echoserver_directory / "server.py")
+        self.client_script = str(echoserver_directory / "client.py")
         self.server: Popen[str] | None = None
         self.client: Popen[str] | None = None
         self.server_queue: Queue[str] = Queue()
