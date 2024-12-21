@@ -74,11 +74,12 @@ class TestEchoServer:
             "-c",
             (
                 "from sys import argv\n"
+                "from pathlib import Path\n"
                 "from sliplib import use_leading_end_byte\n"
                 f"if '{arg}':\n"
                 f"    argv.append('{arg}')\n"
                 f"with use_leading_end_byte({send_leading_end_byte}):\n"
-                f"    exec(open('{self.server_script}').read())"
+                f"    exec(Path('{self.server_script}').read_text())"
             ),
         ]
         self.server = Popen(server_command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True, bufsize=1)
@@ -95,10 +96,11 @@ class TestEchoServer:
             "-c",
             (
                 "from sys import argv\n"
+                "from pathlib import Path\n"
                 "from sliplib import use_leading_end_byte\n"
                 f"argv.append({server_port})\n"
                 f"with use_leading_end_byte({receive_leading_end_byte}):\n"
-                f"    exec(open('{self.client_script}').read())"
+                f"    exec(Path('{self.client_script}').read_text())"
             ),
         ]
         self.client = Popen(client_command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True, bufsize=1)
