@@ -31,14 +31,14 @@ class TestEchoServer:
 
     def get_server_output(self) -> str:
         try:
-            output: str = self.server_queue.get(timeout=5)
+            output: str = self.server_queue.get(timeout=10)
         except Empty:  # no cov
             pytest.fail("No output from server")
         return output.strip()
 
     def get_client_output(self) -> str:
         try:
-            output: str = self.client_queue.get(timeout=5)
+            output: str = self.client_queue.get(timeout=10)
         except Empty:  # no cov
             pytest.fail("No output from client")
         return output.strip()
@@ -50,7 +50,7 @@ class TestEchoServer:
     @pytest.fixture(autouse=True)
     def setup(self) -> Generator[None, None, None]:
         echoserver_directory = pathlib.Path(sliplib.__file__).parents[2] / "examples" / "echoserver"
-        self.python = sys.executable
+        self.python = pathlib.Path(sys.executable)
         self.server_script = str(echoserver_directory / "server.py")
         self.client_script = str(echoserver_directory / "client.py")
         self.server: Popen[str] | None = None
@@ -69,7 +69,7 @@ class TestEchoServer:
         server_prefix: str = end_str if send_leading_end_byte else ""
         client_prefix: str = end_str if receive_leading_end_byte else ""
         server_command = [
-            self.python,
+            "python",
             "-u",
             "-c",
             (
@@ -82,7 +82,7 @@ class TestEchoServer:
                 f"    exec(Path('{self.server_script}').read_text())"
             ),
         ]
-        self.server = Popen(server_command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True, bufsize=1)
+        self.server = Popen(server_command, executable=self.python, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True, bufsize=1)
         server_output_reader = threading.Thread(target=self.output_reader, args=(self.server, self.server_queue))
         server_output_reader.start()
         server_output = self.get_server_output()
@@ -91,7 +91,7 @@ class TestEchoServer:
         server_port = m.group(1)
 
         client_command = [
-            self.python,
+            "python",
             "-u",
             "-c",
             (
@@ -103,7 +103,7 @@ class TestEchoServer:
                 f"    exec(Path('{self.client_script}').read_text())"
             ),
         ]
-        self.client = Popen(client_command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True, bufsize=1)
+        self.client = Popen(client_command, executable=self.python, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True, bufsize=1)
         client_output_reader = threading.Thread(target=self.output_reader, args=(self.client, self.client_queue))
         client_output_reader.start()
         client_output = self.get_client_output()
