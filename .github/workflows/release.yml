@@ -3,8 +3,24 @@ name: release
 on:
   workflow_dispatch:
 
-
 jobs:
+  get_version_from_branch_name:
+    runs-on: ubuntu-latest
+    outputs:
+      release_version: ${{ steps.get_version.outputs.latest_version }}
+    steps:
+      - name: Get version from branch name
+        id: get_version
+        run: |
+          branch_name=${{ github.ref_name }}
+          version = "${branch_name##release//}"
+          if [ "${version}" == "${branch_name}" ]; then
+            echo "Invalid branch name: ${branch_name}"
+          else:
+            echo "Release version: ${version}"
+            echo "release_version=${version}" >> $GITHUB_OUTPUT
+          exit 1
+
   pypi_version:
     runs-on: ubuntu-latest
     outputs:
