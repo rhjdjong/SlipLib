@@ -16,7 +16,7 @@ jobs:
           version="${branch_name##release/}"
           if [ "${version}" == "${branch_name}" ]; then
             echo "Invalid branch name: ${branch_name}"
-          else:
+          else
             echo "Release version: ${version}"
             echo "release_version=${version}" >> $GITHUB_OUTPUT
           fi
