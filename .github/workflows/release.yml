@@ -19,6 +19,7 @@ jobs:
           else:
             echo "Release version: ${version}"
             echo "release_version=${version}" >> $GITHUB_OUTPUT
+          fi
 
 #  pypi_version:
 #    runs-on: ubuntu-latest
