@@ -20,7 +20,7 @@ jobs:
             echo "Invalid branch name: ${branch_name}"
           else
             echo "Release version: ${release_version}"
-            echo "release_version=${release_version}" >> "$GITHUB_OUTPUT"
+            echo "release_version=${release_version}" >> $GITHUB_OUTPUT
           fi
 
   pypi_version:
@@ -40,7 +40,7 @@ jobs:
             pypi_version="0.0.0"
           fi
           echo "Latest version on PyPI: $pypi_version"
-          echo "pypi_version=$pypi_version" >> "$GITHUB_OUTPUT"
+          echo "pypi_version=$pypi_version" >> $GITHUB_OUTPUT
 
   build_package:
     needs: [get_version_from_branch_name, pypi_version]
@@ -63,7 +63,7 @@ jobs:
         id: version
         run: |
           release_version=${{ needs.get_version_from_branch_name.outputs.release_version }}
-          pypi_version=${{ needs.pypi_version.outputs.latest_version }}
+          pypi_version=${{ needs.pypi_version.outputs.pypi_version }}
           repo_version=$(hatch version)
           
           if [ "$release_version" == "$pypi_version" ]; then
@@ -79,7 +79,7 @@ jobs:
             echo "The release version ${release_version} is greater than the latest version ${pypi_version} on PyPI."
           fi
           
-          if [ "${release_version} != "${repo_version}" ]; then
+          if [ "${release_version}" != "${repo_version}" ]; then
             higher_version=$(printf '%s\n' "$release_version" "$repo_version" | sort -rV | head -n 1)
             if [ "$higher_version" != "$release_version" ]; then
               echo "Error! Version ${release_version} is lower than repository version ${repo_version} on PyPI"
@@ -90,7 +90,7 @@ jobs:
             echo "Repository version is now $(hatch version)"
           fi
 
-          echo "release_version=${release_version}" >> "$GITHUB_OUTPUT"
+          echo "release_version=${release_version}" >> $GITHUB_OUTPUT
 
 
       - name: Build source and wheel distribution
