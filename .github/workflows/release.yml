@@ -13,7 +13,7 @@ jobs:
         id: get_version
         run: |
           branch_name=${{ github.ref_name }}
-          version="${branch_name##release//}"
+          version="${branch_name##release/}"
           if [ "${version}" == "${branch_name}" ]; then
             echo "Invalid branch name: ${branch_name}"
           else:
