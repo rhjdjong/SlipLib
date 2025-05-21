@@ -10,3 +10,4 @@ Modules
 .. automodule:: sliplib.slipstream
 .. automodule:: sliplib.slipsocket
 .. automodule:: sliplib.slipserver
+.. automodule:: sliplib.legacy

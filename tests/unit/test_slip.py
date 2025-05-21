@@ -13,104 +13,45 @@ import pytest
 
 from sliplib import END, ESC, ESC_END, ESC_ESC, Driver, ProtocolError, decode, encode, use_leading_end_byte
 
-
-class TestEncoding:
-    """Test encoding of SLIP messages."""
-
-    def test_empty_message_encoding(self) -> None:
-        """Empty message should result in an empty packet."""
-        msg = b""
-        packet = b""
-        assert encode(msg) == packet
-
-    def test_simple_message_encoding(self) -> None:
-        """A simple message without special bytes is not changed."""
-        msg = b"hallo"
-        packet = msg
-        assert encode(msg) == packet
-
-    def test_single_byte_encoding(self) -> None:
-        """Verify that single bytes are encoded correctly"""
-        msg = b"x"
-        packet = msg
-        assert encode(msg) == packet
-
-    def test_message_with_zero_byte_decoding(self) -> None:
-        """A message that contains a NULL byte must be encoded correctly."""
-        msg = b"a\0b"
-        packet = msg
-        assert encode(msg) == packet
-
-    @pytest.mark.parametrize(
-        ("msg", "packet"),
-        [
-            (END, ESC + ESC_END),
-            (ESC, ESC + ESC_ESC),
-            (ESC + ESC_END, ESC + ESC_ESC + ESC_END),
-            (ESC + ESC_ESC, ESC + ESC_ESC + ESC_ESC),
-            (ESC + END, ESC + ESC_ESC + ESC + ESC_END),
-            (ESC + ESC, ESC + ESC_ESC + ESC + ESC_ESC),
-        ],
-    )
-    def test_special_character_encoding(self, msg: bytes, packet: bytes) -> None:
-        """Messages with special bytes should encode these according to the specification."""
-        assert encode(msg) == packet
+message_packet = [
+    (b"", b""),  # Empty message should result in an empty packet.
+    (b"hallo", b"hallo"),  # A simple message without special bytes is not changed.
+    (b"x", b"x"),  # Verify that single bytes are encoded correctly.
+    (b"a\0b", b"a\0b"),  # A message that contains a NULL byte must be encoded correctly.
+    (END, ESC + ESC_END),  # Messages with special bytes should encode these according to the specification.
+    (ESC, ESC + ESC_ESC),
+    (ESC + ESC_END, ESC + ESC_ESC + ESC_END),
+    (ESC + ESC_ESC, ESC + ESC_ESC + ESC_ESC),
+    (ESC + END, ESC + ESC_ESC + ESC + ESC_END),
+    (ESC + ESC, ESC + ESC_ESC + ESC + ESC_ESC),
+]
 
 
-class TestDecoding:
-    """Test decoding of SLIP packets."""
+@pytest.mark.parametrize(("message", "packet"), message_packet)
+def test_encoding(message: bytes, packet: bytes) -> None:
+    assert encode(message) == packet
 
-    def test_empty_packet_decoding(self) -> None:
-        """An empty packet should result in an empty message."""
-        packet = b""
-        assert decode(packet) == b""
 
-    def test_simple_message_decoding(self) -> None:
-        """A packet without the special escape sequences should result in a message without special bytes."""
-        msg = b"hallo"
-        packet = msg
-        assert decode(packet) == msg
+@pytest.mark.parametrize(("message", "packet"), message_packet)
+def test_decoding(message: bytes, packet: bytes) -> None:
+    assert decode(packet) == message
 
-    def test_single_byte_decoding(self) -> None:
-        """A packet with a single byte between END bytes must be decoded correctly."""
-        msg = b"x"
-        packet = msg
-        assert decode(packet) == msg
 
-    def test_message_with_zero_byte_decoding(self) -> None:
-        """A packet that contains a NULL byte must be decoded correctly."""
-        msg = b"a\0b"
-        packet = msg
-        assert decode(packet) == msg
-
-    @pytest.mark.parametrize(
-        ("packet", "msg"),
-        [
-            (ESC + ESC_ESC, ESC),
-            (ESC + ESC_END, END),
-            (ESC_ESC + ESC + ESC_END, ESC_ESC + END),
-            (ESC_END + ESC + ESC_ESC, ESC_END + ESC),
-            (ESC + ESC_ESC + ESC + ESC_END, ESC + END),
-            (ESC + ESC_END + ESC + ESC_ESC, END + ESC),
-        ],
-    )
-    def test_special_character_decoding(self, packet: bytes, msg: bytes) -> None:
-        """A packet with special escape sequences should result in a message with the appropriate special bytes."""
-        assert decode(packet) == msg
-
-    @pytest.mark.parametrize(
-        "packet",
-        [
-            ESC + b"x",
-            b"abc" + ESC,
-            b"a" + END + b"z",
-        ],
-    )
-    def test_invalid_packet_raises_protocol_error(self, packet: bytes) -> None:
-        """A packet with an invalid escape sequence should result in a ProtocolError."""
-        with pytest.raises(ProtocolError) as exc_info:
-            decode(packet)
-        assert exc_info.value.args == (packet,)
+@pytest.mark.parametrize(
+    "packet",
+    [
+        ESC + b"x",
+        b"abc" + ESC,
+        b"a" + END + b"z",
+        END + b"z",
+        b"a" + END,
+    ],
+)
+def test_invalid_packet_raises_protocol_error(packet: bytes) -> None:
+    """A packet with an invalid contents should result in a ProtocolError."""
+    with pytest.raises(ProtocolError) as exc_info:
+        decode(packet)
+    assert exc_info.value.args == (packet,)
 
 
 class TestDriver:

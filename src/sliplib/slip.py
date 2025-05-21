@@ -279,6 +279,8 @@ def encode(msg: bytes) -> bytes:
 
     .. versionchanged:: 0.7.0
        Leading and/or trailing :const:`~config.END` bytes are no longer included in the return value.
+       As of version 0.7.1, the original version of the :func:`~sliplib.legacy.encode()` function is available in the
+       :mod:`~sliplib.legacy` module.
     """
     msg = bytes(msg)
     return msg.replace(ESC, ESC + ESC_ESC).replace(END, ESC + ESC_END)
@@ -304,6 +306,8 @@ def decode(packet: bytes) -> bytes:
 
     .. versionchanged:: 0.7.0
        Leading and/or trailing :const:`~config.END` bytes are no longer allowed.
+       As of version 0.7.1, the original version of the :func:`~sliplib.legacy.decode()` function is available in the
+       :mod:`~sliplib.legacy` module.
 
     """
     if not is_valid(packet):
