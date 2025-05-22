@@ -80,7 +80,7 @@ jobs:
       - name: Combine
         run: |
           python -m compileall examples src tests
-          coverage combine
+          coverage combine covdata
           coverage report -i
           coverage json -i
           export TOTAL=$(cat coverage.json | jq -r .totals.percent_covered_display)
