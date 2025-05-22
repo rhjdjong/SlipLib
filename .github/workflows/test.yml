@@ -91,7 +91,7 @@ jobs:
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
-          gistID: 12a0c0616d67fc2b8b9cda9eda30be5d
+          gistID: 69c76ab440390c14ee4e43d2dec24a00
           filename: sliplib_coverage.svg
           label: Coverage
           message: ${{ env.total }} %
