@@ -4,7 +4,7 @@
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 [![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
 ![tests](https://github.com/rhjdjong/SlipLib/actions/workflows/test.yml/badge.svg)
-![coverage](https://gist.githubusercontent.com/rhjdjong/12a0c0616d67fc2b8b9cda9eda30be5d/raw/sliplib_coverage.svg)
+[![Coverage](https://coveralls.io/repos/github/rhjdjong/SlipLib/badge.svg?branch=main)](https://coveralls.io/github/rhjdjong/SlipLib?branch=main)
 [![Documentation Status](https://readthedocs.org/projects/sliplib/badge/?version=main)](https://sliplib.readthedocs.io/en/main/?badge=main)
 
 # `sliplib` &mdash; A module for the SLIP protocol
