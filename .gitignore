@@ -22,3 +22,4 @@ pyvenv.cfg
 Scripts
 venv
 /coverage.json
+/coverage.xml

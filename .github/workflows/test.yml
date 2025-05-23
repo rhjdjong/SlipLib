@@ -44,7 +44,7 @@ jobs:
       run: hatch fmt --check
 
     - name: Run tests
-      run: hatch run test.py${{ matrix.python-version }}:test-cov
+      run: hatch run test.py${{ matrix.python-version }}:cov-xml
 
     - name: Show files
       run: ls -a
