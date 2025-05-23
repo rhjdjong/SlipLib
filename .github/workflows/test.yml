@@ -46,11 +46,11 @@ jobs:
     - name: Run tests
       run: hatch run test.py${{ matrix.python-version }}:test-cov
 
-    - name: Coverage report
-      run: coverage xml -o covdata-${{ matrix.os }}-${{ matrix.python-version }}
-
     - name: Show files
       run: ls
+
+    - name: Coverage report
+      run: coverage xml -o covdata-${{ matrix.os }}-${{ matrix.python-version }}
 
     - name: Coveralls Parallel
       uses: coverallsapp/github-action@v2
