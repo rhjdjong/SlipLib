@@ -71,6 +71,11 @@ cov = [
     "test-cov",
     "cov-report",
 ]
+cov-xml = [
+    "test-cov",
+    "coverage combine",
+    "coverage xml",
+]
 
 [[tool.hatch.envs.types.matrix]]
 python_version = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]

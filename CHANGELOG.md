@@ -1,6 +1,18 @@
 Changelog
 =========
 
+## v0.7.1
+
+### Bug fixes
+
+- Solved issue [63](https://github.com/rhjdjong/SlipLib/issues/63)
+
+### Other changes
+
+- Introduced the `sliplib.legacy` module with `encode()` and `decode()`
+  functions as they were before version 0.7.0. The legacy `encode()` function
+  honors the setting of `config.USE_LEADING_END_BYTE`.
+
 ## v0.7.0
 
 ### Upgrade steps

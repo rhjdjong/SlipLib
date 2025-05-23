@@ -82,7 +82,7 @@ jobs:
           if [ "${release_version}" != "${repo_version}" ]; then
             higher_version=$(printf '%s\n' "$release_version" "$repo_version" | sort -rV | head -n 1)
             if [ "$higher_version" != "$release_version" ]; then
-              echo "Error! Version ${release_version} is lower than repository version ${repo_version} on PyPI"
+              echo "Error! Version ${release_version} is lower than repository version ${repo_version}"
               exit 1
             fi
             echo "Repository version was ${repo_version}. Updating to ${release_version}"
