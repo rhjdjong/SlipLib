@@ -49,6 +49,9 @@ jobs:
     - name: Coverage report
       run: coverage xml -o covdata-${{ matrix.os }}-${{ matrix.python-version }}
 
+    - name: Show files
+      run: ls
+
     - name: Coveralls Parallel
       uses: coverallsapp/github-action@v2
       with:
