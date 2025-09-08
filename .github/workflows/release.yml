@@ -122,7 +122,7 @@ jobs:
           echo "Making new tag ${tag_name}"
           echo "tag_name=${tag_name}" >> $GITHUB_OUTPUT
       - name: Create tag
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             github.rest.git.createRef({
