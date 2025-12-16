@@ -37,7 +37,9 @@ EXPLICITLY_EXPOSED_SOCKET_METHODS = (
     "getsockopt",
     "gettimeout",
     "listen",
+    "setblocking",
     "setsockopt",
+    "settimeout",
     "shutdown",
 )
 
@@ -276,9 +278,9 @@ class TestSlipSocket:
         assert self.sock_mock.listen.mock_calls == [mocker.call(), mocker.call(5)]
 
     def test_setsockopt_method(self) -> None:
-        """Test that the getsockopt method is delegated to the socket."""
-        self.slipsocket.setsockopt(27, 5)
-        self.sock_mock.setsockopt.assert_called_once_with(27, 5)
+        """Test that the setsockopt method is delegated to the socket."""
+        self.slipsocket.setsockopt(27, 5, 3)
+        self.sock_mock.setsockopt.assert_called_once_with(27, 5, 3)
 
     def test_shutdown_method(self) -> None:
         """Test that the shutdown method is delegated to the socket."""
@@ -301,10 +303,12 @@ class TestSlipSocket:
             assert len(warning) == 1
             assert issubclass(warning[0].category, DeprecationWarning)
             assert "will be removed in version 1.0" in str(warning[0].message)
-        if method == "set_inheritable":
-            args: tuple[()] | tuple[Any] = (True,)
-        else:
-            args = ()
+        arg_dict = {
+            "set_inheritable": (True,),
+            "setblocking": (True,),
+            "settimeout": (5,),
+        }
+        args: tuple[()] | tuple[Any] = arg_dict.get(method, ())
         socket_method(*args)
         getattr(self.sock_mock, method).assert_called_once_with(*args)
 
