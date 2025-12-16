@@ -304,6 +304,7 @@ class TestSlipSocket:
             assert issubclass(warning[0].category, DeprecationWarning)
             assert "will be removed in version 1.0" in str(warning[0].message)
         arg_dict = {
+            "ioctl": (socket.SIO_RCVALL,),
             "set_inheritable": (True,),
             "setblocking": (True,),
             "settimeout": (5,),
