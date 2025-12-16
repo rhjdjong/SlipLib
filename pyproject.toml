@@ -78,10 +78,9 @@ cov-xml = [
 ]
 
 [[tool.hatch.envs.types.matrix]]
-python_version = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+python= ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
 [tool.hatch.envs.types]
-python = "3.13"
 extra-dependencies = [
     "mypy>=1.0.0",
 ]
