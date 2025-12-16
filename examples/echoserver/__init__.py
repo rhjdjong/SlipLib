@@ -18,8 +18,8 @@ The example works both for IPv4 and IPv6 sockets.
 .. automodule:: echoserver.client
    :no-index:
 
-Running the example
-+++++++++++++++++++
+Usage
++++++
 
 Open a terminal window in the :file:`echoserver` directory
 and run the :file:`server.py` script. This will start the server
@@ -28,7 +28,7 @@ and print the address on which the server is listening.
 .. code:: bash
 
    $ python server.py
-   Slip server listening on 127.0.0.1, port 59454
+   Slip server listening on localhost, port 59454
 
 Then in another terminal window in the same directory run the :file:`client.py` script
 with the port number reported by the server.
@@ -36,7 +36,7 @@ with the port number reported by the server.
 .. code:: bash
 
    $ python client.py 59454
-   Connecting to server on 127.0.0.1:59454
+   Connecting to server on port 59454
    Connected to ('127.0.0.1', 59454)
    Message>
 
@@ -47,7 +47,7 @@ An empty message stops both the client and the server.
 .. code:: bash
 
    $ python client.py 59454
-   Connecting to server on 127.0.0.1:59454
+   Connecting to server on port 59454
    Connected to ('127.0.0.1', 59454)
    Message> hallo
    Response: b'ollah'
@@ -61,7 +61,7 @@ The server will have printed the following information:
 .. code:: bash
 
    $ python server.py
-   Slip server listening on 127.0.0.1, port 59454
+   Slip server listening on localhost, port 59454
    Incoming connection from ('127.0.0.1', 59458)
    Raw data received: b'hallo\\xc0'
    Decoded data: b'hallo'
@@ -77,7 +77,7 @@ The server will have printed the following information:
 Running on IPv6
 +++++++++++++++
 
-By running the server and client with the argument ``ipv6``,
+By running the server with the argument ``ipv6``,
 an IPv6-based connection will be established.
 
 .. list-table::
@@ -89,7 +89,7 @@ an IPv6-based connection will be established.
    * - .. code:: bash
 
           $ python server.py ipv6
-          Slip server listening on ::1, port 59454
+          Slip server listening on localhost, port 59454
           \u200b
           Incoming connection from ('::1', 59458, 0, 0)
           \u200b
@@ -98,8 +98,8 @@ an IPv6-based connection will be established.
 
           \u200b
           \u200b
-          $ python client.py 59454 ipv6
-          Connecting to server on ::1:59454
+          $ python client.py 59454
+          Connecting to server on port 59454
           Message>
           ...
 """

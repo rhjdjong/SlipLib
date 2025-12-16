@@ -64,33 +64,29 @@ class TestEchoServer:
     @pytest.mark.parametrize("arg", ["", "ipv6"])
     def test_server_and_client(self, arg: str) -> None:
         server_command = [self.python, "-u", self.server_script]
-        hostname = "127.0.0.1"
         if arg:
             server_command.append(arg)
-            hostname = "::1"
         self.server = Popen(server_command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True, bufsize=1)
         server_output_reader = threading.Thread(target=self.output_reader, args=(self.server, self.server_queue))
         server_output_reader.start()
         server_output = self.get_server_output()
-        m = re.match(rf"Slip server listening on {hostname}, port (\d+)", server_output)
+        m = re.match(r"Slip server listening on localhost, port (\d+)", server_output)
         assert m is not None
         server_port = m.group(1)
 
         client_command = [self.python, "-u", self.client_script, server_port]
-        if arg:
-            client_command.append(arg)
         self.client = Popen(client_command, stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True, bufsize=1)
         client_output_reader = threading.Thread(target=self.output_reader, args=(self.client, self.client_queue))
         client_output_reader.start()
         client_output = self.get_client_output()
-        assert client_output == f"Connecting to server at {hostname}:{server_port}"
+        assert client_output == f"Connecting to server on port {server_port}"
 
         server_output = self.get_server_output()
-        message = f"Incoming connection from ('{hostname}'"
+        message = f"Incoming connection from ('{'::1' if arg else '127.0.0.1'}'"
         assert server_output.startswith(message)
 
         client_output = self.get_client_output()
-        message = f"Connected to ('{hostname}'"
+        message = f"Connected to ('{'::1' if arg else '127.0.0.1'}'"
         assert client_output.startswith(message)
 
         self.write_client_input("hallo")

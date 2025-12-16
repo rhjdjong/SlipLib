@@ -1,5 +1,3 @@
-# ruff: noqa: T201
-
 # Copyright (c) 2020 Ruud de Jong
 # This file is part of the SlipLib project which is released under the MIT license.
 # See https://github.com/rhjdjong/SlipLib for details.
@@ -9,18 +7,17 @@ Server
 ++++++
 
 The :file:`server.py` example file is a demonstrator echo server.
-
-Usage:
-  python echoserver.py [ipv6]
-
-The program uses a subclass of :class:`~sliplib.slipserver.SlipRequestHandler`
+It uses a subclass of :class:`~sliplib.slipserver.SlipRequestHandler`
 that transforms the :attr:`request` attribute into
 a dedicated :class:`~sliplib.slipsocket.SlipSocket` subclass that prints
 the raw data that is received and sent.
 The request handler prints the decoded message,
 and then reverses the order of the bytes in the encoded message
-(so ``abc`` becomes ``cba``), before sending it back to the client.
+(so ``abc`` becomes ``cba``),
+and sends it back to the client.
 """
+
+# ruff: noqa: T201
 
 from __future__ import annotations
 
@@ -75,9 +72,11 @@ class TCPServerIPv6(TCPServer):
 
 
 def main() -> None:
-    hostname, server_class = ("::1", TCPServerIPv6) if len(sys.argv) > 1 else ("127.0.0.1", TCPServer)
-    server = server_class((hostname, 0), SlipHandler)
-    print(f"Slip server listening on {hostname}, port", server.server_address[1])
+    if len(sys.argv) > 1 and sys.argv[1].lower() == "ipv6":
+        server = TCPServerIPv6(("localhost", 0), SlipHandler)  # type: TCPServer
+    else:
+        server = TCPServer(("localhost", 0), SlipHandler)
+    print("Slip server listening on localhost, port", server.server_address[1])
     server.handle_request()
 
 
