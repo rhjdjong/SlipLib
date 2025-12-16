@@ -58,10 +58,10 @@ NOT_DELEGATED_METHODS = tuple(
 
 @pytest.mark.parametrize(
     ("address", "family", "remote_address"),
-    (
+    [
         (("127.0.0.1", 12345), socket.AF_INET, ("93.184.216.34", 54321)),
         (("::1", 12345, 0, 0), socket.AF_INET6, ("2606:2800:220:1:248:1893:25c8:1946", 54321, 0, 0)),
-    ),
+    ],
 )
 class TestSlipSocket:
     """Tests for SlipSocket"""

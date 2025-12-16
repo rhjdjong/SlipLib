@@ -93,7 +93,7 @@ Exceptions
 from __future__ import annotations
 
 import re
-from collections.abc import Iterator  # noqa: TCH003
+from collections.abc import Iterator  # noqa: TC003
 from contextlib import contextmanager
 from queue import Empty, Queue
 from threading import RLock

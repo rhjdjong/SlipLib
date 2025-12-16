@@ -239,7 +239,7 @@ class SlipSocket(SlipWrapper[socket.socket]):
         Returns:
             The remote IP address.
         """
-        return cast(TCPAddress, self.socket.getpeername())
+        return cast("TCPAddress", self.socket.getpeername())
 
     def getsockname(self) -> TCPAddress:
         """Get the :class:`SlipSocket` instance's own address.
@@ -248,7 +248,7 @@ class SlipSocket(SlipWrapper[socket.socket]):
         Returns:
             The local IP address.
         """
-        return cast(TCPAddress, self.socket.getsockname())
+        return cast("TCPAddress", self.socket.getsockname())
 
     def getsockopt(self, *args: Any) -> int | bytes:
         """Get the socket option from the embedded socket.

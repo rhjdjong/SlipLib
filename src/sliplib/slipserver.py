@@ -82,7 +82,7 @@ class SlipRequestHandler(BaseRequestHandler):
 
         if not isinstance(request, SlipSocket):
             request = SlipSocket(request)
-        super().__init__(cast(socket.socket, request), client_address, server)
+        super().__init__(cast("socket.socket", request), client_address, server)
 
     def handle(self) -> None:
         """Service the request. Must be defined by a derived class.
@@ -142,7 +142,7 @@ class SlipServer(TCPServer):
         if self._is_ipv6_address(server_address):
             self.address_family = socket.AF_INET6
         super().__init__(server_address[0:2], handler_class, bind_and_activate)
-        self.socket = cast(socket.socket, SlipSocket(self.socket))
+        self.socket = cast("socket.socket", SlipSocket(self.socket))
 
     @staticmethod
     def _is_ipv6_address(server_address: TCPAddress) -> bool:

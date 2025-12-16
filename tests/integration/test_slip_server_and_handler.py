@@ -31,10 +31,10 @@ class DummySlipRequestHandler(SlipRequestHandler):
 
 @pytest.mark.parametrize(
     ("family", "address"),
-    (
+    [
         (AF_INET, ("127.0.0.1", 0)),
         (AF_INET6, ("::1", 0, 0, 0)),
-    ),
+    ],
 )
 class TestSlipRequestHandler:
     """Tests for SlipRequestHandler."""
