@@ -309,7 +309,7 @@ class TestSlipSocket:
             "setblocking": (True,),
             "settimeout": (5,),
         }
-        args: tuple[()] | tuple[Any] = arg_dict.get(method, ())
+        args: tuple[()] | tuple[Any, ...] = arg_dict.get(method, ())
         socket_method(*args)
         getattr(self.sock_mock, method).assert_called_once_with(*args)
 
