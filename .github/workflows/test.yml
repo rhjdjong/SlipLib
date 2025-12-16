@@ -24,15 +24,19 @@ jobs:
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
 
     steps:
-    - uses: actions/checkout@v6
+    - name: Install Hatch
+      uses: pypa/hatch@install
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install Hatch
-      run: python -m pip install --upgrade pip hatch
+    - name: Update Python packages
+      run: python -m pip install --upgrade pip
+
+    - name: Checkout repository
+      uses: actions/checkout@v6
 
     - name: Run style check
       run: hatch run style:check

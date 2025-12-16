@@ -56,8 +56,11 @@ jobs:
           python-version: "3.x"
 
       - name: Install Hatch
+        uses: pypa/hatch@install
+
+      - name: Update packages
         run: |
-          python -m pip install --upgrade pip setuptools wheel hatch
+          python -m pip install --upgrade pip setuptools wheel
 
       - name: Compare current version with PyPI version
         id: version
