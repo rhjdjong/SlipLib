@@ -1,4 +1,4 @@
-# ruff: noqa: T201, EXE002
+# ruff: noqa: T201
 
 # Copyright (c) 2020 Ruud de Jong
 # This file is part of the SlipLib project which is released under the MIT license.
