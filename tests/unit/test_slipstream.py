@@ -30,6 +30,14 @@ def test_slip_stream_fails_if_instantiated_with_non_bytestream_argument() -> Non
         SlipStream(io.StringIO())  # type: ignore[arg-type]
 
 
+def test_slipstream_unknown_capabilities(mocker: MockerFixture) -> None:
+    """Missing capability attributes retain the permissive defaults."""
+    stream = mocker.Mock(spec_set=("read", "write"))
+    slipstream = SlipStream(stream)
+    assert slipstream.readable is True
+    assert slipstream.writable is True
+
+
 class TestSlipStreamBasics:
     """Tests for basic SlipStream functionality."""
 

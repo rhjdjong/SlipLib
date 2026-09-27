@@ -158,7 +158,8 @@ class SlipStream(SlipWrapper[IOStream]):
         The value is :external:obj:`True` if the readability of the wrapped stream
         cannot be determined.
         """
-        return getattr(self.stream, "readable", True)
+        readable = getattr(self.stream, "readable", True)
+        return bool(readable()) if callable(readable) else readable
 
     @property
     def writable(self) -> bool:
@@ -167,7 +168,8 @@ class SlipStream(SlipWrapper[IOStream]):
         The value is :external:obj:`True` if the writabilty of the wrapped stream
         cannot be determined.
         """
-        return getattr(self.stream, "writable", True)
+        writable = getattr(self.stream, "writable", True)
+        return bool(writable()) if callable(writable) else writable
 
     @property
     def _stream_is_closed(self) -> bool:
