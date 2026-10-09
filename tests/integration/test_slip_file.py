@@ -26,7 +26,13 @@ data = [
     ("mode", "readable", "writable"), [("rb", True, False), ("wb", False, True), ("r+b", True, True)]
 )
 @pytest.mark.parametrize("buffering", [-1, 0])
-def test_file_capabilities(tmp_path: pathlib.Path, mode: str, readable: bool, writable: bool, buffering: int) -> None:
+def test_file_capabilities(
+    tmp_path: pathlib.Path,
+    mode: str,
+    readable: bool,  # noqa: FBT001
+    writable: bool,  # noqa: FBT001
+    buffering: int,
+) -> None:
     """Report binary file capabilities as Boolean properties."""
     data_file = tmp_path / "data.txt"
     data_file.write_bytes(b"")

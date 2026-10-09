@@ -63,6 +63,13 @@ class TestSlipStreamBasics:
         assert self.slipstream.readable == rbl
         assert self.slipstream.writable == wbl
 
+    @pytest.mark.parametrize(("rbl", "wbl"), [(True, True), (True, False), (False, True), (False, False)])
+    def test_slipstream_readable_and_writable_methods(self, rbl: bool, wbl: bool) -> None:  # noqa: FBT001
+        """Verify the readable and writable methods."""
+        self.stream_mock.configure_mock(readable=lambda: rbl, writable=lambda: wbl)
+        assert self.slipstream.readable == rbl
+        assert self.slipstream.writable == wbl
+
     def test_slipstream_reading(self, mocker: MockerFixture) -> None:
         """Verify that receiving messages works by calling the stream's read method."""
         msg_list = [b"hallo", b"bye"]
