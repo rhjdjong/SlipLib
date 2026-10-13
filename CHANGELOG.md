@@ -1,6 +1,14 @@
 Changelog
 =========
 
+## v0.7.2
+
+### Bug fixes
+
+- Repaired the behavior of the `readable` and `writable` properties in `SlipStream`.
+  They now return the proper boolean value in stead of the bound method of the
+  wrapped stream. Fix contributed by Aamir Abdul Azeez.
+  
 ## v0.7.1
 
 ### Bug fixes
