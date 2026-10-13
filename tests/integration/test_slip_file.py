@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import pytest
+
 if TYPE_CHECKING:
     import pathlib
 
@@ -18,6 +20,26 @@ data = [
     b"line with embedded\nnewline",
     b"last line",
 ]
+
+
+@pytest.mark.parametrize(
+    ("mode", "readable", "writable"), [("rb", True, False), ("wb", False, True), ("r+b", True, True)]
+)
+@pytest.mark.parametrize("buffering", [-1, 0])
+def test_file_capabilities(
+    tmp_path: pathlib.Path,
+    mode: str,
+    readable: bool,  # noqa: FBT001
+    writable: bool,  # noqa: FBT001
+    buffering: int,
+) -> None:
+    """Report binary file capabilities as Boolean properties."""
+    data_file = tmp_path / "data.txt"
+    data_file.write_bytes(b"")
+    with data_file.open(mode=mode, buffering=buffering) as stream:
+        slipstream = SlipStream(stream)
+        assert slipstream.readable is readable
+        assert slipstream.writable is writable
 
 
 def test_reading_slip_file(tmp_path: pathlib.Path, *, receive_leading_end_byte: bool) -> None:

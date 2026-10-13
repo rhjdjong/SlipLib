@@ -30,6 +30,14 @@ def test_slip_stream_fails_if_instantiated_with_non_bytestream_argument() -> Non
         SlipStream(io.StringIO())  # type: ignore[arg-type]
 
 
+def test_slipstream_unknown_capabilities(mocker: MockerFixture) -> None:
+    """Missing capability attributes retain the permissive defaults."""
+    stream = mocker.Mock(spec_set=("read", "write"))
+    slipstream = SlipStream(stream)
+    assert slipstream.readable is True
+    assert slipstream.writable is True
+
+
 class TestSlipStreamBasics:
     """Tests for basic SlipStream functionality."""
 
@@ -52,6 +60,13 @@ class TestSlipStreamBasics:
     def test_slipstream_readable_and_writable_attributes(self, rbl: bool, wbl: bool) -> None:  # noqa: FBT001
         """Verify the readable and writable attributes."""
         self.stream_mock.configure_mock(readable=rbl, writable=wbl)
+        assert self.slipstream.readable == rbl
+        assert self.slipstream.writable == wbl
+
+    @pytest.mark.parametrize(("rbl", "wbl"), [(True, True), (True, False), (False, True), (False, False)])
+    def test_slipstream_readable_and_writable_methods(self, rbl: bool, wbl: bool) -> None:  # noqa: FBT001
+        """Verify the readable and writable methods."""
+        self.stream_mock.configure_mock(readable=lambda: rbl, writable=lambda: wbl)
         assert self.slipstream.readable == rbl
         assert self.slipstream.writable == wbl
 
